@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mining Block Model Generator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Mining Block Model Generator</h1>
+            <p>Create and visualize 3D block models for mining applications</p>
+            <button id="aboutBtn" style="position: absolute; top: 8px; right: 8px; padding: 6px 12px; background: #444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em;">About</button>
+        </header>
+
+        <div class="main-content">
+            <aside class="control-panel">
+                <div class="section-header">
+                    <h2>Model Parameters</h2>
+                </div>
+                
+                <form id="modelForm">
+                    <div class="form-row">
+                        <div class="form-group compact">
+                            <label for="originX">Origin X</label>
+                            <input type="number" id="originX" value="0" step="0.1">
+                        </div>
+                        <div class="form-group compact">
+                            <label for="originY">Origin Y</label>
+                            <input type="number" id="originY" value="0" step="0.1">
+                        </div>
+                        <div class="form-group compact">
+                            <label for="originZ">Origin Z</label>
+                            <input type="number" id="originZ" value="0" step="0.1">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group compact">
+                            <label for="cellSizeX">Cell Size X</label>
+                            <input type="number" id="cellSizeX" value="1" step="0.1" min="0.1">
+                        </div>
+                        <div class="form-group compact">
+                            <label for="cellSizeY">Cell Size Y</label>
+                            <input type="number" id="cellSizeY" value="1" step="0.1" min="0.1">
+                        </div>
+                        <div class="form-group compact">
+                            <label for="cellSizeZ">Cell Size Z</label>
+                            <input type="number" id="cellSizeZ" value="1" step="0.1" min="0.1">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group compact">
+                            <label for="cellsX">Cells X</label>
+                            <input type="number" id="cellsX" value="25" step="1" min="1">
+                        </div>
+                        <div class="form-group compact">
+                            <label for="cellsY">Cells Y</label>
+                            <input type="number" id="cellsY" value="25" step="1" min="1">
+                        </div>
+                        <div class="form-group compact">
+                            <label for="cellsZ">Cells Z</label>
+                            <input type="number" id="cellsZ" value="25" step="1" min="1">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="patternType">Material Pattern</label>
+                        <select id="patternType">
+                            <option value="uniform">Uniform</option>
+                            <option value="layered">Layered</option>
+                            <option value="gradient">Gradient</option>
+                            <option value="checkerboard">Checkerboard</option>
+                            <option value="random">Random</option>
+                            <option value="ore_horizon">Single Ore Horizon</option>
+                            <option value="inclined_vein">Inclined Vein</option>
+                            <option value="random_clusters" selected>Random Clusters</option>
+                            <option value="ellipsoid_ore">Ellipsoid Ore Body</option>
+                            <option value="vein_ore">Vein/Structural Ore Body</option>
+                            <option value="porphyry_ore">Porphyry-Style Zoning</option>
+                        </select>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button type="button" id="generateBtn">Generate</button>
+                        <button type="button" id="exportBtn" disabled>Export</button>
+                        <button type="button" id="zoomResetBtn">Zoom to Fit</button>
+                    </div>
+                </form>
+                
+                <div class="collapsible-section">
+                    <div class="section-header collapsible-header" onclick="toggleSection(this)">
+                        <h3>Visualization</h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <form id="vizForm">
+                            <div class="form-row">
+                                <div class="form-group compact">
+                                    <label for="viewMode">View Mode</label>
+                                    <select id="viewMode">
+                                        <option value="solid">Solid</option>
+                                        <option value="points">Points</option>
+                                        <option value="transparent">Transparent</option>
+                                    </select>
+                                </div>
+                                <div class="form-group compact">
+                                    <label for="visualizationField">Field</label>
+                                    <select id="visualizationField">
+                                        <option value="rockType">Rock Type</option>
+                                        <option value="density">Density</option>
+                                        <option value="gradeCu">Cu Grade</option>
+                                        <option value="gradeAu">Au Grade</option>
+                                        <option value="econValue">Value</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="collapsible-section">
+                    <div class="section-header collapsible-header" onclick="toggleSection(this)">
+                        <h3>Slice Tool</h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <form id="sliceForm">
+                            <div class="form-group compact">
+                                <label>
+                                    <input type="checkbox" id="sliceEnabled" style="width: auto; margin-right: 6px;">
+                                    Enable
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="sliceAxis">Axis</label>
+                                <select id="sliceAxis">
+                                    <option value="x">X (Front/Back)</option>
+                                    <option value="y">Y (Left/Right)</option>
+                                    <option value="z" selected>Z (Up/Down)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="slicePosition">Position: <span id="slicePositionValue">0</span></label>
+                                <input type="range" id="slicePosition" min="-500" max="500" value="0" step="1">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="collapsible-section">
+                    <div class="section-header collapsible-header" onclick="toggleSection(this)">
+                        <h3>Value Filter</h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <form id="valueVisibilityForm">
+                            <div class="form-group compact">
+                                <label>
+                                    <input type="checkbox" id="valueVisibilityEnabled" style="width: auto; margin-right: 6px;">
+                                    Enable Filter
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="valueVisibilityMode">Mode</label>
+                                <select id="valueVisibilityMode">
+                                    <option value="above">Above threshold</option>
+                                    <option value="below">Below threshold</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="valueVisibilityThreshold">Threshold: <span id="valueVisibilityThresholdValue">0</span></label>
+                                <input type="range" id="valueVisibilityThreshold" min="0" max="1000" value="0" step="0.1">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="collapsible-section">
+                    <div class="section-header collapsible-header" onclick="toggleSection(this)">
+                        <h3>Ground Layer</h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <form id="groundForm">
+                            <div class="form-group compact">
+                                <label>
+                                    <input type="checkbox" id="groundEnabled" style="width: auto; margin-right: 6px;">
+                                    Show Ground
+                                </label>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div id="status" class="status"></div>
+            </aside>
+
+            <main class="visualization-area">
+                <div id="canvasContainer"></div>
+                <div id="blockTooltip" class="block-tooltip" style="display: none;"></div>
+                <div class="controls-hint">
+                    <p>Controls: Left-click drag to rotate | Right-click drag to pan | Scroll to zoom</p>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- About Modal -->
+    <div id="aboutModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>About</h2>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p><strong>Mining Block Model Generator</strong></p>
+                <p>Built by <strong>Chris Andrews</strong>, BuildIT Design Labs</p>
+                <p style="margin-top: 20px;">
+                    <strong>License:</strong> MIT License<br>
+                    <strong>Copyright:</strong> © 2026 All rights reserved
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        // Toggle collapsible sections
+        function toggleSection(header) {
+            const section = header.parentElement;
+            const content = section.querySelector('.collapsible-content');
+            const icon = header.querySelector('.toggle-icon');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.textContent = '▼';
+            } else {
+                content.style.display = 'none';
+                icon.textContent = '▶';
+            }
+        }
+        
+        // About modal functionality
+        function initAboutModal() {
+            const modal = document.getElementById('aboutModal');
+            const aboutBtn = document.getElementById('aboutBtn');
+            const closeBtn = document.querySelector('.modal-close');
+            
+            if (aboutBtn) {
+                aboutBtn.addEventListener('click', () => {
+                    modal.style.display = 'block';
+                });
+            }
+            
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    modal.style.display = 'none';
+                });
+            }
+            
+            // Close modal when clicking outside of it
+            window.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+        
+        // Initialize collapsible sections (collapsed by default except first)
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.collapsible-section');
+            sections.forEach((section, index) => {
+                const content = section.querySelector('.collapsible-content');
+                const icon = section.querySelector('.toggle-icon');
+                if (index > 0) {
+                    content.style.display = 'none';
+                    icon.textContent = '▶';
+                }
+            });
+            
+            // Initialize About modal
+            initAboutModal();
+        });
+    </script>
+    <script src="scripts/blockModel.js"></script>
+    <script src="scripts/visualization.js"></script>
+    <script src="scripts/main.js"></script>
+</body>
+</html>
