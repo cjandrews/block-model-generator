@@ -14,6 +14,7 @@
             <h1>Mining Block Model Generator</h1>
             <p>Create dummy 3D block models for testing mining applications</p>
             <button id="aboutBtn" style="position: absolute; top: 8px; right: 8px; padding: 6px 12px; background: #444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em;">About</button>
+            <button id="memoryBtn" style="position: absolute; top: 8px; right: 90px; padding: 6px 12px; background: #444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em;">Memory</button>
         </header>
 
         <div class="main-content">
@@ -228,8 +229,28 @@
         </div>
     </div>
 
+    <!-- Memory Monitor Panel (Non-modal) -->
+    <div id="memoryPanel" class="memory-panel" style="display: none;">
+        <div class="memory-panel-content">
+            <div class="memory-panel-header">
+                <h3>Memory Monitor</h3>
+                <span class="memory-panel-close">&times;</span>
+            </div>
+            <div class="memory-panel-body">
+                <div id="memoryInfo" style="font-family: monospace; font-size: 0.9em;">
+                    <p><strong>Memory Usage:</strong></p>
+                    <p id="memoryDetails">Loading...</p>
+                    <p style="margin-top: 15px; font-size: 0.85em; opacity: 0.8;">
+                        <em>Note: Memory information may not be available in all browsers.</em>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script>
         // Toggle collapsible sections
         function toggleSection(header) {
@@ -246,32 +267,6 @@
             }
         }
         
-        // About modal functionality
-        function initAboutModal() {
-            const modal = document.getElementById('aboutModal');
-            const aboutBtn = document.getElementById('aboutBtn');
-            const closeBtn = document.querySelector('.modal-close');
-            
-            if (aboutBtn) {
-                aboutBtn.addEventListener('click', () => {
-                    modal.style.display = 'block';
-                });
-            }
-            
-            if (closeBtn) {
-                closeBtn.addEventListener('click', () => {
-                    modal.style.display = 'none';
-                });
-            }
-            
-            // Close modal when clicking outside of it
-            window.addEventListener('click', (event) => {
-                if (event.target === modal) {
-                    modal.style.display = 'none';
-                }
-            });
-        }
-        
         // Initialize collapsible sections (collapsed by default except first)
         document.addEventListener('DOMContentLoaded', function() {
             const sections = document.querySelectorAll('.collapsible-section');
@@ -284,8 +279,7 @@
                 }
             });
             
-            // Initialize About modal
-            initAboutModal();
+            // Modals are initialized in main.js
         });
     </script>
     <script src="scripts/blockModel.js"></script>

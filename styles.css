@@ -458,6 +458,83 @@ header {
     position: relative;
 }
 
+/* Memory Panel (Non-modal) */
+.memory-panel {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    top: 60px;
+    right: 20px;
+    width: 350px;
+    max-height: 500px;
+    pointer-events: auto;
+}
+
+.memory-panel-content {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    animation: slideInRight 0.3s;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.memory-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #444;
+    background-color: #252525;
+}
+
+.memory-panel-header h3 {
+    margin: 0;
+    color: #7c8aff;
+    font-size: 1.2em;
+}
+
+.memory-panel-close {
+    color: #aaa;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 20px;
+    transition: color 0.2s;
+}
+
+.memory-panel-close:hover,
+.memory-panel-close:focus {
+    color: #fff;
+}
+
+.memory-panel-body {
+    padding: 16px;
+    color: #e0e0e0;
+    line-height: 1.6;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.memory-panel-body p {
+    margin: 8px 0;
+}
+
+.memory-panel-body strong {
+    color: #7c8aff;
+}
+
 /* Responsive design */
 @media (max-width: 1024px) {
     .main-content {

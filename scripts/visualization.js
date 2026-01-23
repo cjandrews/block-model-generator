@@ -27,6 +27,9 @@ let modelBounds = { minX: -100, maxX: 100, minY: -100, maxY: 100, minZ: -100, ma
 let valueVisibilityEnabled = false;
 let valueVisibilityThreshold = 0;
 let valueVisibilityMode = 'above'; // 'above' or 'below'
+let blockValueAttributes = new Map(); // Map of mesh UUID to value attribute buffer
+let valueFilterUpdatePending = false; // Flag to throttle uniform updates
+let valueVisibilityShaderMaterial = null; // Custom shader material for value filtering
 
 // Ground layer
 let groundMesh = null;
@@ -48,6 +51,9 @@ function initVisualization(container) {
     // Scene setup
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x1a1a1a);
+    
+    // Make scene accessible globally for memory monitoring
+    window.scene = scene;
     
     // Camera setup
     const width = container.clientWidth;
@@ -140,17 +146,18 @@ function initVisualization(container) {
  * Initialize slice plane for cutting through the model
  */
 function initSlicePlane() {
-    // Create a plane geometry for visualization
+    // Create a wireframe rectangle using EdgesGeometry
+    // We'll update the size when model bounds are known
     const planeGeometry = new THREE.PlaneGeometry(1000, 1000);
-    const planeMaterial = new THREE.MeshBasicMaterial({
+    const edgesGeometry = new THREE.EdgesGeometry(planeGeometry);
+    const lineMaterial = new THREE.LineBasicMaterial({
         color: 0x00ff00,
-        side: THREE.DoubleSide,
+        linewidth: 2,
         transparent: true,
-        opacity: 0.3,
-        wireframe: false
+        opacity: 0.8
     });
     
-    slicePlaneHelper = new THREE.Mesh(planeGeometry, planeMaterial);
+    slicePlaneHelper = new THREE.LineSegments(edgesGeometry, lineMaterial);
     slicePlaneHelper.visible = false;
     scene.add(slicePlaneHelper);
     
@@ -188,6 +195,9 @@ function animate() {
  * Clear all block meshes from scene
  */
 function clearBlocks() {
+    // Clear value attribute map
+    blockValueAttributes.clear();
+    
     // Clear individual meshes
     blockMeshes.forEach(mesh => {
         scene.remove(mesh);
@@ -302,33 +312,17 @@ function getColorFromValue(value) {
 }
 
 /**
- * Filter blocks based on value visibility (slice uses clipping planes, not filtering)
+ * Filter blocks based on value visibility
+ * NOTE: With shader-based filtering, we no longer filter blocks here for value visibility.
+ * The shader handles filtering. We only filter for other purposes if needed.
  * @param {Array} blocks - Array of block objects
  * @returns {Array} Filtered blocks
  */
 function filterBlocks(blocks) {
-    let filtered = blocks;
-    
-    // Note: Slice tool uses clipping planes (handled in updateClippingPlanes)
-    // We only filter here for value-based visibility
-    
-    // Apply value-based visibility filter (only for numeric fields)
-    if (valueVisibilityEnabled && currentVisualizationField !== 'rockType') {
-        filtered = filtered.filter(block => {
-            const value = block[currentVisualizationField];
-            if (value === undefined || value === null || isNaN(value)) {
-                return false; // Hide blocks with missing values
-            }
-            
-            if (valueVisibilityMode === 'above') {
-                return value >= valueVisibilityThreshold;
-            } else {
-                return value <= valueVisibilityThreshold;
-            }
-        });
-    }
-    
-    return filtered;
+    // With shader-based value filtering, we don't need to filter blocks here
+    // The shader will handle visibility based on instance attributes
+    // This function is kept for compatibility but returns all blocks
+    return blocks;
 }
 
 /**
@@ -337,8 +331,9 @@ function filterBlocks(blocks) {
  * @param {number} cellSizeX - Size of each cell in X direction
  * @param {number} cellSizeY - Size of each cell in Y direction
  * @param {number} cellSizeZ - Size of each cell in Z direction
+ * @param {boolean} centerCamera - Whether to center camera on model (default: true)
  */
-function renderBlocks(blocks, cellSizeX, cellSizeY, cellSizeZ) {
+function renderBlocks(blocks, cellSizeX, cellSizeY, cellSizeZ, centerCamera = true) {
     // Store current data
     vizCurrentBlocks = blocks;
     currentCellSizes = { x: cellSizeX, y: cellSizeY, z: cellSizeZ };
@@ -359,9 +354,6 @@ function renderBlocks(blocks, cellSizeX, cellSizeY, cellSizeZ) {
     // Filter blocks based on slice and value visibility
     const filteredBlocks = filterBlocks(blocks);
     
-    // Update clipping planes for instanced meshes
-    updateClippingPlanes();
-    
     // Render based on current view mode
     switch (currentViewMode) {
         case 'points':
@@ -376,28 +368,50 @@ function renderBlocks(blocks, cellSizeX, cellSizeY, cellSizeZ) {
             break;
     }
     
+    // Update clipping planes AFTER meshes are created
+    updateClippingPlanes();
+    
     // Update ground layer if enabled
     updateGroundLayer(blocks);
     
-    // Center camera on model
-    centerCameraOnModel(blocks);
+    // Center camera on model only if requested (e.g., on initial load or new model generation)
+    if (centerCamera) {
+        centerCameraOnModel(blocks);
+    }
 }
 
 /**
  * Render blocks as points (centroids)
+ * For points, we still need to filter blocks since PointsMaterial doesn't support instance attributes easily
  * @param {Array} blocks - Array of block objects
  * @param {number} cellSizeX - Size of each cell in X direction
  * @param {number} cellSizeY - Size of each cell in Y direction
  * @param {number} cellSizeZ - Size of each cell in Z direction
  */
 function renderAsPoints(blocks, cellSizeX, cellSizeY, cellSizeZ) {
-    const positions = new Float32Array(blocks.length * 3);
-    const colors = new Float32Array(blocks.length * 3);
+    // Filter blocks for value visibility (points don't use shader-based filtering)
+    let filteredBlocks = blocks;
+    if (valueVisibilityEnabled && currentVisualizationField !== 'rockType') {
+        filteredBlocks = blocks.filter(block => {
+            const value = block[currentVisualizationField];
+            if (value === undefined || value === null || isNaN(value)) {
+                return false;
+            }
+            if (valueVisibilityMode === 'above') {
+                return value >= valueVisibilityThreshold;
+            } else {
+                return value <= valueVisibilityThreshold;
+            }
+        });
+    }
+    
+    const positions = new Float32Array(filteredBlocks.length * 3);
+    const colors = new Float32Array(filteredBlocks.length * 3);
     
     // Clear block data map
     blockDataMap.clear();
     
-    blocks.forEach((block, index) => {
+    filteredBlocks.forEach((block, index) => {
         const i = index * 3;
         // Transform mining coordinates to Three.js coordinates:
         // Mining: X=easting, Y=northing, Z=depth (negative = below ground)
@@ -433,7 +447,7 @@ function renderAsPoints(blocks, cellSizeX, cellSizeY, cellSizeZ) {
     });
     
     pointCloud = new THREE.Points(geometry, material);
-    pointCloud.userData.blocks = blocks; // Store blocks array for tooltip
+    pointCloud.userData.blocks = filteredBlocks; // Store filtered blocks array for tooltip
     scene.add(pointCloud);
 }
 
@@ -457,77 +471,249 @@ function updateClippingPlanes() {
         return;
     }
     
+    // Calculate rectangle position and size first (needed for both clipping and non-clipping cases)
+    // Also determine max/min values for the current axis
+    let rectangleWidth, rectangleHeight, rectangleCenterX, rectangleCenterY, rectangleCenterZ, rectangleRotation;
+    let maxValue, minValue;
+    switch (sliceAxis) {
+        case 'x':
+            maxValue = modelBounds.maxX;
+            minValue = modelBounds.minX;
+            // Mining X -> Three.js X: Rectangle in YZ plane (perpendicular to X axis)
+            // Blocks are at (block.x, block.z, block.y) in Three.js coords
+            // So Y extent is from block.z (minY to maxY), Z extent is from block.y (minZ to maxZ)
+            rectangleWidth = (modelBounds.maxY - modelBounds.minY) * 1.1;  // Y extent (vertical in Three.js)
+            rectangleHeight = (modelBounds.maxZ - modelBounds.minZ) * 1.1; // Z extent (forward in Three.js)
+            rectangleCenterX = slicePosition;  // X position of slice plane
+            rectangleCenterY = (modelBounds.minY + modelBounds.maxY) / 2;  // Center in Y (vertical)
+            rectangleCenterZ = (modelBounds.minZ + modelBounds.maxZ) / 2;  // Center in Z (forward)
+            // PlaneGeometry is in XY plane by default (width=X, height=Y)
+            // To put it in YZ plane (perpendicular to X), rotate 90° around Y axis
+            rectangleRotation = { x: 0, y: Math.PI / 2, z: 0 };
+            break;
+        case 'y':
+            maxValue = modelBounds.maxZ;
+            minValue = modelBounds.minZ;
+            // Mining Y -> Three.js Z: Rectangle in XY plane
+            rectangleWidth = (modelBounds.maxX - modelBounds.minX) * 1.1;
+            rectangleHeight = (modelBounds.maxY - modelBounds.minY) * 1.1;
+            rectangleCenterX = (modelBounds.minX + modelBounds.maxX) / 2;
+            rectangleCenterY = (modelBounds.minY + modelBounds.maxY) / 2;
+            rectangleCenterZ = slicePosition;
+            rectangleRotation = { x: 0, y: 0, z: Math.PI / 2 };
+            break;
+        case 'z':
+        default:
+            maxValue = modelBounds.maxY;
+            minValue = modelBounds.minY;
+            // Mining Z -> Three.js Y: Rectangle in XZ plane (horizontal)
+            rectangleWidth = (modelBounds.maxX - modelBounds.minX) * 1.1;
+            rectangleHeight = (modelBounds.maxZ - modelBounds.minZ) * 1.1;
+            rectangleCenterX = (modelBounds.minX + modelBounds.maxX) / 2;
+            rectangleCenterY = slicePosition;
+            rectangleCenterZ = (modelBounds.minZ + modelBounds.maxZ) / 2;
+            rectangleRotation = { x: -Math.PI / 2, y: 0, z: 0 };
+            break;
+    }
+    
+    // Update rectangle helper
+    if (slicePlaneHelper) {
+        slicePlaneHelper.visible = true;
+        slicePlaneHelper.geometry.dispose();
+        const planeGeometry = new THREE.PlaneGeometry(rectangleWidth, rectangleHeight);
+        const edgesGeometry = new THREE.EdgesGeometry(planeGeometry);
+        slicePlaneHelper.geometry = edgesGeometry;
+        slicePlaneHelper.position.set(rectangleCenterX, rectangleCenterY, rectangleCenterZ);
+        slicePlaneHelper.rotation.set(rectangleRotation.x, rectangleRotation.y, rectangleRotation.z);
+    }
+    
+    // If slice position is at or very close to the top, disable clipping to show full volume
+    const epsilon = (maxValue - minValue) * 0.001;
+    if (slicePosition >= maxValue - epsilon) {
+        // At the top - show everything (no clipping)
+        blockMeshes.forEach(mesh => {
+            if (mesh.material) {
+                mesh.material.clippingPlanes = [];
+            }
+        });
+        if (pointCloud && pointCloud.material) {
+            pointCloud.material.clippingPlanes = [];
+        }
+        return;
+    }
+    
     // Update slice plane based on axis and position
     // Transform mining axes to Three.js axes:
     // Mining X -> Three.js X (same)
     // Mining Y -> Three.js Z (forward)
     // Mining Z -> Three.js Y (vertical)
+    // 
+    // IMPORTANT: In Three.js, the normal points toward the side that is KEPT (not clipped)
+    // We want to clip everything ABOVE the slice position (show everything below)
+    // So the normal must point DOWN (negative direction) to keep the below side
     let normal = new THREE.Vector3();
     switch (sliceAxis) {
         case 'x':
-            // Mining X -> Three.js X
-            normal.set(1, 0, 0);
+            // Mining X -> Three.js X: Clip everything to the right (positive X), keep left (negative X)
+            // Normal points left (negative X) to keep left side
+            normal.set(-1, 0, 0);
             break;
         case 'y':
-            // Mining Y -> Three.js Z
-            normal.set(0, 0, 1);
+            // Mining Y -> Three.js Z: Clip everything forward (positive Z), keep backward (negative Z)
+            // Normal points backward (negative Z) to keep backward side
+            normal.set(0, 0, -1);
             break;
         case 'z':
         default:
-            // Mining Z (depth) -> Three.js Y (vertical)
-            normal.set(0, 1, 0);
+            // Mining Z (depth) -> Three.js Y (vertical): Clip everything above (positive Y), keep below (negative Y)
+            // Normal points down (negative Y) to keep below side
+            normal.set(0, -1, 0);
             break;
     }
     
+    // Plane equation: normal · point + constant = 0
+    // For plane at y = slicePosition with normal (0, -1, 0):
+    // -y + constant = 0 → constant = slicePosition
     slicePlane.normal.copy(normal);
-    slicePlane.constant = -slicePosition;
-    
-    // Update visual plane helper
-    if (slicePlaneHelper) {
-        slicePlaneHelper.visible = true;
-        // Position in Three.js coordinates
-        slicePlaneHelper.position.set(
-            sliceAxis === 'x' ? slicePosition : 0,
-            sliceAxis === 'z' ? slicePosition : 0, // Mining Z -> Three.js Y
-            sliceAxis === 'y' ? slicePosition : 0   // Mining Y -> Three.js Z
-        );
-        
-        // Orient the plane
-        // PlaneGeometry defaults to XY plane (vertical in Three.js)
-        // After coordinate transformation: Mining (x, y, z) -> Three.js (x, z, y)
-        if (sliceAxis === 'x') {
-            // Mining X -> Three.js X: Vertical plane perpendicular to X axis (YZ plane)
-            // Rotate 90 degrees around X axis to make it vertical in YZ plane
-            slicePlaneHelper.rotation.set(Math.PI / 2, 0, 0);
-        } else if (sliceAxis === 'y') {
-            // Mining Y -> Three.js Z: Vertical plane perpendicular to Z axis (XY plane)
-            // Default is already in XY plane, but rotate 90 degrees around Z to face correctly
-            slicePlaneHelper.rotation.set(0, 0, Math.PI / 2);
-        } else {
-            // Mining Z -> Three.js Y: Horizontal plane perpendicular to Y axis (XZ plane)
-            // Rotate -90 degrees around X axis to make it horizontal (same as ground)
-            slicePlaneHelper.rotation.set(-Math.PI / 2, 0, 0);
-        }
-        
-        // Update plane size to cover model bounds
-        const size = Math.max(
-            modelBounds.maxX - modelBounds.minX,
-            modelBounds.maxY - modelBounds.minY,
-            modelBounds.maxZ - modelBounds.minZ
-        ) * 1.5;
-        slicePlaneHelper.geometry.dispose();
-        slicePlaneHelper.geometry = new THREE.PlaneGeometry(size, size);
-    }
+    slicePlane.constant = slicePosition;
     
     // Apply clipping to materials (local clipping)
     blockMeshes.forEach(mesh => {
         if (mesh.material) {
-            mesh.material.clippingPlanes = [slicePlane];
+            mesh.material.clippingPlanes = sliceEnabled ? [slicePlane] : [];
+            mesh.material.needsUpdate = true; // Force material update
+            // Update shader material if it exists
+            if (mesh.material.uniforms) {
+                // Shader materials handle clipping planes automatically
+            }
         }
     });
     if (pointCloud && pointCloud.material) {
-        pointCloud.material.clippingPlanes = [slicePlane];
+        pointCloud.material.clippingPlanes = sliceEnabled ? [slicePlane] : [];
+        pointCloud.material.needsUpdate = true; // Force material update
     }
+}
+
+/**
+ * Create material with value-based filtering using onBeforeCompile
+ * This approach modifies the existing MeshLambertMaterial shader to add filtering
+ * @param {boolean} transparent - Whether material should be transparent
+ * @param {number} color - Base color
+ * @returns {THREE.MeshLambertMaterial} Material with shader modifications
+ */
+function createValueFilterMaterial(transparent, color) {
+    const material = new THREE.MeshLambertMaterial({
+        transparent: transparent,
+        opacity: transparent ? 0.3 : 1.0,
+        color: color,
+        clippingPlanes: sliceEnabled ? [slicePlane] : []
+    });
+    
+    // Add custom uniforms for value filtering
+    material.userData.valueFilterUniforms = {
+        valueThreshold: { value: valueVisibilityThreshold },
+        valueMode: { value: valueVisibilityMode === 'above' ? 0 : 1 },
+        valueFilterEnabled: { value: valueVisibilityEnabled ? 1 : 0 }
+    };
+    
+    // Inject shader code using onBeforeCompile
+    // This runs when Three.js compiles the shader
+    material.onBeforeCompile = function(shader) {
+        // Add instance value attribute declaration at the top of vertex shader
+        // Find where attributes/varyings are declared and add ours
+        if (!shader.vertexShader.includes('attribute float instanceValue')) {
+            shader.vertexShader = `
+                attribute float instanceValue;
+                varying float vInstanceValue;
+                ${shader.vertexShader}
+            `;
+        }
+        
+        // Pass instance value through in vertex shader
+        // Insert before the final gl_Position assignment
+        shader.vertexShader = shader.vertexShader.replace(
+            '#include <project_vertex>',
+            `
+            vInstanceValue = instanceValue;
+            #include <project_vertex>
+            `
+        );
+        
+        // Add varying and uniforms to fragment shader
+        if (!shader.fragmentShader.includes('varying float vInstanceValue')) {
+            shader.fragmentShader = `
+                uniform float valueThreshold;
+                uniform int valueMode;
+                uniform int valueFilterEnabled;
+                varying float vInstanceValue;
+                ${shader.fragmentShader}
+            `;
+        }
+        
+        // Add discard logic in fragment shader before final color output
+        // Insert after color calculation but before final output
+        shader.fragmentShader = shader.fragmentShader.replace(
+            '#include <dithering_fragment>',
+            `
+            #include <dithering_fragment>
+            
+            // Value-based filtering (check before final output)
+            if (valueFilterEnabled == 1) {
+                // Hide blocks with missing values (sentinel value -9999)
+                if (vInstanceValue < -9998.0) {
+                    discard;
+                }
+                
+                if (valueMode == 0) {
+                    // Above mode: hide if value < threshold
+                    if (vInstanceValue < valueThreshold) {
+                        discard;
+                    }
+                } else {
+                    // Below mode: hide if value > threshold
+                    if (vInstanceValue > valueThreshold) {
+                        discard;
+                    }
+                }
+            }
+            `
+        );
+        
+        // If dithering_fragment doesn't exist, try inserting before the final gl_FragColor
+        if (!shader.fragmentShader.includes('Value-based filtering')) {
+            shader.fragmentShader = shader.fragmentShader.replace(
+                /gl_FragColor\s*=/,
+                `
+            // Value-based filtering
+            if (valueFilterEnabled == 1) {
+                if (vInstanceValue < -9998.0) {
+                    discard;
+                }
+                if (valueMode == 0) {
+                    if (vInstanceValue < valueThreshold) {
+                        discard;
+                    }
+                } else {
+                    if (vInstanceValue > valueThreshold) {
+                        discard;
+                    }
+                }
+            }
+            gl_FragColor = `
+            );
+        }
+        
+        // Merge our custom uniforms with the shader's uniforms
+        Object.assign(shader.uniforms, material.userData.valueFilterUniforms);
+        
+        // Store reference to shader for uniform updates
+        material.userData.shader = shader;
+    };
+    
+    // Force shader recompilation by marking material as needing update
+    material.needsUpdate = true;
+    
+    return material;
 }
 
 /**
@@ -541,12 +727,9 @@ function updateClippingPlanes() {
 function renderAsCubes(blocks, cellSizeX, cellSizeY, cellSizeZ, transparent) {
     // Use InstancedMesh for better performance with many blocks
     const geometry = new THREE.BoxGeometry(cellSizeX, cellSizeY, cellSizeZ);
-    const material = new THREE.MeshLambertMaterial({
-        transparent: transparent,
-        opacity: transparent ? 0.3 : 1.0,
-        vertexColors: false,
-        clippingPlanes: sliceEnabled ? [slicePlane] : []
-    });
+    
+    // Determine if we need value-based filtering
+    const needsValueFilter = valueVisibilityEnabled && currentVisualizationField !== 'rockType';
     
     // Group blocks by color for instancing
     const colorGroups = {};
@@ -570,9 +753,39 @@ function renderAsCubes(blocks, cellSizeX, cellSizeY, cellSizeZ, transparent) {
         const group = colorGroups[colorKey];
         const count = group.indices.length;
         
-        const instancedMesh = new THREE.InstancedMesh(geometry, material.clone(), count);
+        // Choose material based on whether value filtering is needed
+        let material;
+        if (needsValueFilter) {
+            material = createValueFilterMaterial(transparent, group.color);
+        } else {
+            material = new THREE.MeshLambertMaterial({
+                transparent: transparent,
+                opacity: transparent ? 0.3 : 1.0,
+                vertexColors: false,
+                clippingPlanes: sliceEnabled ? [slicePlane] : [],
+                color: group.color
+            });
+        }
+        
+        const instancedMesh = new THREE.InstancedMesh(geometry, material, count);
         instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-        instancedMesh.material.color.setHex(group.color);
+        
+        // Create instance value attribute if value filtering is enabled
+        if (needsValueFilter) {
+            const values = new Float32Array(count);
+            group.indices.forEach((blockIndex, instanceIndex) => {
+                const block = blocks[blockIndex];
+                const value = block[currentVisualizationField];
+                // Use -9999 as sentinel for missing values (will be filtered out)
+                values[instanceIndex] = (value !== undefined && value !== null && !isNaN(value)) ? value : -9999;
+            });
+            
+            const valueAttribute = new THREE.InstancedBufferAttribute(values, 1);
+            instancedMesh.geometry.setAttribute('instanceValue', valueAttribute);
+            
+            // Store reference to attribute for updates
+            blockValueAttributes.set(instancedMesh.uuid, valueAttribute);
+        }
         
         const matrix = new THREE.Matrix4();
         group.indices.forEach((blockIndex, instanceIndex) => {
@@ -628,6 +841,7 @@ function calculateModelBounds(blocks) {
 
 /**
  * Update slice slider range based on model bounds
+ * Slider starts at top of volume and slices downward
  */
 function updateSliceSliderRange() {
     const slider = document.getElementById('slicePosition');
@@ -649,14 +863,28 @@ function updateSliceSliderRange() {
         case 'z':
         default:
             // Mining Z (depth) -> Three.js Y (vertical)
+            // maxY is top (shallowest, closest to ground), minY is bottom (deepest)
             min = modelBounds.minY;
             max = modelBounds.maxY;
             break;
     }
     
+    // Keep slider normal (min to max) but start at max position
+    // This way the slider moves from top (right side) to bottom (left side)
     slider.min = min;
     slider.max = max;
-    slider.value = slicePosition = (min + max) / 2; // Center by default
+    
+    // Start at the top (max value) - this shows the whole volume initially
+    // As you move the slider left (toward min), it slices away top layers
+    // For Z-axis: maxY is top (shallowest, closest to ground), minY is bottom (deepest)
+    // When slicePosition = maxY: clips where y > maxY (nothing, shows all)
+    // When slicePosition moves toward minY: progressively clips more from top
+    const initialPosition = max;
+    slider.value = slicePosition = initialPosition;
+    
+    // Update the clipping plane immediately with the initial position
+    // This ensures the whole volume is visible when slice is first enabled
+    updateClippingPlanes();
     
     const valueDisplay = document.getElementById('slicePositionValue');
     if (valueDisplay) {
@@ -915,7 +1143,8 @@ function setViewMode(mode) {
                 vizCurrentBlocks,
                 currentCellSizes.x,
                 currentCellSizes.y,
-                currentCellSizes.z
+                currentCellSizes.z,
+                false // Don't center camera on dropdown change
             );
         }
     }
@@ -927,6 +1156,7 @@ function setViewMode(mode) {
  */
 function setVisualizationField(field) {
     if (['rockType', 'density', 'gradeCu', 'gradeAu', 'econValue'].includes(field)) {
+        const previousField = currentVisualizationField;
         currentVisualizationField = field;
         
         // Update value visibility slider range and state
@@ -939,11 +1169,16 @@ function setVisualizationField(field) {
         }
         
         if (vizCurrentBlocks.length > 0) {
+            // Always re-render when field changes because colors are based on the field
+            // The only exception is if we're using shader-based value filtering and only
+            // need to update the value attribute (but colors still need to update)
+            // So we always re-render to ensure colors are correct
             renderBlocks(
                 vizCurrentBlocks,
                 currentCellSizes.x,
                 currentCellSizes.y,
-                currentCellSizes.z
+                currentCellSizes.z,
+                false // Don't center camera on dropdown change
             );
         }
     }
@@ -959,11 +1194,14 @@ function setSliceEnabled(enabled) {
         slicePlaneHelper.visible = enabled;
     }
     if (vizCurrentBlocks.length > 0) {
+        // Always re-render when toggling slice tool to ensure all blocks are visible when disabled
+        // This preserves view mode and field settings while resetting visibility
         renderBlocks(
             vizCurrentBlocks,
             currentCellSizes.x,
             currentCellSizes.y,
-            currentCellSizes.z
+            currentCellSizes.z,
+            false // Don't center camera on dropdown change
         );
     }
 }
@@ -977,11 +1215,14 @@ function setSliceAxis(axis) {
         sliceAxis = axis;
         updateSliceSliderRange();
         if (vizCurrentBlocks.length > 0) {
+            // Trigger a re-render to ensure visual state is updated immediately
+            // renderBlocks() will call updateClippingPlanes() after meshes are created
             renderBlocks(
                 vizCurrentBlocks,
                 currentCellSizes.x,
                 currentCellSizes.y,
-                currentCellSizes.z
+                currentCellSizes.z,
+                false // Don't center camera on dropdown change
             );
         }
     }
@@ -1019,14 +1260,81 @@ function setValueVisibilityEnabled(enabled) {
         modeSelect.disabled = !enabled || !isNumericField;
     }
     
+    // When disabling the filter, always re-render to ensure all blocks are visible
+    // When enabling, re-render if needed to add shader attributes, otherwise update uniforms
     if (vizCurrentBlocks.length > 0) {
-        renderBlocks(
-            vizCurrentBlocks,
-            currentCellSizes.x,
-            currentCellSizes.y,
-            currentCellSizes.z
-        );
+        const needsValueFilter = enabled && currentVisualizationField !== 'rockType';
+        const hasShaderMaterials = blockMeshes.some(m => m.material && m.material.uniforms);
+        
+        // If disabling filter, always re-render to show all blocks
+        // If enabling and switching between shader and non-shader, need full re-render
+        if (!enabled || needsValueFilter !== hasShaderMaterials) {
+            // Re-render to ensure all blocks are visible (preserves view mode and field)
+            renderBlocks(
+                vizCurrentBlocks,
+                currentCellSizes.x,
+                currentCellSizes.y,
+                currentCellSizes.z,
+                false // Don't center camera on slider/checkbox change
+            );
+        } else {
+            // Just update uniforms if already using shaders and enabling
+            updateValueFilterUniforms();
+        }
     }
+}
+
+/**
+ * Update shader uniforms for value filtering (fast - no mesh recreation)
+ * Uses requestAnimationFrame to throttle updates during slider dragging
+ */
+function updateValueFilterUniforms() {
+    if (valueFilterUpdatePending) {
+        return; // Already scheduled
+    }
+    
+    valueFilterUpdatePending = true;
+    requestAnimationFrame(() => {
+        valueFilterUpdatePending = false;
+        
+        blockMeshes.forEach(mesh => {
+            if (mesh.material) {
+                // Check if material has value filter uniforms (from onBeforeCompile)
+                if (mesh.material.userData && mesh.material.userData.valueFilterUniforms) {
+                    const uniforms = mesh.material.userData.valueFilterUniforms;
+                    uniforms.valueThreshold.value = valueVisibilityThreshold;
+                    uniforms.valueMode.value = valueVisibilityMode === 'above' ? 0 : 1;
+                    uniforms.valueFilterEnabled.value = valueVisibilityEnabled ? 1 : 0;
+                    
+                    // Also update the compiled shader uniforms if they exist
+                    if (mesh.material.userData.shader && mesh.material.userData.shader.uniforms) {
+                        const shaderUniforms = mesh.material.userData.shader.uniforms;
+                        if (shaderUniforms.valueThreshold) {
+                            shaderUniforms.valueThreshold.value = valueVisibilityThreshold;
+                        }
+                        if (shaderUniforms.valueMode) {
+                            shaderUniforms.valueMode.value = valueVisibilityMode === 'above' ? 0 : 1;
+                        }
+                        if (shaderUniforms.valueFilterEnabled) {
+                            shaderUniforms.valueFilterEnabled.value = valueVisibilityEnabled ? 1 : 0;
+                        }
+                    }
+                }
+                // Also check for direct ShaderMaterial (fallback)
+                else if (mesh.material.uniforms) {
+                    if (mesh.material.uniforms.valueThreshold) {
+                        mesh.material.uniforms.valueThreshold.value = valueVisibilityThreshold;
+                    }
+                    if (mesh.material.uniforms.valueMode) {
+                        mesh.material.uniforms.valueMode.value = valueVisibilityMode === 'above' ? 0 : 1;
+                    }
+                    if (mesh.material.uniforms.valueFilterEnabled) {
+                        mesh.material.uniforms.valueFilterEnabled.value = valueVisibilityEnabled ? 1 : 0;
+                    }
+                }
+            }
+        });
+    });
 }
 
 /**
@@ -1042,13 +1350,26 @@ function setValueVisibilityThreshold(threshold) {
         valueDisplay.textContent = threshold.toFixed(2);
     }
     
+    // Update shader uniforms instead of re-rendering (much faster!)
     if (valueVisibilityEnabled && vizCurrentBlocks.length > 0) {
-        renderBlocks(
-            vizCurrentBlocks,
-            currentCellSizes.x,
-            currentCellSizes.y,
-            currentCellSizes.z
+        // Check if we have shader materials, if not we need to re-render
+        const hasShaderMaterials = blockMeshes.some(m => 
+            m.material && 
+            (m.material.userData?.valueFilterUniforms || m.material.uniforms?.valueThreshold)
         );
+        
+        if (hasShaderMaterials) {
+            updateValueFilterUniforms();
+        } else {
+            // Need to re-render to create shader materials
+            renderBlocks(
+                vizCurrentBlocks,
+                currentCellSizes.x,
+                currentCellSizes.y,
+                currentCellSizes.z,
+                false // Don't center camera on slider change
+            );
+        }
     }
 }
 
@@ -1059,13 +1380,25 @@ function setValueVisibilityThreshold(threshold) {
 function setValueVisibilityMode(mode) {
     if (['above', 'below'].includes(mode)) {
         valueVisibilityMode = mode;
+        // Update shader uniforms instead of re-rendering (much faster!)
         if (valueVisibilityEnabled && vizCurrentBlocks.length > 0) {
-            renderBlocks(
-                vizCurrentBlocks,
-                currentCellSizes.x,
-                currentCellSizes.y,
-                currentCellSizes.z
+            const hasShaderMaterials = blockMeshes.some(m => 
+                m.material && 
+                (m.material.userData?.valueFilterUniforms || m.material.uniforms?.valueThreshold)
             );
+            
+            if (hasShaderMaterials) {
+                updateValueFilterUniforms();
+            } else {
+                // Need to re-render to create shader materials
+                renderBlocks(
+                    vizCurrentBlocks,
+                    currentCellSizes.x,
+                    currentCellSizes.y,
+                    currentCellSizes.z,
+                    false // Don't center camera on dropdown change
+                );
+            }
         }
     }
 }

@@ -130,10 +130,20 @@ function clearOldCache() {
     }
 }
 
+// Flag to prevent multiple initializations
+let isInitialized = false;
+
 /**
  * Initialize application
  */
 function init() {
+    // Prevent multiple initializations
+    if (isInitialized) {
+        console.warn('init() called multiple times, skipping...');
+        return;
+    }
+    isInitialized = true;
+    
     const canvasContainer = document.getElementById('canvasContainer');
     const generateBtn = document.getElementById('generateBtn');
     const exportBtn = document.getElementById('exportBtn');
@@ -266,6 +276,10 @@ function init() {
     } catch (e) {
         console.warn('Could not clear cache:', e);
     }
+    
+    // Initialize modals
+    initAboutModal();
+    initMemoryModal();
     
     updateStatus('Generating initial model...');
     
@@ -494,16 +508,91 @@ function generateLargeModel(gridParams) {
 /**
  * Handle export button click
  */
-function handleExport() {
+async function handleExport() {
     if (currentBlocks.length === 0) {
         updateStatus('No blocks to export. Please generate a model first.', 'error');
         return;
     }
     
+    // Check if JSZip is available
+    if (typeof JSZip === 'undefined') {
+        updateStatus('ZIP library not loaded. Exporting as CSV...', 'info');
+        // Fallback to non-compressed CSV
+        exportAsCsv();
+        return;
+    }
+    
     try {
-        updateStatus('Exporting to CSV (this may take a moment for large models)...');
+        updateStatus('Exporting to ZIP (this may take a moment for large models)...');
         
         // Use standard CSV export
+        const csvContent = blocksToCsv(currentBlocks, {
+            includeIndices: false,
+            includeZone: true,
+            includeGrades: true,
+            includeEconValue: true,
+            filterAirBlocks: true,
+            cellSizeX: currentParams ? currentParams.cellSizeX : undefined,
+            cellSizeY: currentParams ? currentParams.cellSizeY : undefined,
+            cellSizeZ: currentParams ? currentParams.cellSizeZ : undefined
+        });
+        
+        // Create ZIP file
+        const zip = new JSZip();
+        const timestamp = Date.now();
+        const csvFileName = `block_model_${timestamp}.csv`;
+        
+        // Add CSV to ZIP
+        zip.file(csvFileName, csvContent);
+        
+        // Generate ZIP file as blob
+        const zipBlob = await zip.generateAsync({
+            type: 'blob',
+            compression: 'DEFLATE',
+            compressionOptions: {
+                level: 6 // Balance between compression and speed (1-9, 6 is good default)
+            }
+        });
+        
+        // Create download link
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(zipBlob);
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', `block_model_${timestamp}.zip`);
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+        
+        // Calculate compression ratio
+        const originalSize = new Blob([csvContent]).size;
+        const compressedSize = zipBlob.size;
+        const compressionRatio = ((1 - compressedSize / originalSize) * 100).toFixed(1);
+        
+        updateStatus(
+            `ZIP exported successfully: ${currentBlocks.length.toLocaleString()} blocks. ` +
+            `Compressed ${(originalSize / 1024 / 1024).toFixed(2)} MB to ${(compressedSize / 1024 / 1024).toFixed(2)} MB (${compressionRatio}% reduction).`,
+            'success'
+        );
+        
+    } catch (error) {
+        updateStatus(`Export error: ${error.message}. Trying CSV export...`, 'error');
+        console.error('ZIP export error:', error);
+        // Fallback to non-compressed CSV
+        exportAsCsv();
+    }
+}
+
+/**
+ * Fallback function to export as plain CSV (no compression)
+ */
+function exportAsCsv() {
+    try {
         const csvContent = blocksToCsv(currentBlocks, {
             includeIndices: false,
             includeZone: true,
@@ -535,10 +624,195 @@ function handleExport() {
             `CSV exported successfully: ${currentBlocks.length.toLocaleString()} blocks.`,
             'success'
         );
-        
     } catch (error) {
-        updateStatus(`Export error: ${error.message}`, 'error');
-        console.error('Export error:', error);
+        updateStatus(`CSV export error: ${error.message}`, 'error');
+        console.error('CSV export error:', error);
+    }
+}
+
+/**
+ * Initialize About modal
+ */
+function initAboutModal() {
+    const aboutBtn = document.getElementById('aboutBtn');
+    const aboutModal = document.getElementById('aboutModal');
+    const aboutClose = aboutModal?.querySelector('.modal-close');
+    
+    if (aboutBtn && aboutModal) {
+        aboutBtn.addEventListener('click', () => {
+            aboutModal.style.display = 'block';
+        });
+        
+        if (aboutClose) {
+            aboutClose.addEventListener('click', () => {
+                aboutModal.style.display = 'none';
+            });
+        }
+        
+        // Close when clicking outside modal
+        aboutModal.addEventListener('click', (e) => {
+            if (e.target === aboutModal) {
+                aboutModal.style.display = 'none';
+            }
+        });
+    }
+}
+
+/**
+ * Initialize Memory Monitor modal
+ */
+function initMemoryModal() {
+    const memoryBtn = document.getElementById('memoryBtn');
+    const memoryPanel = document.getElementById('memoryPanel');
+    const memoryClose = memoryPanel?.querySelector('.memory-panel-close');
+    const memoryDetails = document.getElementById('memoryDetails');
+    
+    let memoryUpdateInterval = null;
+    
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+    
+    function updateMemoryInfo() {
+        if (!memoryDetails) return;
+        
+        let info = [];
+        
+        // Try to get memory info from performance API (Chrome/Edge)
+        if (performance.memory) {
+            const mem = performance.memory;
+            info.push(`Used JS Heap: ${formatBytes(mem.usedJSHeapSize)}`);
+            info.push(`Total JS Heap: ${formatBytes(mem.totalJSHeapSize)}`);
+            info.push(`JS Heap Limit: ${formatBytes(mem.jsHeapSizeLimit)}`);
+            
+            const percentUsed = ((mem.usedJSHeapSize / mem.jsHeapSizeLimit) * 100).toFixed(1);
+            info.push(`Heap Usage: ${percentUsed}%`);
+        } else {
+            info.push('Memory API not available in this browser.');
+        }
+        
+        // Try to get memory info from navigator.deviceMemory (if available)
+        if (navigator.deviceMemory) {
+            info.push(`Device Memory: ${navigator.deviceMemory} GB`);
+        }
+        
+        // Count Three.js objects if available
+        if (typeof THREE !== 'undefined' && window.scene) {
+            let objectCount = 0;
+            let geometryCount = 0;
+            let materialCount = 0;
+            let textureCount = 0;
+            
+            try {
+                // Add a safety limit to prevent infinite recursion
+                let objectCountLimit = 0;
+                const MAX_OBJECTS = 100000; // Safety limit
+                
+                window.scene.traverse((obj) => {
+                    objectCountLimit++;
+                    if (objectCountLimit > MAX_OBJECTS) {
+                        console.warn('Scene object count limit reached, stopping traversal');
+                        return;
+                    }
+                    
+                    objectCount++;
+                    if (obj.geometry) geometryCount++;
+                    if (obj.material) {
+                        if (Array.isArray(obj.material)) {
+                            materialCount += obj.material.length;
+                        } else {
+                            materialCount++;
+                        }
+                    }
+                });
+                
+                // Count textures (approximate)
+                // Use a safer approach to avoid stack overflow from Object.values()
+                const textures = new Set();
+                try {
+                    let textureTraverseLimit = 0;
+                    const MAX_TEXTURE_TRAVERSE = 10000;
+                    
+                    window.scene.traverse((obj) => {
+                        textureTraverseLimit++;
+                        if (textureTraverseLimit > MAX_TEXTURE_TRAVERSE) {
+                            return;
+                        }
+                        
+                        if (obj.material) {
+                            const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+                            materials.forEach(mat => {
+                                if (mat && typeof mat === 'object') {
+                                    // Safely check common texture properties instead of iterating all
+                                    const textureProps = ['map', 'normalMap', 'bumpMap', 'roughnessMap', 'metalnessMap', 'emissiveMap', 'aoMap', 'lightMap', 'displacementMap', 'alphaMap'];
+                                    textureProps.forEach(prop => {
+                                        try {
+                                            const val = mat[prop];
+                                            if (val && typeof val === 'object' && val.isTexture) {
+                                                textures.add(val);
+                                            }
+                                        } catch (e) {
+                                            // Skip if property access fails
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                } catch (e) {
+                    // Silently fail if traversal causes issues
+                    console.warn('Error counting textures:', e);
+                }
+                textureCount = textures.size;
+                
+                info.push('');
+                info.push('Three.js Objects:');
+                info.push(`  Scene Objects: ${objectCount}`);
+                info.push(`  Geometries: ${geometryCount}`);
+                info.push(`  Materials: ${materialCount}`);
+                info.push(`  Textures: ${textureCount}`);
+            } catch (e) {
+                // Silently fail if scene is not accessible
+            }
+        }
+        
+        memoryDetails.innerHTML = info.join('<br>');
+    }
+    
+    if (memoryBtn && memoryPanel) {
+        memoryBtn.addEventListener('click', () => {
+            // Toggle panel visibility
+            if (memoryPanel.style.display === 'none' || !memoryPanel.style.display) {
+                memoryPanel.style.display = 'block';
+                updateMemoryInfo();
+                
+                // Update memory info every second while panel is open
+                if (memoryUpdateInterval) {
+                    clearInterval(memoryUpdateInterval);
+                }
+                memoryUpdateInterval = setInterval(updateMemoryInfo, 1000);
+            } else {
+                memoryPanel.style.display = 'none';
+                if (memoryUpdateInterval) {
+                    clearInterval(memoryUpdateInterval);
+                    memoryUpdateInterval = null;
+                }
+            }
+        });
+        
+        if (memoryClose) {
+            memoryClose.addEventListener('click', () => {
+                memoryPanel.style.display = 'none';
+                if (memoryUpdateInterval) {
+                    clearInterval(memoryUpdateInterval);
+                    memoryUpdateInterval = null;
+                }
+            });
+        }
     }
 }
 
