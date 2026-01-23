@@ -1,6 +1,9 @@
 /**
  * 3D Visualization using Three.js
  * Sets up scene and renders blocks
+ * 
+ * @license MIT License
+ * @copyright Copyright (c) 2026 BuildIT Design Labs, LLC
  */
 
 let scene, camera, renderer, controls;

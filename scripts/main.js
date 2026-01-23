@@ -2,6 +2,9 @@
  * Main application controller
  * Wires UI to block model and visualization modules
  * Supports large models with localStorage caching
+ * 
+ * @license MIT License
+ * @copyright Copyright (c) 2026 BuildIT Design Labs, LLC
  */
 
 let currentBlocks = [];

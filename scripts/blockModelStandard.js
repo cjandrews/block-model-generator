@@ -7,6 +7,9 @@
  * - Required: ROCKTYPE, DENSITY
  * - Optional: ZONE, GRADE_AU, GRADE_CU, ECON_VALUE
  * - Grid indices: I, J, K (for internal tracking)
+ * 
+ * @license MIT License
+ * @copyright Copyright (c) 2026 BuildIT Design Labs, LLC
  */
 
 /**

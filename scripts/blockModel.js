@@ -2,6 +2,9 @@
  * Block Model Generator
  * Generates regular grid of blocks with material patterns
  * Integrated with standardized block model schema (blockModelStandard.js)
+ * 
+ * @license MIT License
+ * @copyright Copyright (c) 2026 BuildIT Design Labs, LLC
  */
 
 // ============================================================================
@@ -281,7 +284,7 @@ const MATERIALS = {
         density: 2.5, 
         gradeCu: 0.05,  // Background Cu (<0.1% typical for waste)
         gradeAu: 0.05,  // Background Au (<0.1 g/t typical for waste)
-        econValue: -100.0 
+        econValue: -15.0  // Negative value represents mining/haulage/disposal costs (typically -10 to -30 per tonne)
     },
     'Ore_Low': { 
         color: 0xffa500, 
@@ -927,13 +930,23 @@ function generateEllipsoidOreBody(blocks, params = {}) {
             rockType = 'Waste';
         }
         
+        // Calculate economic value: positive for ore (revenue - costs), negative for waste (costs only)
+        let econValue;
+        if (rockType === 'Waste') {
+            econValue = -15.0; // Waste mining/haulage/disposal costs (typically -10 to -30 per tonne)
+        } else {
+            // Ore value: revenue from metals minus processing costs
+            // Simplified: (Cu% * price_factor + Au_g/t * price_factor) - processing_cost
+            econValue = (gradeCu * 20 + gradeAu * 50) - 10; // Revenue minus processing cost
+        }
+        
         return {
             ...block,
             rockType: rockType,
             gradeCu: Math.max(0, gradeCu),
             gradeAu: Math.max(0, gradeAu),
             density: block.density || 2.5,
-            econValue: block.econValue || (gradeCu * 20 + gradeAu * 50) // Simple value calculation
+            econValue: block.econValue !== undefined ? block.econValue : econValue
         };
     });
 }
@@ -1074,13 +1087,22 @@ function generateVeinOreBody(blocks, params = {}) {
             rockType = 'Waste';
         }
         
+        // Calculate economic value: positive for ore (revenue - costs), negative for waste (costs only)
+        let econValue;
+        if (rockType === 'Waste') {
+            econValue = -15.0; // Waste mining/haulage/disposal costs (typically -10 to -30 per tonne)
+        } else {
+            // Ore value: revenue from metals minus processing costs
+            econValue = (gradeCu * 20 + gradeAu * 50) - 10; // Revenue minus processing cost
+        }
+        
         return {
             ...block,
             rockType: rockType,
             gradeCu: Math.max(0, gradeCu),
             gradeAu: Math.max(0, gradeAu),
             density: block.density || 2.5,
-            econValue: block.econValue || (gradeCu * 20 + gradeAu * 50)
+            econValue: block.econValue !== undefined ? block.econValue : econValue
         };
     });
 }
@@ -1216,13 +1238,22 @@ function generatePorphyryOreBody(blocks, params = {}) {
             rockType = 'Waste';
         }
         
+        // Calculate economic value: positive for ore (revenue - costs), negative for waste (costs only)
+        let econValue;
+        if (rockType === 'Waste') {
+            econValue = -15.0; // Waste mining/haulage/disposal costs (typically -10 to -30 per tonne)
+        } else {
+            // Ore value: revenue from metals minus processing costs
+            econValue = (gradeCu * 20 + gradeAu * 50) - 10; // Revenue minus processing cost
+        }
+        
         return {
             ...block,
             rockType: rockType,
             gradeCu: Math.max(0, gradeCu),
             gradeAu: Math.max(0, gradeAu),
             density: block.density || 2.5,
-            econValue: block.econValue || (gradeCu * 20 + gradeAu * 50),
+            econValue: block.econValue !== undefined ? block.econValue : econValue,
             zone: zone !== 'Waste' ? zone : block.zone
         };
     });

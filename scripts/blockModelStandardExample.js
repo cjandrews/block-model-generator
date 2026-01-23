@@ -1,6 +1,9 @@
 /**
  * Example Usage of Standardized Block Model Functions
  * Demonstrates integration with existing codebase
+ * 
+ * @license MIT License
+ * @copyright Copyright (c) 2026 BuildIT Design Labs, LLC
  */
 
 // Example 1: Generate a standard regular grid
