@@ -10,7 +10,7 @@ let scene, camera, renderer, controls;
 let blockMeshes = [];
 let pointCloud = null;
 let instancedMesh = null;
-let currentViewMode = 'solid'; // 'solid', 'points', 'transparent'
+let currentViewMode = 'solid'; // 'solid', 'points', 'transparent', 'squares'
 let currentVisualizationField = 'rockType'; // Field to visualize
 let vizCurrentBlocks = []; // Blocks currently in visualization (renamed to avoid conflict with main.js)
 let currentCellSizes = { x: 10, y: 10, z: 10 };
@@ -198,11 +198,20 @@ function clearBlocks() {
     // Clear value attribute map
     blockValueAttributes.clear();
     
-    // Clear individual meshes
+    // Clear individual meshes and sprites
     blockMeshes.forEach(mesh => {
         scene.remove(mesh);
-        mesh.geometry.dispose();
-        mesh.material.dispose();
+        // Sprites don't have geometry
+        if (mesh.geometry) {
+            mesh.geometry.dispose();
+        }
+        // Dispose material and texture
+        if (mesh.material) {
+            if (mesh.material.map) {
+                mesh.material.map.dispose();
+            }
+            mesh.material.dispose();
+        }
     });
     blockMeshes = [];
     
@@ -214,7 +223,7 @@ function clearBlocks() {
         instancedMesh = null;
     }
     
-    // Clear point cloud
+    // Clear point cloud (no longer used, but keep for compatibility)
     if (pointCloud) {
         scene.remove(pointCloud);
         pointCloud.geometry.dispose();
@@ -362,6 +371,9 @@ function renderBlocks(blocks, cellSizeX, cellSizeY, cellSizeZ, centerCamera = tr
         case 'transparent':
             renderAsCubes(filteredBlocks, cellSizeX, cellSizeY, cellSizeZ, true);
             break;
+        case 'squares':
+            renderAsSquares(filteredBlocks, cellSizeX, cellSizeY, cellSizeZ);
+            break;
         case 'solid':
         default:
             renderAsCubes(filteredBlocks, cellSizeX, cellSizeY, cellSizeZ, false);
@@ -381,15 +393,14 @@ function renderBlocks(blocks, cellSizeX, cellSizeY, cellSizeZ, centerCamera = tr
 }
 
 /**
- * Render blocks as points (centroids)
- * For points, we still need to filter blocks since PointsMaterial doesn't support instance attributes easily
+ * Render blocks as small instanced spheres (centroids)
  * @param {Array} blocks - Array of block objects
  * @param {number} cellSizeX - Size of each cell in X direction
  * @param {number} cellSizeY - Size of each cell in Y direction
  * @param {number} cellSizeZ - Size of each cell in Z direction
  */
 function renderAsPoints(blocks, cellSizeX, cellSizeY, cellSizeZ) {
-    // Filter blocks for value visibility (points don't use shader-based filtering)
+    // Filter blocks for slice and value visibility
     let filteredBlocks = blocks;
     if (valueVisibilityEnabled && currentVisualizationField !== 'rockType') {
         filteredBlocks = blocks.filter(block => {
@@ -405,6 +416,127 @@ function renderAsPoints(blocks, cellSizeX, cellSizeY, cellSizeZ) {
         });
     }
     
+    if (filteredBlocks.length === 0) {
+        return;
+    }
+    
+    // Calculate sphere size based on cell size (smaller than cubes)
+    const sphereRadius = Math.min(cellSizeX, cellSizeY, cellSizeZ) * 0.12;
+    
+    // Create sphere geometry (reusable for all instances)
+    const sphereGeometry = new THREE.SphereGeometry(sphereRadius, 8, 6);
+    
+    // Group blocks by color for instanced rendering
+    const colorGroups = {};
+    const needsValueFilter = valueVisibilityEnabled && currentVisualizationField !== 'rockType';
+    
+    filteredBlocks.forEach((block, blockIndex) => {
+        const color = getBlockColor(block, currentVisualizationField);
+        const colorKey = color.toString();
+        
+        if (!colorGroups[colorKey]) {
+            colorGroups[colorKey] = {
+                color: color,
+                indices: []
+            };
+        }
+        colorGroups[colorKey].indices.push(blockIndex);
+    });
+    
+    // Clear block data map
+    blockDataMap.clear();
+    
+    // Create instanced meshes for each color group
+    Object.keys(colorGroups).forEach(colorKey => {
+        const group = colorGroups[colorKey];
+        const count = group.indices.length;
+        
+        // Choose material based on whether value filtering is needed
+        let material;
+        if (needsValueFilter) {
+            material = createValueFilterMaterial(false, group.color);
+        } else {
+            material = new THREE.MeshLambertMaterial({
+                transparent: false,
+                opacity: 1.0,
+                vertexColors: false,
+                clippingPlanes: sliceEnabled ? [slicePlane] : [],
+                color: group.color
+            });
+        }
+        
+        const instancedMesh = new THREE.InstancedMesh(sphereGeometry, material, count);
+        instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        
+        // Create instance value attribute if value filtering is enabled
+        if (needsValueFilter) {
+            const values = new Float32Array(count);
+            group.indices.forEach((blockIndex, instanceIndex) => {
+                const block = filteredBlocks[blockIndex];
+                const value = block[currentVisualizationField];
+                // Use -9999 as sentinel for missing values (will be filtered out)
+                values[instanceIndex] = (value !== undefined && value !== null && !isNaN(value)) ? value : -9999;
+            });
+            
+            const valueAttribute = new THREE.InstancedBufferAttribute(values, 1);
+            instancedMesh.geometry.setAttribute('instanceValue', valueAttribute);
+            
+            // Store reference to attribute for updates
+            blockValueAttributes.set(instancedMesh.uuid, valueAttribute);
+        }
+        
+        const matrix = new THREE.Matrix4();
+        group.indices.forEach((blockIndex, instanceIndex) => {
+            const block = filteredBlocks[blockIndex];
+            // Transform mining coordinates to Three.js coordinates:
+            // (x, z, y) - depth maps to vertical axis
+            matrix.makeTranslation(block.x, block.z, block.y);
+            instancedMesh.setMatrixAt(instanceIndex, matrix);
+            
+            // Store block data for tooltip (using instance index as key)
+            blockDataMap.set(`${instancedMesh.uuid}_${instanceIndex}`, block);
+        });
+        
+        instancedMesh.instanceMatrix.needsUpdate = true;
+        instancedMesh.userData.blocks = filteredBlocks; // Store blocks array for reference
+        instancedMesh.userData.groupIndices = group.indices; // Store indices mapping
+        scene.add(instancedMesh);
+        blockMeshes.push(instancedMesh);
+    });
+}
+
+/**
+ * Render blocks as billboarded squares using Points with custom shader
+ * This is much more efficient than individual sprites
+ * @param {Array} blocks - Array of block objects
+ * @param {number} cellSizeX - Size of each cell in X direction
+ * @param {number} cellSizeY - Size of each cell in Y direction
+ * @param {number} cellSizeZ - Size of each cell in Z direction
+ */
+function renderAsSquares(blocks, cellSizeX, cellSizeY, cellSizeZ) {
+    // Filter blocks for slice and value visibility
+    let filteredBlocks = blocks;
+    if (valueVisibilityEnabled && currentVisualizationField !== 'rockType') {
+        filteredBlocks = blocks.filter(block => {
+            const value = block[currentVisualizationField];
+            if (value === undefined || value === null || isNaN(value)) {
+                return false;
+            }
+            if (valueVisibilityMode === 'above') {
+                return value >= valueVisibilityThreshold;
+            } else {
+                return value <= valueVisibilityThreshold;
+            }
+        });
+    }
+    
+    if (filteredBlocks.length === 0) {
+        return;
+    }
+    
+    // Calculate square size based on cell size
+    const squareSize = Math.min(cellSizeX, cellSizeY, cellSizeZ) * 0.25;
+    
     const positions = new Float32Array(filteredBlocks.length * 3);
     const colors = new Float32Array(filteredBlocks.length * 3);
     
@@ -417,7 +549,6 @@ function renderAsPoints(blocks, cellSizeX, cellSizeY, cellSizeZ) {
         // Mining: X=easting, Y=northing, Z=depth (negative = below ground)
         // Three.js: X=right, Y=up, Z=forward
         // Transformation: (x, z, y) so depth (mining Z) maps to vertical (Three.js Y)
-        // Note: mining Z is negative below ground, so it maps to negative Three.js Y (down)
         positions[i] = block.x;        // X stays X
         positions[i + 1] = block.z;    // Mining Z (depth) -> Three.js Y (vertical, negative = down)
         positions[i + 2] = block.y;    // Mining Y (northing) -> Three.js Z (forward)
@@ -432,19 +563,38 @@ function renderAsPoints(blocks, cellSizeX, cellSizeY, cellSizeZ) {
         colors[i + 2] = b;
         
         // Store block data for tooltip (using index as key)
-        blockDataMap.set(`point_${index}`, block);
+        blockDataMap.set(`square_${index}`, block);
     });
     
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     
-    const material = new THREE.PointsMaterial({
-        size: Math.max(cellSizeX, cellSizeY, cellSizeZ) * 0.5,
+    // Custom shader material to render squares instead of points
+    // Use onBeforeCompile to modify the built-in PointsMaterial shader
+    const baseMaterial = new THREE.PointsMaterial({
+        size: squareSize,
         vertexColors: true,
         sizeAttenuation: true,
         clippingPlanes: sliceEnabled ? [slicePlane] : []
     });
+    
+    // Modify the fragment shader to draw squares
+    baseMaterial.onBeforeCompile = function(shader) {
+        shader.fragmentShader = shader.fragmentShader.replace(
+            'gl_FragColor = vec4( diffuse, opacity );',
+            `
+            // Draw a square instead of a circle
+            vec2 coord = gl_PointCoord - vec2(0.5);
+            if (abs(coord.x) > 0.5 || abs(coord.y) > 0.5) {
+                discard;
+            }
+            gl_FragColor = vec4( diffuse, opacity );
+            `
+        );
+    };
+    
+    const material = baseMaterial;
     
     pointCloud = new THREE.Points(geometry, material);
     pointCloud.userData.blocks = filteredBlocks; // Store filtered blocks array for tooltip
@@ -462,6 +612,7 @@ function updateClippingPlanes() {
                 mesh.material.clippingPlanes = [];
             }
         });
+        // Handle point cloud (used for squares view mode)
         if (pointCloud && pointCloud.material) {
             pointCloud.material.clippingPlanes = [];
         }
@@ -536,6 +687,7 @@ function updateClippingPlanes() {
                 mesh.material.clippingPlanes = [];
             }
         });
+        // Handle point cloud (used for squares view mode)
         if (pointCloud && pointCloud.material) {
             pointCloud.material.clippingPlanes = [];
         }
@@ -588,9 +740,11 @@ function updateClippingPlanes() {
             }
         }
     });
+    
+    // Handle point cloud (used for squares view mode)
     if (pointCloud && pointCloud.material) {
         pointCloud.material.clippingPlanes = sliceEnabled ? [slicePlane] : [];
-        pointCloud.material.needsUpdate = true; // Force material update
+        pointCloud.material.needsUpdate = true;
     }
 }
 
@@ -1136,7 +1290,7 @@ function updateVisualization(blocks, cellSizeX, cellSizeY, cellSizeZ) {
  * @param {string} mode - View mode: 'solid', 'points', or 'transparent'
  */
 function setViewMode(mode) {
-    if (['solid', 'points', 'transparent'].includes(mode)) {
+    if (['solid', 'points', 'transparent', 'squares'].includes(mode)) {
         currentViewMode = mode;
         if (vizCurrentBlocks.length > 0) {
             renderBlocks(
@@ -1494,26 +1648,13 @@ function onMouseMove(event) {
     // Find intersections
     const intersects = [];
     
-    // Check point cloud
-    if (pointCloud && pointCloud.visible) {
-            const pointIntersects = raycaster.intersectObject(pointCloud);
-            if (pointIntersects.length > 0) {
-                const intersect = pointIntersects[0];
-                const index = intersect.index;
-                if (pointCloud.userData.blocks && pointCloud.userData.blocks[index]) {
-                    intersects.push({
-                        object: pointCloud,
-                        index: index,
-                        distance: intersect.distance,
-                        block: pointCloud.userData.blocks[index]
-                    });
-                }
-            }
-    }
+    // Point cloud replaced with instanced spheres (handled by blockMeshes below)
     
-    // Check instanced meshes
+    // Check instanced meshes and sprites
     blockMeshes.forEach(mesh => {
-        if (mesh.visible && mesh instanceof THREE.InstancedMesh) {
+        if (!mesh.visible) return;
+        
+        if (mesh instanceof THREE.InstancedMesh) {
             const meshIntersects = raycaster.intersectObject(mesh);
             if (meshIntersects.length > 0) {
                 const intersect = meshIntersects[0];
@@ -1557,6 +1698,23 @@ function onMouseMove(event) {
             }
         }
     });
+    
+    // Check point cloud (used for squares view mode)
+    if (pointCloud && pointCloud.visible) {
+        const pointIntersects = raycaster.intersectObject(pointCloud);
+        if (pointIntersects.length > 0) {
+            const intersect = pointIntersects[0];
+            const index = intersect.index;
+            if (pointCloud.userData.blocks && pointCloud.userData.blocks[index]) {
+                intersects.push({
+                    object: pointCloud,
+                    index: index,
+                    distance: intersect.distance,
+                    block: pointCloud.userData.blocks[index]
+                });
+            }
+        }
+    }
     
     // Sort by distance and get closest
     if (intersects.length > 0) {
