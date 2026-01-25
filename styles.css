@@ -458,6 +458,13 @@ header {
     position: relative;
 }
 
+/* Hide Memory button on small screens */
+@media (max-width: 768px) {
+    #memoryBtn {
+        display: none;
+    }
+}
+
 /* Memory Panel (Non-modal) */
 .memory-panel {
     display: none;
