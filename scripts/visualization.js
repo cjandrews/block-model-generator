@@ -10,10 +10,15 @@ let scene, camera, renderer, controls;
 let blockMeshes = [];
 let pointCloud = null;
 let instancedMesh = null;
-let currentViewMode = 'solid'; // 'solid', 'points', 'transparent', 'squares'
+let currentViewMode = 'solid'; // 'solid', 'points', 'transparent', 'squares', 'slicesX', 'slicesY', 'slicesZ'
 let currentVisualizationField = 'rockType'; // Field to visualize
 let vizCurrentBlocks = []; // Blocks currently in visualization (renamed to avoid conflict with main.js)
 let currentCellSizes = { x: 10, y: 10, z: 10 };
+
+// Cache for field value ranges (to avoid recalculating min/max for each block)
+let fieldValueRanges = {
+    econValue: { min: 0, max: 1, cached: false }
+};
 
 // Slice tool
 let slicePlane = null;
@@ -30,6 +35,10 @@ let valueVisibilityMode = 'above'; // 'above' or 'below'
 let blockValueAttributes = new Map(); // Map of mesh UUID to value attribute buffer
 let valueFilterUpdatePending = false; // Flag to throttle uniform updates
 let valueVisibilityShaderMaterial = null; // Custom shader material for value filtering
+
+// Categorical filter (for rockType and other categorical fields)
+let categoryFilterEnabled = false;
+let visibleCategories = new Set(); // Set of category values to show (empty = show all)
 
 // Ground layer
 let groundMesh = null;
@@ -238,6 +247,34 @@ function clearBlocks() {
  * @param {string} field - Field name to visualize
  * @returns {number} Hex color value
  */
+/**
+ * Update cached value ranges for fields that need dynamic min/max calculation
+ * This is called once when blocks are rendered, not for each block
+ */
+function updateFieldValueRanges(blocks, field) {
+    if (field === 'econValue') {
+        // Only recalculate if not cached or blocks changed
+        if (!fieldValueRanges.econValue.cached || fieldValueRanges.econValue.blockCount !== blocks.length) {
+            const values = blocks.map(b => b[field]).filter(v => v !== undefined && !isNaN(v));
+            if (values.length > 0) {
+                fieldValueRanges.econValue.min = Math.min(...values);
+                fieldValueRanges.econValue.max = Math.max(...values);
+            } else {
+                fieldValueRanges.econValue.min = 0;
+                fieldValueRanges.econValue.max = 1;
+            }
+            fieldValueRanges.econValue.blockCount = blocks.length;
+            fieldValueRanges.econValue.cached = true;
+        }
+    }
+}
+
+/**
+ * Get color for a block based on the visualization field
+ * @param {Object} block - Block object
+ * @param {string} field - Field name to visualize
+ * @returns {number} Hex color value
+ */
 function getBlockColor(block, field) {
     if (field === 'rockType') {
         return getMaterialColor(block.rockType || block.material || 'Waste');
@@ -267,12 +304,9 @@ function getBlockColor(block, field) {
             max = 10.0; // Typical grade range
             break;
         case 'econValue':
-            // Find min/max from all blocks
-            const values = vizCurrentBlocks.map(b => b[field]).filter(v => v !== undefined && !isNaN(v));
-            if (values.length > 0) {
-                min = Math.min(...values);
-                max = Math.max(...values);
-            }
+            // Use cached min/max (calculated once per render, not per block)
+            min = fieldValueRanges.econValue.min;
+            max = fieldValueRanges.econValue.max;
             break;
     }
     
@@ -328,10 +362,22 @@ function getColorFromValue(value) {
  * @returns {Array} Filtered blocks
  */
 function filterBlocks(blocks) {
-    // With shader-based value filtering, we don't need to filter blocks here
+    let filtered = blocks;
+    
+    // Apply categorical filter if enabled and field is categorical (rockType)
+    // Empty visibleCategories set means show all (filter disabled)
+    if (categoryFilterEnabled && currentVisualizationField === 'rockType' && visibleCategories.size > 0) {
+        filtered = filtered.filter(block => {
+            const category = block.rockType || block.material || 'Waste';
+            return visibleCategories.has(category);
+        });
+    }
+    
+    // With shader-based value filtering, we don't need to filter numeric values here
     // The shader will handle visibility based on instance attributes
-    // This function is kept for compatibility but returns all blocks
-    return blocks;
+    // For points mode, value filtering is done in renderAsPoints
+    
+    return filtered;
 }
 
 /**
@@ -363,7 +409,18 @@ function renderBlocks(blocks, cellSizeX, cellSizeY, cellSizeZ, centerCamera = tr
     // Filter blocks based on slice and value visibility
     const filteredBlocks = filterBlocks(blocks);
     
+    // Update cached value ranges for fields that need dynamic min/max (like econValue)
+    // This must be done before getBlockColor is called for each block
+    updateFieldValueRanges(filteredBlocks, currentVisualizationField);
+    
+    // Update category filter UI when blocks change (if rockType is selected)
+    // This will be called after renderBlocks completes, so we use setTimeout to avoid blocking
+    if (currentVisualizationField === 'rockType') {
+        setTimeout(() => updateCategoryFilterUI(), 0);
+    }
+    
     // Render based on current view mode
+    // Note: Slice modes use the full blocks array for slice calculation, then filter
     switch (currentViewMode) {
         case 'points':
             renderAsPoints(filteredBlocks, cellSizeX, cellSizeY, cellSizeZ);
@@ -373,6 +430,15 @@ function renderBlocks(blocks, cellSizeX, cellSizeY, cellSizeZ, centerCamera = tr
             break;
         case 'squares':
             renderAsSquares(filteredBlocks, cellSizeX, cellSizeY, cellSizeZ);
+            break;
+        case 'slicesX':
+            renderAsSlicesX(blocks, filteredBlocks, cellSizeX, cellSizeY, cellSizeZ);
+            break;
+        case 'slicesY':
+            renderAsSlicesY(blocks, filteredBlocks, cellSizeX, cellSizeY, cellSizeZ);
+            break;
+        case 'slicesZ':
+            renderAsSlicesZ(blocks, filteredBlocks, cellSizeX, cellSizeY, cellSizeZ);
             break;
         case 'solid':
         default:
@@ -599,6 +665,201 @@ function renderAsSquares(blocks, cellSizeX, cellSizeY, cellSizeZ) {
     pointCloud = new THREE.Points(geometry, material);
     pointCloud.userData.blocks = filteredBlocks; // Store filtered blocks array for tooltip
     scene.add(pointCloud);
+}
+
+/**
+ * Calculate optimal number of slices based on model dimensions and total blocks
+ * @param {Array} blocks - Array of block objects
+ * @param {string} axis - Axis to slice along: 'x', 'y', or 'z'
+ * @returns {number} Number of slices (1-5)
+ */
+function calculateOptimalSliceCount(blocks, axis) {
+    if (blocks.length === 0) return 1;
+    
+    // Get unique coordinate values along the axis
+    const coordSet = new Set();
+    blocks.forEach(block => {
+        let coord;
+        if (axis === 'x') coord = block.x;
+        else if (axis === 'y') coord = block.y;
+        else coord = block.z;
+        coordSet.add(coord);
+    });
+    
+    const uniqueCoords = coordSet.size;
+    const totalBlocks = blocks.length;
+    
+    // Calculate based on dimensionality (more unique positions = more slices)
+    // And total blocks (more blocks = can show more slices)
+    // Use logarithmic scaling to avoid too many slices for very large models
+    const dimensionFactor = Math.min(uniqueCoords / 10, 1); // Normalize to 0-1
+    const blockCountFactor = Math.min(Math.log10(totalBlocks / 100) / 2, 1); // Normalize to 0-1
+    
+    // Combine factors: more unique positions and more blocks = more slices
+    const combinedFactor = (dimensionFactor * 0.6 + blockCountFactor * 0.4);
+    
+    // Calculate slices: minimum 2, maximum 5
+    const slices = Math.max(2, Math.min(5, Math.round(2 + combinedFactor * 3)));
+    
+    // But don't exceed the number of unique coordinates
+    return Math.min(slices, uniqueCoords);
+}
+
+/**
+ * Calculate evenly spaced slice positions along an axis
+ * Uses actual block coordinates to ensure slices are exactly 1 block wide
+ * @param {Array} blocks - Array of block objects
+ * @param {string} axis - Axis to slice along: 'x', 'y', or 'z'
+ * @param {number} numSlices - Number of slices to create
+ * @returns {Array<number>} Array of slice positions (actual block coordinates)
+ */
+function calculateSlicePositions(blocks, axis, numSlices) {
+    if (blocks.length === 0 || numSlices < 1) return [];
+    
+    // Get all unique coordinate values along the axis (sorted)
+    const coordSet = new Set();
+    blocks.forEach(block => {
+        let coord;
+        if (axis === 'x') coord = block.x;
+        else if (axis === 'y') coord = block.y;
+        else coord = block.z;
+        coordSet.add(coord);
+    });
+    
+    const uniqueCoords = Array.from(coordSet).sort((a, b) => a - b);
+    
+    if (uniqueCoords.length === 0) return [];
+    
+    // Select evenly spaced coordinates from the unique values
+    // This ensures slices are exactly 1 block wide (one coordinate value each)
+    const positions = [];
+    if (numSlices >= uniqueCoords.length) {
+        // If we want more slices than unique coordinates, return all
+        return uniqueCoords;
+    }
+    
+    if (numSlices === 1) {
+        // Return the middle coordinate
+        positions.push(uniqueCoords[Math.floor(uniqueCoords.length / 2)]);
+    } else {
+        // Select evenly spaced indices
+        const step = (uniqueCoords.length - 1) / (numSlices - 1);
+        for (let i = 0; i < numSlices; i++) {
+            const index = Math.round(i * step);
+            positions.push(uniqueCoords[index]);
+        }
+    }
+    
+    return positions;
+}
+
+/**
+ * Filter blocks to only those on slice planes (exactly 1 block wide)
+ * @param {Array} blocks - Array of block objects
+ * @param {string} axis - Axis to slice along: 'x', 'y', or 'z'
+ * @param {Array<number>} slicePositions - Array of slice positions (actual block coordinates)
+ * @param {number} cellSize - Cell size along the axis (for floating point tolerance)
+ * @returns {Array} Filtered blocks on slice planes
+ */
+function filterBlocksOnSlices(blocks, axis, slicePositions, cellSize) {
+    if (slicePositions.length === 0) return [];
+    
+    // Exact matching: block is on slice if its coordinate exactly matches a slice position
+    // Use very small tolerance for floating point precision (1/10000th of cell size)
+    // Since slice positions are actual block coordinates, this should match exactly
+    const tolerance = cellSize * 0.0001;
+    
+    // Create a Set for O(1) lookup instead of O(n) array.some()
+    // Normalize positions to tolerance units for exact matching
+    const slicePosSet = new Set();
+    slicePositions.forEach(pos => {
+        // Round to tolerance precision to handle floating point issues
+        const normalized = Math.round(pos / tolerance) * tolerance;
+        slicePosSet.add(normalized);
+    });
+    
+    return blocks.filter(block => {
+        let coord;
+        if (axis === 'x') coord = block.x;
+        else if (axis === 'y') coord = block.y;
+        else coord = block.z;
+        
+        // Normalize coordinate to same precision and check Set (O(1) lookup)
+        const normalizedCoord = Math.round(coord / tolerance) * tolerance;
+        return slicePosSet.has(normalizedCoord);
+    });
+}
+
+/**
+ * Render blocks as slices along X axis
+ * @param {Array} allBlocks - All block objects (for slice calculation)
+ * @param {Array} filteredBlocks - Pre-filtered blocks (for value visibility)
+ * @param {number} cellSizeX - Size of each cell in X direction
+ * @param {number} cellSizeY - Size of each cell in Y direction
+ * @param {number} cellSizeZ - Size of each cell in Z direction
+ */
+function renderAsSlicesX(allBlocks, filteredBlocks, cellSizeX, cellSizeY, cellSizeZ) {
+    // Calculate optimal number of slices based on full model
+    const numSlices = calculateOptimalSliceCount(allBlocks, 'x');
+    const slicePositions = calculateSlicePositions(allBlocks, 'x', numSlices);
+    
+    // Filter pre-filtered blocks to only those on slice planes
+    const sliceBlocks = filterBlocksOnSlices(filteredBlocks, 'x', slicePositions, cellSizeX);
+    
+    if (sliceBlocks.length === 0) {
+        return;
+    }
+    
+    // Render using cubes (same as solid mode)
+    renderAsCubes(sliceBlocks, cellSizeX, cellSizeY, cellSizeZ, false);
+}
+
+/**
+ * Render blocks as slices along Y axis
+ * @param {Array} allBlocks - All block objects (for slice calculation)
+ * @param {Array} filteredBlocks - Pre-filtered blocks (for value visibility)
+ * @param {number} cellSizeX - Size of each cell in X direction
+ * @param {number} cellSizeY - Size of each cell in Y direction
+ * @param {number} cellSizeZ - Size of each cell in Z direction
+ */
+function renderAsSlicesY(allBlocks, filteredBlocks, cellSizeX, cellSizeY, cellSizeZ) {
+    // Calculate optimal number of slices based on full model
+    const numSlices = calculateOptimalSliceCount(allBlocks, 'y');
+    const slicePositions = calculateSlicePositions(allBlocks, 'y', numSlices);
+    
+    // Filter pre-filtered blocks to only those on slice planes
+    const sliceBlocks = filterBlocksOnSlices(filteredBlocks, 'y', slicePositions, cellSizeY);
+    
+    if (sliceBlocks.length === 0) {
+        return;
+    }
+    
+    // Render using cubes (same as solid mode)
+    renderAsCubes(sliceBlocks, cellSizeX, cellSizeY, cellSizeZ, false);
+}
+
+/**
+ * Render blocks as slices along Z axis
+ * @param {Array} allBlocks - All block objects (for slice calculation)
+ * @param {Array} filteredBlocks - Pre-filtered blocks (for value visibility)
+ * @param {number} cellSizeX - Size of each cell in X direction
+ * @param {number} cellSizeY - Size of each cell in Y direction
+ * @param {number} cellSizeZ - Size of each cell in Z direction
+ */
+function renderAsSlicesZ(allBlocks, filteredBlocks, cellSizeX, cellSizeY, cellSizeZ) {
+    // Calculate optimal number of slices based on full model
+    const numSlices = calculateOptimalSliceCount(allBlocks, 'z');
+    const slicePositions = calculateSlicePositions(allBlocks, 'z', numSlices);
+    
+    // Filter pre-filtered blocks to only those on slice planes
+    const sliceBlocks = filterBlocksOnSlices(filteredBlocks, 'z', slicePositions, cellSizeZ);
+    
+    if (sliceBlocks.length === 0) {
+        return;
+    }
+    
+    // Render using cubes (same as solid mode)
+    renderAsCubes(sliceBlocks, cellSizeX, cellSizeY, cellSizeZ, false);
 }
 
 /**
@@ -1290,7 +1551,7 @@ function updateVisualization(blocks, cellSizeX, cellSizeY, cellSizeZ) {
  * @param {string} mode - View mode: 'solid', 'points', or 'transparent'
  */
 function setViewMode(mode) {
-    if (['solid', 'points', 'transparent', 'squares'].includes(mode)) {
+    if (['solid', 'points', 'transparent', 'squares', 'slicesX', 'slicesY', 'slicesZ'].includes(mode)) {
         currentViewMode = mode;
         if (vizCurrentBlocks.length > 0) {
             renderBlocks(
@@ -1321,6 +1582,9 @@ function setVisualizationField(field) {
         if (modeSelect) {
             modeSelect.disabled = (field === 'rockType' || !document.getElementById('valueVisibilityEnabled')?.checked);
         }
+        
+        // Update category filter UI when field changes
+        updateCategoryFilterUI();
         
         if (vizCurrentBlocks.length > 0) {
             // Always re-render when field changes because colors are based on the field
@@ -1554,6 +1818,125 @@ function setValueVisibilityMode(mode) {
                 );
             }
         }
+    }
+}
+
+/**
+ * Update category filter UI based on current field and available categories
+ */
+function updateCategoryFilterUI() {
+    const container = document.getElementById('categoryFilterCheckboxes');
+    if (!container) return;
+    
+    // Only show category filter for rockType field
+    if (currentVisualizationField !== 'rockType') {
+        container.innerHTML = '<p style="font-size: 0.85em; opacity: 0.7; margin: 8px 0;">Select "Rock Type" field to filter categories</p>';
+        return;
+    }
+    
+    // Get all unique rock types from current blocks
+    if (vizCurrentBlocks.length === 0) {
+        container.innerHTML = '<p style="font-size: 0.85em; opacity: 0.7; margin: 8px 0;">No blocks available</p>';
+        return;
+    }
+    
+    const categories = new Set();
+    vizCurrentBlocks.forEach(block => {
+        const category = block.rockType || block.material || 'Waste';
+        categories.add(category);
+    });
+    
+    const sortedCategories = Array.from(categories).sort();
+    
+    // Clear and rebuild checkboxes
+    container.innerHTML = '';
+    
+    sortedCategories.forEach(category => {
+        const label = document.createElement('label');
+        label.style.display = 'flex';
+        label.style.alignItems = 'center';
+        label.style.marginBottom = '6px';
+        label.style.cursor = 'pointer';
+        label.style.fontSize = '0.9em';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = category;
+        checkbox.checked = visibleCategories.size === 0 || visibleCategories.has(category);
+        checkbox.style.width = 'auto';
+        checkbox.style.marginRight = '8px';
+        checkbox.style.cursor = 'pointer';
+        
+        // Update visibleCategories when checkbox changes
+        checkbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                visibleCategories.add(category);
+            } else {
+                visibleCategories.delete(category);
+            }
+            
+            // If all categories are unchecked, show all (empty set = show all)
+            // This is handled by filterBlocks - empty set means show all
+            // But we need to ensure at least one is checked for the filter to work
+            const allCheckboxes = container.querySelectorAll('input[type="checkbox"]');
+            const checkedCount = Array.from(allCheckboxes).filter(cb => cb.checked).length;
+            
+            // If all unchecked, re-check all (show everything)
+            if (checkedCount === 0) {
+                allCheckboxes.forEach(cb => {
+                    cb.checked = true;
+                    const cat = cb.value;
+                    visibleCategories.add(cat);
+                });
+            }
+            
+            // Re-render with updated filter
+            if (vizCurrentBlocks.length > 0 && categoryFilterEnabled) {
+                renderBlocks(
+                    vizCurrentBlocks,
+                    currentCellSizes.x,
+                    currentCellSizes.y,
+                    currentCellSizes.z,
+                    false // Don't center camera
+                );
+            }
+        });
+        
+        const span = document.createElement('span');
+        span.textContent = category;
+        span.style.color = '#e0e0e0';
+        
+        label.appendChild(checkbox);
+        label.appendChild(span);
+        container.appendChild(label);
+    });
+    
+    // If visibleCategories is empty, initialize with all categories
+    if (visibleCategories.size === 0) {
+        sortedCategories.forEach(cat => visibleCategories.add(cat));
+        // Update checkboxes to reflect all selected
+        container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            cb.checked = true;
+        });
+    }
+}
+
+/**
+ * Set category filter enabled state
+ * @param {boolean} enabled - Whether category filter is enabled
+ */
+function setCategoryFilterEnabled(enabled) {
+    categoryFilterEnabled = enabled;
+    
+    if (vizCurrentBlocks.length > 0) {
+        // Re-render to apply filter
+        renderBlocks(
+            vizCurrentBlocks,
+            currentCellSizes.x,
+            currentCellSizes.y,
+            currentCellSizes.z,
+            false // Don't center camera
+        );
     }
 }
 

@@ -260,6 +260,14 @@ function init() {
         });
     }
     
+    // Category filter controls
+    const categoryFilterEnabledCheckbox = document.getElementById('categoryFilterEnabled');
+    if (categoryFilterEnabledCheckbox) {
+        categoryFilterEnabledCheckbox.addEventListener('change', (e) => {
+            setCategoryFilterEnabled(e.target.checked);
+        });
+    }
+    
     // Clear old cache on startup (this will clear models with old Z-axis convention)
     clearOldCache();
     
@@ -335,7 +343,12 @@ async function handleGenerate() {
                 currentParams = params;
                 
                 // Update visualization (may need to limit for very large models)
-                const blocksToVisualize = totalCells > 200000 
+                // Skip thinning if slice view mode is selected (slice modes handle their own filtering)
+                const viewModeSelect = document.getElementById('viewMode');
+                const currentViewMode = viewModeSelect ? viewModeSelect.value : 'solid';
+                const isSliceMode = ['slicesX', 'slicesY', 'slicesZ'].includes(currentViewMode);
+                
+                const blocksToVisualize = (totalCells > 200000 && !isSliceMode)
                     ? blocks.filter((_, idx) => idx % Math.ceil(totalCells / 200000) === 0)
                     : blocks;
                 
@@ -408,7 +421,12 @@ async function handleGenerate() {
         }
         
         // Update visualization (limit for very large models)
-        const blocksToVisualize = totalCells > 200000 
+        // Skip thinning if slice view mode is selected (slice modes handle their own filtering)
+        const viewModeSelect = document.getElementById('viewMode');
+        const currentViewMode = viewModeSelect ? viewModeSelect.value : 'solid';
+        const isSliceMode = ['slicesX', 'slicesY', 'slicesZ'].includes(currentViewMode);
+        
+        const blocksToVisualize = (totalCells > 200000 && !isSliceMode)
             ? blocksWithMaterials.filter((_, idx) => idx % Math.ceil(totalCells / 200000) === 0)
             : blocksWithMaterials;
         
@@ -525,7 +543,8 @@ async function handleExport() {
     try {
         updateStatus('Exporting to ZIP (this may take a moment for large models)...');
         
-        // Use standard CSV export
+        // Use standard CSV export (chunked to avoid string length limits)
+        // blocksToCsv now handles chunking internally for very large models
         const csvContent = blocksToCsv(currentBlocks, {
             includeIndices: false,
             includeZone: true,
@@ -537,12 +556,18 @@ async function handleExport() {
             cellSizeZ: currentParams ? currentParams.cellSizeZ : undefined
         });
         
+        // Check if CSV content is too large for a single string (safety check)
+        if (csvContent.length > 500 * 1024 * 1024) { // 500MB limit
+            updateStatus('CSV content too large. Please reduce model size.', 'error');
+            return;
+        }
+        
         // Create ZIP file
         const zip = new JSZip();
         const timestamp = Date.now();
         const csvFileName = `block_model_${timestamp}.csv`;
         
-        // Add CSV to ZIP
+        // Add CSV to ZIP (JSZip handles large content efficiently)
         zip.file(csvFileName, csvContent);
         
         // Generate ZIP file as blob

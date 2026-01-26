@@ -176,53 +176,65 @@ function blocksToCsv(blocks, options = {}) {
         headers.push('ECON_VALUE');
     }
     
-    // Build data rows
-    const rows = filteredBlocks.map(block => {
-        const row = [
-            formatCoordinate(block.x),
-            formatCoordinate(block.y),
-            formatCoordinate(block.z)
-        ];
-        
-        if (includeIndices) {
-            row.push(block.i, block.j, block.k);
-        }
-        
-        // Add block dimensions if provided
-        if (includeDimensions) {
-            row.push(
-                formatNumber(cellSizeX),
-                formatNumber(cellSizeY),
-                formatNumber(cellSizeZ)
-            );
-        }
-        
-        row.push(
-            block.rockType || 'Waste',
-            formatNumber(block.density)
-        );
-        
-        if (hasZone) {
-            row.push(block.zone !== undefined && block.zone !== null ? String(block.zone) : '');
-        }
-        
-        if (hasGradeCu) {
-            row.push(block.gradeCu !== undefined && block.gradeCu !== null ? formatNumber(block.gradeCu) : '0.0000');
-        }
-        
-        if (hasGradeAu) {
-            row.push(block.gradeAu !== undefined && block.gradeAu !== null ? formatNumber(block.gradeAu) : '0.0000');
-        }
-        
-        if (hasEconValue) {
-            row.push(block.econValue !== undefined && block.econValue !== null ? formatNumber(block.econValue) : '0.0000');
-        }
-        
-        return row.join(',');
-    });
+    // Build CSV content using chunked approach to avoid string length limits
+    // JavaScript strings have a maximum length of ~2^28-1 characters
+    // For very large models, we need to build the CSV in chunks
+    const MAX_CHUNK_SIZE = 100000; // Process 100K blocks at a time
+    const headerRow = headers.join(',');
+    const chunks = [headerRow];
     
-    // Combine header and rows
-    return [headers.join(','), ...rows].join('\n');
+    // Process blocks in chunks to avoid memory issues
+    for (let i = 0; i < filteredBlocks.length; i += MAX_CHUNK_SIZE) {
+        const chunk = filteredBlocks.slice(i, i + MAX_CHUNK_SIZE);
+        const chunkRows = chunk.map(block => {
+            const row = [
+                formatCoordinate(block.x),
+                formatCoordinate(block.y),
+                formatCoordinate(block.z)
+            ];
+            
+            if (includeIndices) {
+                row.push(block.i, block.j, block.k);
+            }
+            
+            // Add block dimensions if provided
+            if (includeDimensions) {
+                row.push(
+                    formatNumber(cellSizeX),
+                    formatNumber(cellSizeY),
+                    formatNumber(cellSizeZ)
+                );
+            }
+            
+            row.push(
+                block.rockType || 'Waste',
+                formatNumber(block.density)
+            );
+            
+            if (hasZone) {
+                row.push(block.zone !== undefined && block.zone !== null ? String(block.zone) : '');
+            }
+            
+            if (hasGradeCu) {
+                row.push(block.gradeCu !== undefined && block.gradeCu !== null ? formatNumber(block.gradeCu) : '0.0000');
+            }
+            
+            if (hasGradeAu) {
+                row.push(block.gradeAu !== undefined && block.gradeAu !== null ? formatNumber(block.gradeAu) : '0.0000');
+            }
+            
+            if (hasEconValue) {
+                row.push(block.econValue !== undefined && block.econValue !== null ? formatNumber(block.econValue) : '0.0000');
+            }
+            
+            return row.join(',');
+        });
+        
+        chunks.push(chunkRows.join('\n'));
+    }
+    
+    // Combine all chunks
+    return chunks.join('\n');
 }
 
 /**

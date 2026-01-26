@@ -108,6 +108,9 @@
                                         <option value="points">Points</option>
                                         <option value="transparent">Transparent</option>
                                         <option value="squares">Squares</option>
+                                        <option value="slicesX">Slices X</option>
+                                        <option value="slicesY">Slices Y</option>
+                                        <option value="slicesZ">Slices Z</option>
                                     </select>
                                 </div>
                                 <div class="form-group compact">
@@ -177,6 +180,29 @@
                             <div class="form-group">
                                 <label for="valueVisibilityThreshold">Threshold: <span id="valueVisibilityThresholdValue">0</span></label>
                                 <input type="range" id="valueVisibilityThreshold" min="0" max="1000" value="0" step="0.1">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="collapsible-section">
+                    <div class="section-header collapsible-header" onclick="toggleSection(this)">
+                        <h3>Category Filter</h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <form id="categoryFilterForm">
+                            <div class="form-group compact">
+                                <label>
+                                    <input type="checkbox" id="categoryFilterEnabled" style="width: auto; margin-right: 6px;">
+                                    Enable Filter
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label>Show/Hide Categories:</label>
+                                <div id="categoryFilterCheckboxes" style="max-height: 200px; overflow-y: auto; margin-top: 8px;">
+                                    <p style="font-size: 0.85em; opacity: 0.7; margin: 8px 0;">Select a categorical field (e.g., Rock Type) to filter</p>
+                                </div>
                             </div>
                         </form>
                     </div>
