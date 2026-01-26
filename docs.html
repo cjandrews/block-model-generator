@@ -402,116 +402,116 @@
     <div class="docs-container">
         <div class="docs-sidebar">
             <div class="docs-header">
-                <h1>📚 Documentation</h1>
-                <p>Block Model Generator</p>
+                <h1 data-i18n="docs.title">📚 Documentation</h1>
+                <p data-i18n="docs.subtitle">Block Model Generator</p>
             </div>
             <div class="docs-nav">
                 <ul class="docs-nav-list" id="docsNav">
-                    <li class="docs-nav-item"><a href="#" class="docs-nav-link active" data-section="getting-started">Getting Started</a></li>
-                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="model-parameters">Model Parameters</a></li>
-                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="patterns">Material Patterns</a></li>
-                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="visualization">Visualization</a></li>
-                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="filters">Filters & Tools</a></li>
-                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="export">Export & Data</a></li>
-                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="schema">Data Schema</a></li>
-                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="controls">Controls</a></li>
-                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="tips">Tips & Tricks</a></li>
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link active" data-section="getting-started" data-i18n="docs.nav.gettingStarted">Getting Started</a></li>
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="model-parameters" data-i18n="docs.nav.modelParameters">Model Parameters</a></li>
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="patterns" data-i18n="docs.nav.patterns">Material Patterns</a></li>
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="visualization" data-i18n="docs.nav.visualization">Visualization</a></li>
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="filters" data-i18n="docs.nav.filters">Filters & Tools</a></li>
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="export" data-i18n="docs.nav.export">Export & Data</a></li>
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="schema" data-i18n="docs.nav.schema">Data Schema</a></li>
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="controls" data-i18n="docs.nav.controls">Controls</a></li>
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="tips" data-i18n="docs.nav.tips">Tips & Tricks</a></li>
                 </ul>
             </div>
         </div>
 
         <div class="docs-main">
             <div class="docs-search-container">
-                <input type="text" id="searchBox" class="search-box" placeholder="🔍 Search documentation...">
+                <input type="text" id="searchBox" class="search-box" data-i18n="docs.searchPlaceholder" placeholder="🔍 Search documentation...">
             </div>
             <div class="docs-content">
             <!-- Getting Started Section -->
             <div class="docs-section active" id="getting-started">
-                <h2>🚀 Getting Started</h2>
+                <h2 data-i18n="docs.sections.gettingStarted.title">🚀 Getting Started</h2>
                 
-                <p>Welcome to the <strong>Mining Block Model Generator</strong>! This tool helps you create realistic 3D block models for testing mining applications, visualization, and data analysis. The tool also supports petroleum geology applications through specialized patterns.</p>
+                <p data-i18n="docs.sections.gettingStarted.welcome">Welcome to the <strong>Mining Block Model Generator</strong>! This tool helps you create realistic 3D block models for testing mining applications, visualization, and data analysis. The tool also supports petroleum geology applications through specialized patterns.</p>
 
                 <div class="docs-feature-card">
-                    <h4>What is a Block Model?</h4>
-                    <p>A block model is a 3D grid representation of a mining deposit, where each block (cell) contains properties like:</p>
+                    <h4 data-i18n="docs.sections.gettingStarted.whatIsBlockModel">What is a Block Model?</h4>
+                    <p data-i18n="docs.sections.gettingStarted.blockModelDesc">A block model is a 3D grid representation of a mining deposit, where each block (cell) contains properties like:</p>
                     <ul>
-                        <li><strong>Coordinates</strong> (X, Y, Z) - Block center position</li>
-                        <li><strong>Rock Type</strong> - Classification (Ore, Waste, etc.)</li>
-                        <li><strong>Density</strong> - Material density in tonnes/m³</li>
-                        <li><strong>Grades</strong> - Metal concentrations (Cu, Au, etc.)</li>
-                        <li><strong>Economic Value</strong> - Calculated value per block</li>
+                        <li><strong data-i18n="docs.sections.gettingStarted.coordinates">Coordinates</strong> (X, Y, Z) - Block center position</li>
+                        <li><strong data-i18n="docs.sections.gettingStarted.rockType">Rock Type</strong> - Classification (Ore, Waste, etc.)</li>
+                        <li><strong data-i18n="docs.sections.gettingStarted.density">Density</strong> - Material density in tonnes/m³</li>
+                        <li><strong data-i18n="docs.sections.gettingStarted.grades">Grades</strong> - Metal concentrations (Cu, Au, etc.)</li>
+                        <li><strong data-i18n="docs.sections.gettingStarted.economicValue">Economic Value</strong> - Calculated value per block</li>
                     </ul>
                 </div>
 
-                <h3>Quick Start Guide</h3>
+                <h3 data-i18n="docs.sections.gettingStarted.quickStartGuide">Quick Start Guide</h3>
                 <ol>
-                    <li><strong>Set Model Parameters</strong> - Define origin, cell size, and grid dimensions</li>
-                    <li><strong>Choose a Pattern</strong> - Select how materials are distributed (12 patterns available: Uniform, Layered, Ore Bodies, Petroleum, etc.)</li>
-                    <li><strong>Generate Model</strong> - Click "Generate" to create your block model</li>
-                    <li><strong>Visualize</strong> - Explore the 3D model using interactive controls</li>
-                    <li><strong>Export</strong> - Download as CSV for use in other software</li>
+                    <li data-i18n="docs.sections.gettingStarted.step1"><strong>Set Model Parameters</strong> - Define origin, cell size, and grid dimensions</li>
+                    <li data-i18n="docs.sections.gettingStarted.step2"><strong>Choose a Pattern</strong> - Select how materials are distributed (12 patterns available: Uniform, Layered, Ore Bodies, Petroleum, etc.)</li>
+                    <li data-i18n="docs.sections.gettingStarted.step3"><strong>Generate Model</strong> - Click "Generate" to create your block model</li>
+                    <li data-i18n="docs.sections.gettingStarted.step4"><strong>Visualize</strong> - Explore the 3D model using interactive controls</li>
+                    <li data-i18n="docs.sections.gettingStarted.step5"><strong>Export</strong> - Download as CSV for use in other software</li>
                 </ol>
 
                 <div class="docs-feature-card" style="margin-top: 20px;">
-                    <h4>Navigation & Help</h4>
-                    <p>The header contains quick access buttons:</p>
+                    <h4 data-i18n="docs.sections.gettingStarted.navigationHelp">Navigation & Help</h4>
+                    <p data-i18n="docs.sections.gettingStarted.headerButtons">The header contains quick access buttons:</p>
                     <ul>
-                        <li><strong>📚 Docs</strong> - Opens this documentation (you're reading it now!)</li>
-                        <li><strong>Memory</strong> - Monitor memory usage for large models</li>
-                        <li><strong>About</strong> - Application information and credits</li>
+                        <li data-i18n="docs.sections.gettingStarted.docsButton"><strong>📚 Docs</strong> - Opens this documentation (you're reading it now!)</li>
+                        <li data-i18n="docs.sections.gettingStarted.memoryButton"><strong>Memory</strong> - Monitor memory usage for large models</li>
+                        <li data-i18n="docs.sections.gettingStarted.aboutButton"><strong>About</strong> - Application information and credits</li>
                     </ul>
                 </div>
 
                 <div class="docs-tip">
-                    <strong>💡 Tip:</strong> Start with default parameters to get familiar with the tool, then adjust based on your needs.
+                    <span data-i18n="docs.sections.gettingStarted.tipStart"><strong>💡 Tip:</strong> Start with default parameters to get familiar with the tool, then adjust based on your needs.</span>
                 </div>
             </div>
 
             <!-- Model Parameters Section -->
             <div class="docs-section" id="model-parameters">
-                <h2>⚙️ Model Parameters</h2>
+                <h2 data-i18n="docs.sections.modelParameters.title">⚙️ Model Parameters</h2>
                 
-                <p>Model parameters define the physical structure and dimensions of your block model.</p>
+                <p data-i18n="docs.sections.modelParameters.intro">Model parameters define the physical structure and dimensions of your block model.</p>
 
-                <h3>Origin Coordinates</h3>
-                <p>The origin (X, Y, Z) defines the starting point of your model. All block coordinates are calculated relative to this origin.</p>
+                <h3 data-i18n="docs.sections.modelParameters.originCoordinates">Origin Coordinates</h3>
+                <p data-i18n="docs.sections.modelParameters.originDesc">The origin (X, Y, Z) defines the starting point of your model. All block coordinates are calculated relative to this origin.</p>
                 <ul>
-                    <li><strong>Origin X, Y, Z</strong> - Starting coordinates in meters (default: 0, 0, 0)</li>
-                    <li>Useful for aligning models with real-world coordinates</li>
+                    <li data-i18n="docs.sections.modelParameters.originXyz"><strong>Origin X, Y, Z</strong> - Starting coordinates in meters (default: 0, 0, 0)</li>
+                    <li data-i18n="docs.sections.modelParameters.originUseful">Useful for aligning models with real-world coordinates</li>
                 </ul>
 
-                <h3>Cell Size</h3>
-                <p>Cell size determines the dimensions of each block in the model.</p>
+                <h3 data-i18n="docs.sections.modelParameters.cellSize">Cell Size</h3>
+                <p data-i18n="docs.sections.modelParameters.cellSizeDesc">Cell size determines the dimensions of each block in the model.</p>
                 <ul>
-                    <li><strong>Cell Size X, Y, Z</strong> - Block dimensions in meters (default: 1m × 1m × 1m)</li>
-                    <li>All three dimensions can be different (e.g., 10m × 10m × 5m)</li>
-                    <li>Minimum value: 0.1 meters</li>
+                    <li data-i18n="docs.sections.modelParameters.cellSizeXyz"><strong>Cell Size X, Y, Z</strong> - Block dimensions in meters (default: 1m × 1m × 1m)</li>
+                    <li data-i18n="docs.sections.modelParameters.cellSizeDifferent">All three dimensions can be different (e.g., 10m × 10m × 5m)</li>
+                    <li data-i18n="docs.sections.modelParameters.cellSizeMin">Minimum value: 0.1 meters</li>
                 </ul>
 
-                <h3>Grid Dimensions</h3>
-                <p>The number of cells in each direction determines the model size.</p>
+                <h3 data-i18n="docs.sections.modelParameters.gridDimensions">Grid Dimensions</h3>
+                <p data-i18n="docs.sections.modelParameters.gridDimensionsDesc">The number of cells in each direction determines the model size.</p>
                 <ul>
-                    <li><strong>Cells X, Y, Z</strong> - Number of blocks in each direction (default: 25 × 25 × 25)</li>
-                    <li>Total blocks = Cells X × Cells Y × Cells Z</li>
-                    <li>Larger models take more time to generate and render</li>
+                    <li data-i18n="docs.sections.modelParameters.cellsXyz"><strong>Cells X, Y, Z</strong> - Number of blocks in each direction (default: 25 × 25 × 25)</li>
+                    <li data-i18n="docs.sections.modelParameters.totalBlocks">Total blocks = Cells X × Cells Y × Cells Z</li>
+                    <li data-i18n="docs.sections.modelParameters.largerModels">Larger models take more time to generate and render</li>
                 </ul>
 
                 <div class="docs-warning">
-                    <strong>⚠️ Performance Note:</strong> Models with more than 50,000 blocks may take longer to generate. The app automatically uses caching for large models.
+                    <span data-i18n="docs.sections.modelParameters.performanceNote"><strong>⚠️ Performance Note:</strong> Models with more than 50,000 blocks may take longer to generate. The app automatically uses caching for large models.</span>
                 </div>
 
                 <div class="docs-tip">
-                    <strong>💡 Tip:</strong> For testing, start with smaller models (10×10×10 = 1,000 blocks). For production, use realistic mining dimensions (e.g., 50×50×30 = 75,000 blocks).
+                    <span data-i18n="docs.sections.modelParameters.tipTesting"><strong>💡 Tip:</strong> For testing, start with smaller models (10×10×10 = 1,000 blocks). For production, use realistic mining dimensions (e.g., 50×50×30 = 75,000 blocks).</span>
                 </div>
             </div>
 
             <!-- Material Patterns Section -->
             <div class="docs-section" id="patterns">
-                <h2>🎨 Material Patterns</h2>
+                <h2 data-i18n="docs.sections.patterns.title">🎨 Material Patterns</h2>
                 
-                <p>Material patterns control how different materials (ore, waste, etc.) are distributed throughout your block model.</p>
+                <p data-i18n="docs.sections.patterns.intro">Material patterns control how different materials (ore, waste, etc.) are distributed throughout your block model.</p>
 
-                <h3>Advanced Ore Body Patterns</h3>
+                <h3 data-i18n="docs.sections.patterns.advancedPatterns">Advanced Ore Body Patterns</h3>
 
                 <div class="docs-feature-card">
                     <h4><span class="docs-badge">Advanced</span>Porphyry-Style Zoning</h4>
@@ -572,7 +572,7 @@
                     </div>
                 </div>
 
-                <h3>Geological Patterns</h3>
+                <h3 data-i18n="docs.sections.patterns.geologicalPatterns">Geological Patterns</h3>
 
                 <div class="docs-feature-card">
                     <h4><span class="docs-badge">Geological</span>Random Clusters</h4>
@@ -589,7 +589,7 @@
                     <p>Creates a single horizontal ore layer at a specific depth. Simulates flat-lying deposits.</p>
                 </div>
 
-                <h3>Basic Patterns</h3>
+                <h3 data-i18n="docs.sections.patterns.basicPatterns">Basic Patterns</h3>
                 
                 <div class="docs-feature-card">
                     <h4><span class="docs-badge">Basic</span>Random</h4>
@@ -619,11 +619,11 @@
 
             <!-- Visualization Section -->
             <div class="docs-section" id="visualization">
-                <h2>👁️ Visualization</h2>
+                <h2 data-i18n="docs.sections.visualization.title">👁️ Visualization</h2>
                 
-                <p>The 3D visualization allows you to explore your block model interactively.</p>
+                <p data-i18n="docs.sections.visualization.intro">The 3D visualization allows you to explore your block model interactively.</p>
 
-                <h3>View Modes</h3>
+                <h3 data-i18n="docs.sections.visualization.viewModes">View Modes</h3>
                 
                 <div class="docs-feature-card">
                     <h4>Solid</h4>
@@ -656,17 +656,17 @@
                     <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;"><em>Note: Slice view modes automatically skip block thinning for better visualization, even in large models.</em></p>
                 </div>
 
-                <h3>Visualization Fields</h3>
-                <p>Choose which property to visualize using color:</p>
+                <h3 data-i18n="docs.sections.visualization.visualizationFields">Visualization Fields</h3>
+                <p data-i18n="docs.sections.visualization.fieldsDesc">Choose which property to visualize using color:</p>
                 <ul>
-                    <li><strong>Rock Type</strong> - Color by material classification</li>
-                    <li><strong>Density</strong> - Color scale based on density values</li>
-                    <li><strong>Cu Grade</strong> - Color scale based on copper grade</li>
-                    <li><strong>Au Grade</strong> - Color scale based on gold grade</li>
-                    <li><strong>Value</strong> - Color scale based on economic value</li>
+                    <li data-i18n="docs.sections.visualization.rockTypeField"><strong>Rock Type</strong> - Color by material classification</li>
+                    <li data-i18n="docs.sections.visualization.densityField"><strong>Density</strong> - Color scale based on density values</li>
+                    <li data-i18n="docs.sections.visualization.cuGradeField"><strong>Cu Grade</strong> - Color scale based on copper grade</li>
+                    <li data-i18n="docs.sections.visualization.auGradeField"><strong>Au Grade</strong> - Color scale based on gold grade</li>
+                    <li data-i18n="docs.sections.visualization.valueField"><strong>Value</strong> - Color scale based on economic value</li>
                 </ul>
 
-                <h3>3D Controls</h3>
+                <h3 data-i18n="docs.sections.visualization.controls3d">3D Controls</h3>
                 <ul>
                     <li><strong>Left-click + Drag</strong> - Rotate the model</li>
                     <li><strong>Right-click + Drag</strong> - Pan the view</li>
@@ -675,19 +675,19 @@
                 </ul>
 
                 <div class="docs-tip">
-                    <strong>💡 Tip:</strong> Hover over blocks to see detailed information in the tooltip, including coordinates, grades, and other properties.
+                    <span data-i18n="docs.sections.visualization.tipHover"><strong>💡 Tip:</strong> Hover over blocks to see detailed information in the tooltip, including coordinates, grades, and other properties.</span>
                 </div>
             </div>
 
             <!-- Filters & Tools Section -->
             <div class="docs-section" id="filters">
-                <h2>🔍 Filters & Tools</h2>
+                <h2 data-i18n="docs.sections.filters.title">🔍 Filters & Tools</h2>
                 
-                <p>Filters and tools help you focus on specific parts of your model or analyze particular features.</p>
+                <p data-i18n="docs.sections.filters.intro">Filters and tools help you focus on specific parts of your model or analyze particular features.</p>
 
-                <h3>Slice Tool</h3>
+                <h3 data-i18n="docs.sections.filters.sliceTool">Slice Tool</h3>
                 <div class="docs-feature-card">
-                    <h4>How It Works</h4>
+                    <h4 data-i18n="docs.sections.filters.howItWorks">How It Works</h4>
                     <p>The slice tool allows you to view cross-sections of your model by hiding blocks outside a specific plane.</p>
                     <ul>
                         <li><strong>Enable</strong> - Turn the slice tool on/off</li>
@@ -696,9 +696,9 @@
                     </ul>
                 </div>
 
-                <h3>Value Filter</h3>
+                <h3 data-i18n="docs.sections.filters.valueFilter">Value Filter</h3>
                 <div class="docs-feature-card">
-                    <h4>How It Works</h4>
+                    <h4 data-i18n="docs.sections.filters.howItWorks">How It Works</h4>
                     <p>Filter blocks based on their economic value or other numeric properties.</p>
                     <ul>
                         <li><strong>Enable Filter</strong> - Turn the filter on/off</li>
@@ -708,9 +708,9 @@
                     <p>Useful for identifying high-value ore zones or filtering out low-value material.</p>
                 </div>
 
-                <h3>Category Filter</h3>
+                <h3 data-i18n="docs.sections.filters.categoryFilter">Category Filter</h3>
                 <div class="docs-feature-card">
-                    <h4>How It Works</h4>
+                    <h4 data-i18n="docs.sections.filters.howItWorks">How It Works</h4>
                     <p>Show or hide specific categories (e.g., rock types) in your visualization.</p>
                     <ul>
                         <li><strong>Enable Filter</strong> - Turn the filter on/off</li>
@@ -719,9 +719,9 @@
                     <p>Categories are automatically detected from categorical fields like Rock Type.</p>
                 </div>
 
-                <h3>Ground Layer</h3>
+                <h3 data-i18n="docs.sections.filters.groundLayer">Ground Layer</h3>
                 <div class="docs-feature-card">
-                    <h4>How It Works</h4>
+                    <h4 data-i18n="docs.sections.filters.howItWorks">How It Works</h4>
                     <p>Display a ground surface plane to provide spatial context.</p>
                     <ul>
                         <li><strong>Show Ground</strong> - Toggle the ground plane visibility</li>
@@ -732,11 +732,11 @@
 
             <!-- Export & Data Section -->
             <div class="docs-section" id="export">
-                <h2>💾 Export & Data</h2>
+                <h2 data-i18n="docs.sections.export.title">💾 Export & Data</h2>
                 
-                <p>Export your block model to CSV format for use in other mining software.</p>
+                <p data-i18n="docs.sections.export.intro">Export your block model to CSV format for use in other mining software.</p>
 
-                <h3>Export Format</h3>
+                <h3 data-i18n="docs.sections.export.exportFormat">Export Format</h3>
                 <p>The exported CSV follows a standardized schema compatible with:</p>
                 <ul>
                     <li>MiningMath</li>
@@ -746,7 +746,7 @@
                     <li>Datamine</li>
                 </ul>
 
-                <h3>Export Process</h3>
+                <h3 data-i18n="docs.sections.export.exportProcess">Export Process</h3>
                 <ol>
                     <li>Generate your block model</li>
                     <li>Click the <strong>"Export"</strong> button</li>
@@ -754,7 +754,7 @@
                     <li>Open in Excel, mining software, or other tools</li>
                 </ol>
 
-                <h3>Exported Fields</h3>
+                <h3 data-i18n="docs.sections.export.exportedFields">Exported Fields</h3>
                 <p>The CSV includes all relevant block properties:</p>
                 <ul>
                     <li><strong>X, Y, Z</strong> - Block centroid coordinates (meters)</li>
@@ -780,11 +780,11 @@
 
             <!-- Data Schema Section -->
             <div class="docs-section" id="schema">
-                <h2>📊 Data Schema</h2>
+                <h2 data-i18n="docs.sections.schema.title">📊 Data Schema</h2>
                 
-                <p>The block model uses a standardized schema for maximum compatibility with mining software.</p>
+                <p data-i18n="docs.sections.schema.intro">The block model uses a standardized schema for maximum compatibility with mining software.</p>
 
-                <h3>Required Fields</h3>
+                <h3 data-i18n="docs.sections.schema.requiredFields">Required Fields</h3>
                 <table class="docs-table">
                     <thead>
                         <tr>
@@ -828,7 +828,7 @@
                     </tbody>
                 </table>
 
-                <h3>Optional Fields</h3>
+                <h3 data-i18n="docs.sections.schema.optionalFields">Optional Fields</h3>
                 <table class="docs-table">
                     <thead>
                         <tr>
@@ -866,7 +866,7 @@
                     </tbody>
                 </table>
 
-                <h3>Coordinate Conventions</h3>
+                <h3 data-i18n="docs.sections.schema.coordinateConventions">Coordinate Conventions</h3>
                 <ul>
                     <li>All coordinates represent <strong>block centroids</strong> (center points)</li>
                     <li>Coordinates are calculated as: <code>centroid = origin + (index + 0.5) × cellSize</code></li>
@@ -874,7 +874,7 @@
                     <li>Precision: 4 decimal places for numeric values</li>
                 </ul>
 
-                <h3>Petroleum Geology Field Mappings</h3>
+                <h3 data-i18n="docs.sections.schema.petroleumMappings">Petroleum Geology Field Mappings</h3>
                 <div class="docs-feature-card">
                     <h4>Alternative Field Meanings</h4>
                     <p>For petroleum geology patterns (e.g., Salt Dome Reservoir), the standard fields are repurposed to represent petroleum properties:</p>
@@ -922,9 +922,9 @@
 
             <!-- Controls Section -->
             <div class="docs-section" id="controls">
-                <h2>🎮 Controls</h2>
+                <h2 data-i18n="docs.sections.controls.title">🎮 Controls</h2>
                 
-                <h3>Mouse Controls</h3>
+                <h3 data-i18n="docs.sections.controls.mouseControls">Mouse Controls</h3>
                 <table class="docs-table">
                     <thead>
                         <tr>
@@ -957,10 +957,10 @@
                     </tbody>
                 </table>
 
-                <h3>Keyboard Shortcuts</h3>
-                <p>Currently, all controls are mouse-based. Keyboard shortcuts may be added in future versions.</p>
+                <h3 data-i18n="docs.sections.controls.keyboardShortcuts">Keyboard Shortcuts</h3>
+                <p data-i18n="docs.sections.controls.keyboardDesc">Currently, all controls are mouse-based. Keyboard shortcuts may be added in future versions.</p>
 
-                <h3>Button Functions</h3>
+                <h3 data-i18n="docs.sections.controls.buttonFunctions">Button Functions</h3>
                 <ul>
                     <li><strong>Generate</strong> - Creates a new block model based on current parameters</li>
                     <li><strong>Export</strong> - Downloads the current model as CSV (enabled after generation)</li>
@@ -973,9 +973,9 @@
 
             <!-- Tips & Tricks Section -->
             <div class="docs-section" id="tips">
-                <h2>💡 Tips & Tricks</h2>
+                <h2 data-i18n="docs.sections.tips.title">💡 Tips & Tricks</h2>
                 
-                <h3>Performance Optimization</h3>
+                <h3 data-i18n="docs.sections.tips.performanceOptimization">Performance Optimization</h3>
                 <ul>
                     <li>Start with smaller models to test patterns and settings</li>
                     <li>Use "Points" view mode for very large models (>100K blocks)</li>
@@ -987,7 +987,7 @@
                     <li>Value filter uses GPU-accelerated shader-based clipping for real-time updates</li>
                 </ul>
 
-                <h3>Visualization Tips</h3>
+                <h3 data-i18n="docs.sections.tips.visualizationTips">Visualization Tips</h3>
                 <ul>
                     <li>Use different view modes to see different aspects of your model</li>
                     <li>Combine slice tool with filters for detailed cross-section analysis</li>
@@ -995,7 +995,7 @@
                     <li>Use transparent mode to see internal structure</li>
                 </ul>
 
-                <h3>Pattern Selection</h3>
+                <h3 data-i18n="docs.sections.tips.patternSelection">Pattern Selection</h3>
                 <ul>
                     <li><strong>Porphyry-Style Zoning</strong> - Ideal for large-scale porphyry deposits</li>
                     <li><strong>Vein/Structural Ore Body</strong> - Best for epithermal gold and fault-controlled deposits</li>
@@ -1007,7 +1007,7 @@
                     <li><strong>Basic Patterns</strong> (Random, Checkerboard, Gradient, Layered, Uniform) - Useful for testing and simple models</li>
                 </ul>
 
-                <h3>Export Best Practices</h3>
+                <h3 data-i18n="docs.sections.tips.exportBestPractices">Export Best Practices</h3>
                 <ul>
                     <li>Filter out unwanted blocks before exporting to reduce file size</li>
                     <li>Verify coordinate system matches your target software</li>
@@ -1015,7 +1015,7 @@
                     <li>Use appropriate cell sizes for your application (e.g., 5m×5m×5m for detailed models)</li>
                 </ul>
 
-                <h3>Common Use Cases</h3>
+                <h3 data-i18n="docs.sections.tips.commonUseCases">Common Use Cases</h3>
                 <div class="docs-feature-card">
                     <h4>Testing Mining Software</h4>
                     <p>Generate models with known properties to test algorithms, visualization, or processing tools.</p>
@@ -1048,6 +1048,32 @@
         </div>
     </div>
 
+    <script src="scripts/i18n.js"></script>
     <script src="scripts/docs.js"></script>
+    <script>
+        // Initialize i18n when documentation page loads
+        (function() {
+            // Get locale from URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const locale = urlParams.get('locale') || 'en';
+            
+            // Initialize i18n when ready
+            if (typeof initI18n === 'function') {
+                initI18n(locale).then(() => {
+                    // Update document language attribute
+                    document.documentElement.lang = locale;
+                });
+            } else {
+                // Wait for i18n.js to load
+                window.addEventListener('load', function() {
+                    if (typeof initI18n === 'function') {
+                        initI18n(locale).then(() => {
+                            document.documentElement.lang = locale;
+                        });
+                    }
+                });
+            }
+        })();
+    </script>
 </body>
 </html>

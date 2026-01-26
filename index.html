@@ -11,68 +11,84 @@
 <body>
     <div class="container">
         <header>
-            <h1>Mining Block Model Generator</h1>
-            <p>Create dummy 3D block models for testing mining applications</p>
+            <h1 data-i18n="app.title">Mining Block Model Generator</h1>
+            <p data-i18n="app.subtitle">Create dummy 3D block models for testing mining applications</p>
             <div class="header-buttons">
-                <button id="memoryBtn" class="header-btn">Memory</button>
-                <button id="aboutBtn" class="header-btn">About</button>
+                <div class="language-selector">
+                    <button id="languageSelectBtn" class="header-btn language-btn" style="margin-right: 8px; padding: 6px 8px; display: flex; align-items: center; justify-content: center;">
+                        <img id="languageFlag" src="images/Flag_of_the_United_States.svg" alt="Language" style="width: 24px; height: 18px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                    </button>
+                    <div id="languageDropdown" class="language-dropdown" style="display: none;">
+                        <div class="language-option" data-locale="en">
+                            <img src="images/Flag_of_the_United_States.svg" alt="English" style="width: 32px; height: 24px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                        </div>
+                        <div class="language-option" data-locale="es">
+                            <img src="images/Flag_of_Spain.svg" alt="Español" style="width: 32px; height: 24px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                        </div>
+                        <div class="language-option" data-locale="fr">
+                            <img src="images/Flag_of_France.svg" alt="Français" style="width: 32px; height: 24px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                        </div>
+                    </div>
+                </div>
+                <button id="memoryBtn" class="header-btn" data-i18n="buttons.memory">Memory</button>
+                <button id="aboutBtn" class="header-btn" data-i18n="buttons.about">About</button>
             </div>
         </header>
 
         <div class="main-content">
             <aside class="control-panel">
                 <div class="section-header">
-                    <h2>Model Parameters</h2>
+                    <h2 data-i18n="modelParameters.title">Model Parameters</h2>
                 </div>
                 
                 <form id="modelForm">
                     <div class="form-row">
                         <div class="form-group compact">
-                            <label for="originX">Origin X</label>
+                            <label for="originX" data-i18n="modelParameters.originX">Origin X</label>
                             <input type="number" id="originX" value="0" step="0.1">
                         </div>
                         <div class="form-group compact">
-                            <label for="originY">Origin Y</label>
+                            <label for="originY" data-i18n="modelParameters.originY">Origin Y</label>
                             <input type="number" id="originY" value="0" step="0.1">
                         </div>
                         <div class="form-group compact">
-                            <label for="originZ">Origin Z</label>
+                            <label for="originZ" data-i18n="modelParameters.originZ">Origin Z</label>
                             <input type="number" id="originZ" value="0" step="0.1">
                         </div>
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group compact">
-                            <label for="cellSizeX">Cell Size X</label>
+                            <label for="cellSizeX" data-i18n="modelParameters.cellSizeX">Cell Size X</label>
                             <input type="number" id="cellSizeX" value="1" step="0.1" min="0.1">
                         </div>
                         <div class="form-group compact">
-                            <label for="cellSizeY">Cell Size Y</label>
+                            <label for="cellSizeY" data-i18n="modelParameters.cellSizeY">Cell Size Y</label>
                             <input type="number" id="cellSizeY" value="1" step="0.1" min="0.1">
                         </div>
                         <div class="form-group compact">
-                            <label for="cellSizeZ">Cell Size Z</label>
+                            <label for="cellSizeZ" data-i18n="modelParameters.cellSizeZ">Cell Size Z</label>
                             <input type="number" id="cellSizeZ" value="1" step="0.1" min="0.1">
                         </div>
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group compact">
-                            <label for="cellsX">Cells X</label>
+                            <label for="cellsX" data-i18n="modelParameters.cellsX">Cells X</label>
                             <input type="number" id="cellsX" value="25" step="1" min="1">
                         </div>
                         <div class="form-group compact">
-                            <label for="cellsY">Cells Y</label>
+                            <label for="cellsY" data-i18n="modelParameters.cellsY">Cells Y</label>
                             <input type="number" id="cellsY" value="25" step="1" min="1">
                         </div>
                         <div class="form-group compact">
-                            <label for="cellsZ">Cells Z</label>
+                            <label for="cellsZ" data-i18n="modelParameters.cellsZ">Cells Z</label>
                             <input type="number" id="cellsZ" value="25" step="1" min="1">
                         </div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="patternType">Material Pattern</label>
+                        <label for="patternType" data-i18n="modelParameters.materialPattern">Material Pattern</label>
                         <select id="patternType">
                             <option value="porphyry_ore">Porphyry-Style Zoning</option>
                             <option value="vein_ore">Vein/Structural Ore Body</option>
@@ -90,25 +106,25 @@
                     </div>
                     
                     <div class="button-group">
-                        <button type="button" id="generateBtn">Generate</button>
-                        <button type="button" id="exportBtn" disabled>Export</button>
-                        <button type="button" id="zoomResetBtn">Zoom to Fit</button>
+                        <button type="button" id="generateBtn" data-i18n="buttons.generate">Generate</button>
+                        <button type="button" id="exportBtn" disabled data-i18n="buttons.export">Export</button>
+                        <button type="button" id="zoomResetBtn" data-i18n="buttons.zoomToFit">Zoom to Fit</button>
                     </div>
                     <div class="button-group" style="margin-top: 8px; display: block;">
-                        <button type="button" id="docsBtnControl" class="header-btn" style="width: 100%; flex: none;">📚 Documentation</button>
+                        <button type="button" id="docsBtnControl" class="header-btn" style="width: 100%; flex: none;" data-i18n="buttons.documentation">📚 Documentation</button>
                     </div>
                 </form>
                 
                 <div class="collapsible-section">
                     <div class="section-header collapsible-header" onclick="toggleSection(this)">
-                        <h3>Visualization</h3>
+                        <h3 data-i18n="visualization.title">Visualization</h3>
                         <span class="toggle-icon">▼</span>
                     </div>
                     <div class="collapsible-content">
                         <form id="vizForm">
-                            <div class="form-row">
+                            <div class="form-row form-row-2col">
                                 <div class="form-group compact">
-                                    <label for="viewMode">View Mode</label>
+                                    <label for="viewMode" data-i18n="visualization.viewMode">View Mode</label>
                                     <select id="viewMode">
                                         <option value="solid">Solid</option>
                                         <option value="points">Points</option>
@@ -120,7 +136,7 @@
                                     </select>
                                 </div>
                                 <div class="form-group compact">
-                                    <label for="visualizationField">Field</label>
+                                    <label for="visualizationField" data-i18n="visualization.field">Field</label>
                                     <select id="visualizationField">
                                         <option value="rockType">Rock Type</option>
                                         <option value="density">Density</option>
@@ -136,7 +152,7 @@
                 
                 <div class="collapsible-section">
                     <div class="section-header collapsible-header" onclick="toggleSection(this)">
-                        <h3>Slice Tool</h3>
+                        <h3 data-i18n="sliceTool.title">Slice Tool</h3>
                         <span class="toggle-icon">▼</span>
                     </div>
                     <div class="collapsible-content">
@@ -144,11 +160,11 @@
                             <div class="form-group compact">
                                 <label>
                                     <input type="checkbox" id="sliceEnabled" style="width: auto; margin-right: 6px;">
-                                    Enable
+                                    <span data-i18n="sliceTool.enable">Enable</span>
                                 </label>
                             </div>
                             <div class="form-group">
-                                <label for="sliceAxis">Axis</label>
+                                <label for="sliceAxis" data-i18n="sliceTool.axis">Axis</label>
                                 <select id="sliceAxis">
                                     <option value="x">X (Front/Back)</option>
                                     <option value="y">Y (Left/Right)</option>
@@ -165,7 +181,7 @@
                 
                 <div class="collapsible-section">
                     <div class="section-header collapsible-header" onclick="toggleSection(this)">
-                        <h3>Value Filter</h3>
+                        <h3 data-i18n="valueFilter.title">Value Filter</h3>
                         <span class="toggle-icon">▼</span>
                     </div>
                     <div class="collapsible-content">
@@ -173,11 +189,11 @@
                             <div class="form-group compact">
                                 <label>
                                     <input type="checkbox" id="valueVisibilityEnabled" style="width: auto; margin-right: 6px;">
-                                    Enable Filter
+                                    <span data-i18n="valueFilter.enable">Enable Filter</span>
                                 </label>
                             </div>
                             <div class="form-group">
-                                <label for="valueVisibilityMode">Mode</label>
+                                <label for="valueVisibilityMode" data-i18n="valueFilter.mode">Mode</label>
                                 <select id="valueVisibilityMode">
                                     <option value="above">Above threshold</option>
                                     <option value="below">Below threshold</option>
@@ -193,7 +209,7 @@
                 
                 <div class="collapsible-section">
                     <div class="section-header collapsible-header" onclick="toggleSection(this)">
-                        <h3>Category Filter</h3>
+                        <h3 data-i18n="categoryFilter.title">Category Filter</h3>
                         <span class="toggle-icon">▼</span>
                     </div>
                     <div class="collapsible-content">
@@ -201,13 +217,13 @@
                             <div class="form-group compact">
                                 <label>
                                     <input type="checkbox" id="categoryFilterEnabled" style="width: auto; margin-right: 6px;">
-                                    Enable Filter
+                                    <span data-i18n="categoryFilter.enable">Enable Filter</span>
                                 </label>
                             </div>
                             <div class="form-group">
-                                <label>Show/Hide Categories:</label>
+                                <label data-i18n="categoryFilter.showHide">Show/Hide Categories:</label>
                                 <div id="categoryFilterCheckboxes" style="max-height: 200px; overflow-y: auto; margin-top: 8px;">
-                                    <p style="font-size: 0.85em; opacity: 0.7; margin: 8px 0;">Select a categorical field (e.g., Rock Type) to filter</p>
+                                    <p style="font-size: 0.85em; opacity: 0.7; margin: 8px 0;" data-i18n="categoryFilter.selectField">Select a categorical field (e.g., Rock Type) to filter</p>
                                 </div>
                             </div>
                         </form>
@@ -216,7 +232,7 @@
                 
                 <div class="collapsible-section">
                     <div class="section-header collapsible-header" onclick="toggleSection(this)">
-                        <h3>Ground Layer</h3>
+                        <h3 data-i18n="groundLayer.title">Ground Layer</h3>
                         <span class="toggle-icon">▼</span>
                     </div>
                     <div class="collapsible-content">
@@ -224,7 +240,7 @@
                             <div class="form-group compact">
                                 <label>
                                     <input type="checkbox" id="groundEnabled" style="width: auto; margin-right: 6px;">
-                                    Show Ground
+                                    <span data-i18n="groundLayer.showGround">Show Ground</span>
                                 </label>
                             </div>
                         </form>
@@ -238,7 +254,7 @@
                 <div id="canvasContainer"></div>
                 <div id="blockTooltip" class="block-tooltip" style="display: none;"></div>
                 <div class="controls-hint">
-                    <p>Controls: Left-click drag to rotate | Right-click drag to pan | Scroll to zoom</p>
+                    <p data-i18n="controls.hint">Controls: Left-click drag to rotate | Right-click drag to pan | Scroll to zoom</p>
                 </div>
             </main>
         </div>
@@ -248,15 +264,15 @@
     <div id="aboutModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>About</h2>
+                <h2 data-i18n="about.title">About</h2>
                 <span class="modal-close">&times;</span>
             </div>
             <div class="modal-body">
-                <p><strong>Mining Block Model Generator</strong></p>
-                <p>Built by <strong>Chris Andrews</strong>, BuildIT Design Labs</p>
+                <p><strong data-i18n="about.appName">Mining Block Model Generator</strong></p>
+                <p data-i18n="about.builtBy" data-i18n-params='{"author": "Chris Andrews", "company": "BuildIT Design Labs"}'>Built by <strong>Chris Andrews</strong>, BuildIT Design Labs</p>
                 <p style="margin-top: 20px;">
-                    <strong>License:</strong> MIT License<br>
-                    <strong>Copyright:</strong> © 2026 All rights reserved
+                    <strong data-i18n="about.license">License: MIT License</strong><br>
+                    <strong data-i18n="about.copyright" data-i18n-params='{"year": "2026"}'>Copyright: © 2026 All rights reserved</strong>
                 </p>
             </div>
         </div>
@@ -266,15 +282,15 @@
     <div id="memoryPanel" class="memory-panel" style="display: none;">
         <div class="memory-panel-content">
             <div class="memory-panel-header">
-                <h3>Memory Monitor</h3>
+                <h3 data-i18n="memory.title">Memory Monitor</h3>
                 <span class="memory-panel-close">&times;</span>
             </div>
             <div class="memory-panel-body">
                 <div id="memoryInfo" style="font-family: monospace; font-size: 0.9em;">
-                    <p><strong>Memory Usage:</strong></p>
-                    <p id="memoryDetails">Loading...</p>
+                    <p><strong data-i18n="memory.usage">Memory Usage:</strong></p>
+                    <p id="memoryDetails" data-i18n="memory.loading">Loading...</p>
                     <p style="margin-top: 15px; font-size: 0.85em; opacity: 0.8;">
-                        <em>Note: Memory information may not be available in all browsers.</em>
+                        <em data-i18n="memory.note">Note: Memory information may not be available in all browsers.</em>
                     </p>
                 </div>
             </div>
@@ -284,6 +300,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="scripts/i18n.js"></script>
     <script>
         // Toggle collapsible sections
         function toggleSection(header) {
@@ -313,6 +330,128 @@
             });
             
             // Modals are initialized in main.js
+            
+            // Initialize language selector (wait for i18n to be ready)
+            let languageSelectorInitialized = false;
+            let localeChangeHandler = null;
+            
+            function initLanguageSelector() {
+                if (languageSelectorInitialized) return;
+                
+                const languageSelectBtn = document.getElementById('languageSelectBtn');
+                const languageDropdown = document.getElementById('languageDropdown');
+                const languageFlag = document.getElementById('languageFlag');
+                const languageOptions = document.querySelectorAll('.language-option');
+                
+                if (!languageSelectBtn || !languageDropdown || !languageFlag) {
+                    // Retry if elements aren't ready
+                    setTimeout(initLanguageSelector, 50);
+                    return;
+                }
+                
+                languageSelectorInitialized = true;
+                
+                // Update flag based on current locale
+                function updateLanguageDisplay(locale) {
+                    const flagMap = {
+                        'en': 'images/Flag_of_the_United_States.svg',
+                        'es': 'images/Flag_of_Spain.svg',
+                        'fr': 'images/Flag_of_France.svg'
+                    };
+                    
+                    if (languageFlag && flagMap[locale]) {
+                        languageFlag.src = flagMap[locale];
+                    }
+                }
+                
+                // Toggle dropdown
+                languageSelectBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isVisible = languageDropdown.style.display !== 'none' && languageDropdown.style.display !== '';
+                    languageDropdown.style.display = isVisible ? 'none' : 'flex';
+                });
+                
+                // Close dropdown when clicking outside
+                function closeDropdown(e) {
+                    if (languageDropdown && !languageSelectBtn.contains(e.target) && !languageDropdown.contains(e.target)) {
+                        languageDropdown.style.display = 'none';
+                    }
+                }
+                document.addEventListener('click', closeDropdown);
+                
+                // Handle language option clicks
+                languageOptions.forEach(option => {
+                    option.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        const locale = option.getAttribute('data-locale');
+                        if (locale) {
+                            // Check if it's different from current locale
+                            const currentLocale = typeof getLocale === 'function' ? getLocale() : 'en';
+                            if (locale !== currentLocale) {
+                                // Close dropdown immediately for better UX
+                                languageDropdown.style.display = 'none';
+                                
+                                if (typeof setLocale === 'function') {
+                                    try {
+                                        // Update flag immediately (optimistic update)
+                                        updateLanguageDisplay(locale);
+                                        // Then set locale (which will trigger localeChanged event)
+                                        await setLocale(locale);
+                                    } catch (error) {
+                                        console.error('Error setting locale:', error);
+                                        // Revert on error
+                                        if (typeof getLocale === 'function') {
+                                            updateLanguageDisplay(getLocale());
+                                        }
+                                    }
+                                } else {
+                                    console.warn('setLocale function not available yet');
+                                }
+                            } else {
+                                // Same locale selected, just close dropdown
+                                languageDropdown.style.display = 'none';
+                            }
+                        }
+                    });
+                });
+                
+                // Update display when locale changes - use a single handler
+                localeChangeHandler = function(e) {
+                    if (e && e.detail && e.detail.locale) {
+                        updateLanguageDisplay(e.detail.locale);
+                    } else if (typeof getLocale === 'function') {
+                        updateLanguageDisplay(getLocale());
+                    }
+                };
+                
+                // Listen for locale changes (only add once)
+                window.removeEventListener('localeChanged', localeChangeHandler); // Remove if exists
+                window.addEventListener('localeChanged', localeChangeHandler);
+                
+                // Initial update
+                function doInitialUpdate() {
+                    if (typeof getLocale === 'function') {
+                        const currentLocale = getLocale();
+                        updateLanguageDisplay(currentLocale);
+                    } else {
+                        // Wait a bit more for i18n
+                        setTimeout(doInitialUpdate, 100);
+                    }
+                }
+                
+                // Try initial update
+                doInitialUpdate();
+            }
+            
+            // Initialize language selector when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    setTimeout(initLanguageSelector, 100);
+                });
+            } else {
+                setTimeout(initLanguageSelector, 100);
+            }
         });
     </script>
     <script src="scripts/blockModel.js"></script>

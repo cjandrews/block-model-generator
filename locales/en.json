@@ -1,0 +1,171 @@
+{
+  "app": {
+    "title": "Mining Block Model Generator",
+    "subtitle": "Create dummy 3D block models for testing mining applications"
+  },
+  "buttons": {
+    "generate": "Generate",
+    "export": "Export",
+    "zoomToFit": "Zoom",
+    "memory": "Memory",
+    "about": "About",
+    "documentation": "📚 Documentation"
+  },
+  "modelParameters": {
+    "title": "Model Parameters",
+    "originX": "Origin X",
+    "originY": "Origin Y",
+    "originZ": "Origin Z",
+    "cellSizeX": "Cell Size X",
+    "cellSizeY": "Cell Size Y",
+    "cellSizeZ": "Cell Size Z",
+    "cellsX": "Cells X",
+    "cellsY": "Cells Y",
+    "cellsZ": "Cells Z",
+    "materialPattern": "Material Pattern"
+  },
+  "patterns": {
+    "uniform": "Uniform",
+    "layered": "Layered",
+    "gradient": "Gradient",
+    "checkerboard": "Checkerboard",
+    "random": "Random",
+    "ore_horizon": "Single Ore Horizon",
+    "inclined_vein": "Inclined Vein",
+    "random_clusters": "Random Clusters",
+    "ellipsoid_ore": "Ellipsoid Ore Body",
+    "vein_ore": "Vein/Structural Ore Body",
+    "porphyry_ore": "Porphyry-Style Zoning",
+    "salt_dome": "Salt Dome Reservoir (Petroleum)"
+  },
+  "visualization": {
+    "title": "Visualization",
+    "viewMode": "View Mode",
+    "field": "Field",
+    "modes": {
+      "solid": "Solid",
+      "points": "Points",
+      "transparent": "Transparent",
+      "squares": "Squares",
+      "slicesX": "Slices X",
+      "slicesY": "Slices Y",
+      "slicesZ": "Slices Z"
+    },
+    "fields": {
+      "rockType": "Rock Type",
+      "density": "Density",
+      "gradeCu": "Cu Grade",
+      "gradeAu": "Au Grade",
+      "econValue": "Value"
+    }
+  },
+  "sliceTool": {
+    "title": "Slice Tool",
+    "enable": "Enable",
+    "axis": "Axis",
+    "position": "Position: {{value}}",
+    "axes": {
+      "x": "X (Front/Back)",
+      "y": "Y (Left/Right)",
+      "z": "Z (Up/Down)"
+    }
+  },
+  "valueFilter": {
+    "title": "Value Filter",
+    "enable": "Enable Filter",
+    "mode": "Mode",
+    "threshold": "Threshold: {{value}}",
+    "modes": {
+      "above": "Above threshold",
+      "below": "Below threshold"
+    }
+  },
+  "categoryFilter": {
+    "title": "Category Filter",
+    "enable": "Enable Filter",
+    "showHide": "Show/Hide Categories:",
+    "selectField": "Select a categorical field (e.g., Rock Type) to filter",
+    "noBlocks": "No blocks available"
+  },
+  "groundLayer": {
+    "title": "Ground Layer",
+    "showGround": "Show Ground"
+  },
+  "status": {
+    "generatingInitial": "Generating initial model...",
+    "generating": "Generating block model...",
+    "checkingCache": "Checking cache for large model...",
+    "loadedFromCache": "Loaded {{count}} blocks from cache.",
+    "generatingBlocks": "Generating {{count}} blocks...",
+    "generatingLarge": "Generating large model in chunks (this may take a while)...",
+    "generatingProgress": "Generating blocks: {{progress}}% ({{processed}}/{{total}})...",
+    "applyingPattern": "Applying material pattern...",
+    "caching": "Caching model data...",
+    "modelGenerated": "Model generated: {{count}} blocks. Pattern: {{pattern}}. Ready to export.",
+    "modelGeneratedLarge": "Model generated: {{count}} blocks. Pattern: {{pattern}}. Visualizing sample for performance. Full model available for export.",
+    "modelLoaded": "Model loaded from cache: {{count}} blocks. Ready to export.",
+    "modelLoadedLarge": "Model loaded from cache: {{count}} blocks. Visualizing sample for performance. Full model available for export.",
+    "exporting": "Exporting to ZIP (this may take a moment for large models)...",
+    "zipNotAvailable": "ZIP library not loaded. Exporting as CSV...",
+    "exportSuccess": "ZIP exported successfully: {{count}} blocks. Compressed {{originalSize}} MB to {{compressedSize}} MB ({{ratio}}% reduction).",
+    "csvSuccess": "CSV exported successfully: {{count}} blocks.",
+    "error": "Error: {{message}}",
+    "noBlocksToExport": "No blocks to export. Please generate a model first.",
+    "csvTooLarge": "CSV content too large. Please reduce model size.",
+    "exportError": "Export error: {{message}}. Trying CSV export...",
+    "csvError": "CSV export error: {{message}}"
+  },
+  "errors": {
+    "cellSizeInvalid": "Cell sizes must be greater than 0",
+    "cellCountInvalid": "Number of cells must be greater than 0"
+  },
+  "tooltip": {
+    "title": "Block Information",
+    "position": "Position:",
+    "indices": "Indices:",
+    "rockType": "Rock Type:",
+    "density": "Density:",
+    "cuGrade": "Cu Grade:",
+    "auGrade": "Au Grade:",
+    "econValue": "Economic Value:",
+    "zone": "Zone:",
+    "notAvailable": "N/A",
+    "units": {
+      "density": "t/m³",
+      "cuGrade": "%",
+      "auGrade": "g/t"
+    }
+  },
+  "controls": {
+    "hint": "Controls: Left-click drag to rotate | Right-click drag to pan | Scroll to zoom"
+  },
+  "about": {
+    "title": "About",
+    "appName": "Mining Block Model Generator",
+    "builtBy": "Built by <strong>{{author}}</strong>, {{company}}",
+    "license": "License: MIT License",
+    "copyright": "Copyright: © {{year}} All rights reserved"
+  },
+  "memory": {
+    "title": "Memory Monitor",
+    "usage": "Memory Usage:",
+    "loading": "Loading...",
+    "note": "Note: Memory information may not be available in all browsers.",
+    "usedHeap": "Used JS Heap",
+    "totalHeap": "Total JS Heap",
+    "heapLimit": "JS Heap Limit",
+    "heapUsage": "Heap Usage",
+    "deviceMemory": "Device Memory",
+    "threejsObjects": "Three.js Objects:",
+    "sceneObjects": "Scene Objects",
+    "geometries": "Geometries",
+    "materials": "Materials",
+    "textures": "Textures"
+  },
+  "language": {
+    "select": "Language",
+    "english": "English",
+    "spanish": "Español",
+    "french": "Français"
+  }
+}

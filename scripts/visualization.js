@@ -1304,6 +1304,12 @@ function updateSliceSliderRange() {
     const valueDisplay = document.getElementById('slicePositionValue');
     if (valueDisplay) {
         valueDisplay.textContent = slicePosition.toFixed(1);
+        // Update label text with translation
+        const label = document.querySelector('label[for="slicePosition"]');
+        if (label && typeof t === 'function') {
+            const labelText = t('sliceTool.position', { value: slicePosition.toFixed(1) });
+            label.innerHTML = labelText;
+        }
     }
 }
 
@@ -1392,6 +1398,12 @@ function updateValueVisibilitySliderRange(preserveEnabledState = false) {
     const valueDisplay = document.getElementById('valueVisibilityThresholdValue');
     if (valueDisplay) {
         valueDisplay.textContent = valueVisibilityThreshold.toFixed(2);
+        // Update label text with translation
+        const label = document.querySelector('label[for="valueVisibilityThreshold"]');
+        if (label && typeof t === 'function') {
+            const labelText = t('valueFilter.threshold', { value: valueVisibilityThreshold.toFixed(2) });
+            label.innerHTML = labelText;
+        }
     }
 }
 
@@ -1767,6 +1779,12 @@ function setValueVisibilityThreshold(threshold) {
     const valueDisplay = document.getElementById('valueVisibilityThresholdValue');
     if (valueDisplay) {
         valueDisplay.textContent = threshold.toFixed(2);
+        // Update label text with translation
+        const label = document.querySelector('label[for="valueVisibilityThreshold"]');
+        if (label && typeof t === 'function') {
+            const labelText = t('valueFilter.threshold', { value: threshold.toFixed(2) });
+            label.innerHTML = labelText;
+        }
     }
     
     // Update shader uniforms instead of re-rendering (much faster!)
@@ -1831,13 +1849,13 @@ function updateCategoryFilterUI() {
     
     // Only show category filter for rockType field
     if (currentVisualizationField !== 'rockType') {
-        container.innerHTML = '<p style="font-size: 0.85em; opacity: 0.7; margin: 8px 0;">Select "Rock Type" field to filter categories</p>';
+        container.innerHTML = `<p style="font-size: 0.85em; opacity: 0.7; margin: 8px 0;">${t('categoryFilter.selectField')}</p>`;
         return;
     }
     
     // Get all unique rock types from current blocks
     if (vizCurrentBlocks.length === 0) {
-        container.innerHTML = '<p style="font-size: 0.85em; opacity: 0.7; margin: 8px 0;">No blocks available</p>';
+        container.innerHTML = `<p style="font-size: 0.85em; opacity: 0.7; margin: 8px 0;">${t('categoryFilter.noBlocks')}</p>`;
         return;
     }
     
@@ -2135,29 +2153,29 @@ function showTooltip(event, block) {
     if (!tooltipElement) return;
     
     // Build tooltip content
-    let content = '<div class="tooltip-header">Block Information</div>';
-    content += `<div class="tooltip-row"><span class="tooltip-label">Position:</span> <span class="tooltip-value">(${block.x.toFixed(2)}, ${block.y.toFixed(2)}, ${block.z.toFixed(2)})</span></div>`;
-    content += `<div class="tooltip-row"><span class="tooltip-label">Indices:</span> <span class="tooltip-value">I=${block.i}, J=${block.j}, K=${block.k}</span></div>`;
-    content += `<div class="tooltip-row"><span class="tooltip-label">Rock Type:</span> <span class="tooltip-value">${block.rockType || block.material || 'N/A'}</span></div>`;
+    let content = `<div class="tooltip-header">${t('tooltip.title')}</div>`;
+    content += `<div class="tooltip-row"><span class="tooltip-label">${t('tooltip.position')}</span> <span class="tooltip-value">(${block.x.toFixed(2)}, ${block.y.toFixed(2)}, ${block.z.toFixed(2)})</span></div>`;
+    content += `<div class="tooltip-row"><span class="tooltip-label">${t('tooltip.indices')}</span> <span class="tooltip-value">I=${block.i}, J=${block.j}, K=${block.k}</span></div>`;
+    content += `<div class="tooltip-row"><span class="tooltip-label">${t('tooltip.rockType')}</span> <span class="tooltip-value">${block.rockType || block.material || t('tooltip.notAvailable')}</span></div>`;
     
     if (block.density !== undefined && block.density !== null) {
-        content += `<div class="tooltip-row"><span class="tooltip-label">Density:</span> <span class="tooltip-value">${block.density.toFixed(2)} t/m³</span></div>`;
+        content += `<div class="tooltip-row"><span class="tooltip-label">${t('tooltip.density')}</span> <span class="tooltip-value">${block.density.toFixed(2)} ${t('tooltip.units.density')}</span></div>`;
     }
     
     if (block.gradeCu !== undefined && block.gradeCu !== null) {
-        content += `<div class="tooltip-row"><span class="tooltip-label">Cu Grade:</span> <span class="tooltip-value">${block.gradeCu.toFixed(2)}%</span></div>`;
+        content += `<div class="tooltip-row"><span class="tooltip-label">${t('tooltip.cuGrade')}</span> <span class="tooltip-value">${block.gradeCu.toFixed(2)}${t('tooltip.units.cuGrade')}</span></div>`;
     }
     
     if (block.gradeAu !== undefined && block.gradeAu !== null) {
-        content += `<div class="tooltip-row"><span class="tooltip-label">Au Grade:</span> <span class="tooltip-value">${block.gradeAu.toFixed(2)} g/t</span></div>`;
+        content += `<div class="tooltip-row"><span class="tooltip-label">${t('tooltip.auGrade')}</span> <span class="tooltip-value">${block.gradeAu.toFixed(2)} ${t('tooltip.units.auGrade')}</span></div>`;
     }
     
     if (block.econValue !== undefined && block.econValue !== null) {
-        content += `<div class="tooltip-row"><span class="tooltip-label">Economic Value:</span> <span class="tooltip-value">${block.econValue.toFixed(2)}</span></div>`;
+        content += `<div class="tooltip-row"><span class="tooltip-label">${t('tooltip.econValue')}</span> <span class="tooltip-value">${block.econValue.toFixed(2)}</span></div>`;
     }
     
     if (block.zone !== undefined && block.zone !== null) {
-        content += `<div class="tooltip-row"><span class="tooltip-label">Zone:</span> <span class="tooltip-value">${block.zone}</span></div>`;
+        content += `<div class="tooltip-row"><span class="tooltip-label">${t('tooltip.zone')}</span> <span class="tooltip-value">${block.zone}</span></div>`;
     }
     
     tooltipElement.innerHTML = content;
