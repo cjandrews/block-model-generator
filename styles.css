@@ -31,6 +31,32 @@ header {
     background: #252525;
     border-bottom: 1px solid #333;
     flex-shrink: 0;
+    position: relative;
+}
+
+.header-buttons {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.header-btn {
+    padding: 6px 12px;
+    background: #444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.header-btn:hover {
+    background: #555;
 }
 
 header h1 {
@@ -454,13 +480,10 @@ button:disabled {
     color: #7c8aff;
 }
 
-header {
-    position: relative;
-}
-
-/* Hide Memory button on small screens */
+/* Hide Memory and Docs buttons on small screens */
 @media (max-width: 768px) {
-    #memoryBtn {
+    #memoryBtn,
+    #docsBtn {
         display: none;
     }
 }

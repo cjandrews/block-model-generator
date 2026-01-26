@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="license" content="MIT License">
+    <meta name="copyright" content="Copyright (c) 2026 BuildIT Design Labs, LLC">
+    <title>Block Model Generator - Documentation</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Documentation-specific styles */
+        html, body {
+            height: 100%;
+            overflow: auto;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: #1a1a1a;
+        }
+        
+        .docs-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .docs-header {
+            text-align: center;
+            color: #e0e0e0;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #7c8aff;
+        }
+
+        .docs-header h1 {
+            font-size: 2em;
+            margin: 0;
+            color: #7c8aff;
+        }
+
+        .docs-header p {
+            font-size: 1em;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+
+        .docs-nav {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 30px;
+            border: 1px solid #444;
+        }
+
+        .docs-nav-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .docs-nav-item {
+            margin: 0;
+        }
+
+        .docs-nav-link {
+            display: block;
+            padding: 8px 16px;
+            background: #1f1f1f;
+            color: #7c8aff;
+            text-decoration: none;
+            border-radius: 4px;
+            border: 1px solid #444;
+            transition: all 0.3s;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+
+        .docs-nav-link:hover {
+            background: #333;
+            border-color: #7c8aff;
+            box-shadow: 0 2px 8px rgba(124, 138, 255, 0.3);
+        }
+
+        .docs-nav-link.active {
+            background: #4a5aff;
+            color: white;
+            border-color: #4a5aff;
+        }
+
+        .docs-content {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 30px;
+            border: 1px solid #444;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .docs-section {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .docs-section.active {
+            display: block;
+        }
+
+        .docs-section h2 {
+            color: #7c8aff;
+            font-size: 1.8em;
+            margin-top: 0;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #444;
+        }
+
+        .docs-section h3 {
+            color: #7c8aff;
+            font-size: 1.4em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        .docs-section h4 {
+            color: #b0b0b0;
+            font-size: 1.1em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .docs-section p {
+            color: #e0e0e0;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .docs-section ul, .docs-section ol {
+            color: #e0e0e0;
+            line-height: 1.8;
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .docs-section li {
+            margin-bottom: 8px;
+        }
+
+        .docs-section code {
+            background: #1f1f1f;
+            color: #7cff8a;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .docs-section pre {
+            background: #1f1f1f;
+            color: #e0e0e0;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #444;
+            margin: 15px 0;
+        }
+
+        .docs-section pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+
+        .docs-feature-card {
+            background: #1f1f1f;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 15px 0;
+            transition: all 0.3s;
+        }
+
+        .docs-feature-card:hover {
+            border-color: #7c8aff;
+            box-shadow: 0 2px 8px rgba(124, 138, 255, 0.2);
+        }
+
+        .docs-feature-card h4 {
+            color: #7c8aff;
+            margin-top: 0;
+        }
+
+        .docs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #1f1f1f;
+        }
+
+        .docs-table th {
+            background: #252525;
+            color: #7c8aff;
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #444;
+        }
+
+        .docs-table td {
+            padding: 10px 12px;
+            border: 1px solid #444;
+            color: #e0e0e0;
+        }
+
+        .docs-table tr:nth-child(even) {
+            background: #252525;
+        }
+
+        .docs-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #4a5aff;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .docs-badge.optional {
+            background: #555;
+        }
+
+        .docs-badge.required {
+            background: #ff7c7c;
+        }
+
+        .docs-tip {
+            background: #2a4a3a;
+            border-left: 4px solid #7cff8a;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .docs-tip strong {
+            color: #7cff8a;
+        }
+
+        .docs-warning {
+            background: #4a2a2a;
+            border-left: 4px solid #ff7c7c;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .docs-warning strong {
+            color: #ff7c7c;
+        }
+
+        .docs-interactive-demo {
+            background: #1f1f1f;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .docs-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #4a5aff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        .docs-button:hover {
+            background: #5b6bff;
+            box-shadow: 0 2px 8px rgba(74, 90, 255, 0.4);
+        }
+
+        .docs-button.secondary {
+            background: #555;
+        }
+
+        .docs-button.secondary:hover {
+            background: #666;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            background: #1f1f1f;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #e0e0e0;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #7c8aff;
+            box-shadow: 0 0 0 2px rgba(124, 138, 255, 0.2);
+        }
+
+        .highlight {
+            background: rgba(124, 138, 255, 0.3);
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .docs-container {
+                padding: 10px;
+            }
+
+            .docs-content {
+                padding: 15px;
+            }
+
+            .docs-nav-list {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="docs-container">
+        <div class="docs-header">
+            <h1>📚 Block Model Generator Documentation</h1>
+            <p>Complete guide to using the Mining Block Model Generator</p>
+        </div>
+
+        <div class="docs-nav">
+            <input type="text" id="searchBox" class="search-box" placeholder="🔍 Search documentation...">
+            <ul class="docs-nav-list" id="docsNav">
+                <li class="docs-nav-item"><a href="#" class="docs-nav-link active" data-section="getting-started">Getting Started</a></li>
+                <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="model-parameters">Model Parameters</a></li>
+                <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="patterns">Material Patterns</a></li>
+                <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="visualization">Visualization</a></li>
+                <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="filters">Filters & Tools</a></li>
+                <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="export">Export & Data</a></li>
+                <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="schema">Data Schema</a></li>
+                <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="controls">Controls</a></li>
+                <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="tips">Tips & Tricks</a></li>
+            </ul>
+        </div>
+
+        <div class="docs-content">
+            <!-- Getting Started Section -->
+            <div class="docs-section active" id="getting-started">
+                <h2>🚀 Getting Started</h2>
+                
+                <p>Welcome to the <strong>Mining Block Model Generator</strong>! This tool helps you create realistic 3D block models for testing mining applications, visualization, and data analysis.</p>
+
+                <div class="docs-feature-card">
+                    <h4>What is a Block Model?</h4>
+                    <p>A block model is a 3D grid representation of a mining deposit, where each block (cell) contains properties like:</p>
+                    <ul>
+                        <li><strong>Coordinates</strong> (X, Y, Z) - Block center position</li>
+                        <li><strong>Rock Type</strong> - Classification (Ore, Waste, etc.)</li>
+                        <li><strong>Density</strong> - Material density in tonnes/m³</li>
+                        <li><strong>Grades</strong> - Metal concentrations (Cu, Au, etc.)</li>
+                        <li><strong>Economic Value</strong> - Calculated value per block</li>
+                    </ul>
+                </div>
+
+                <h3>Quick Start Guide</h3>
+                <ol>
+                    <li><strong>Set Model Parameters</strong> - Define origin, cell size, and grid dimensions</li>
+                    <li><strong>Choose a Pattern</strong> - Select how materials are distributed (Uniform, Layered, Ore Bodies, etc.)</li>
+                    <li><strong>Generate Model</strong> - Click "Generate" to create your block model</li>
+                    <li><strong>Visualize</strong> - Explore the 3D model using interactive controls</li>
+                    <li><strong>Export</strong> - Download as CSV for use in other software</li>
+                </ol>
+
+                <div class="docs-tip">
+                    <strong>💡 Tip:</strong> Start with default parameters to get familiar with the tool, then adjust based on your needs.
+                </div>
+            </div>
+
+            <!-- Model Parameters Section -->
+            <div class="docs-section" id="model-parameters">
+                <h2>⚙️ Model Parameters</h2>
+                
+                <p>Model parameters define the physical structure and dimensions of your block model.</p>
+
+                <h3>Origin Coordinates</h3>
+                <p>The origin (X, Y, Z) defines the starting point of your model. All block coordinates are calculated relative to this origin.</p>
+                <ul>
+                    <li><strong>Origin X, Y, Z</strong> - Starting coordinates in meters (default: 0, 0, 0)</li>
+                    <li>Useful for aligning models with real-world coordinates</li>
+                </ul>
+
+                <h3>Cell Size</h3>
+                <p>Cell size determines the dimensions of each block in the model.</p>
+                <ul>
+                    <li><strong>Cell Size X, Y, Z</strong> - Block dimensions in meters (default: 1m × 1m × 1m)</li>
+                    <li>All three dimensions can be different (e.g., 10m × 10m × 5m)</li>
+                    <li>Minimum value: 0.1 meters</li>
+                </ul>
+
+                <h3>Grid Dimensions</h3>
+                <p>The number of cells in each direction determines the model size.</p>
+                <ul>
+                    <li><strong>Cells X, Y, Z</strong> - Number of blocks in each direction (default: 25 × 25 × 25)</li>
+                    <li>Total blocks = Cells X × Cells Y × Cells Z</li>
+                    <li>Larger models take more time to generate and render</li>
+                </ul>
+
+                <div class="docs-warning">
+                    <strong>⚠️ Performance Note:</strong> Models with more than 50,000 blocks may take longer to generate. The app automatically uses caching for large models.
+                </div>
+
+                <div class="docs-tip">
+                    <strong>💡 Tip:</strong> For testing, start with smaller models (10×10×10 = 1,000 blocks). For production, use realistic mining dimensions (e.g., 50×50×30 = 75,000 blocks).
+                </div>
+            </div>
+
+            <!-- Material Patterns Section -->
+            <div class="docs-section" id="patterns">
+                <h2>🎨 Material Patterns</h2>
+                
+                <p>Material patterns control how different materials (ore, waste, etc.) are distributed throughout your block model.</p>
+
+                <h3>Basic Patterns</h3>
+                
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Basic</span>Uniform</h4>
+                    <p>All blocks have the same material properties. Useful for testing or simple models.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Basic</span>Layered</h4>
+                    <p>Creates horizontal layers of different materials. Simulates sedimentary deposits.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Basic</span>Gradient</h4>
+                    <p>Gradual transition of properties from one side to another. Useful for testing visualization.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Basic</span>Checkerboard</h4>
+                    <p>Alternating pattern of materials. Good for testing filtering and visualization tools.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Basic</span>Random</h4>
+                    <p>Completely random distribution of materials. Useful for stress testing.</p>
+                </div>
+
+                <h3>Geological Patterns</h3>
+
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Geological</span>Single Ore Horizon</h4>
+                    <p>Creates a single horizontal ore layer at a specific depth. Simulates flat-lying deposits.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Geological</span>Inclined Vein</h4>
+                    <p>Creates an inclined planar ore body. Simulates vein deposits or fault-controlled mineralization.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Geological</span>Random Clusters</h4>
+                    <p>Creates multiple randomly distributed ore clusters. Simulates disseminated or stockwork deposits.</p>
+                </div>
+
+                <h3>Advanced Ore Body Patterns</h3>
+
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Advanced</span>Ellipsoid Ore Body</h4>
+                    <p>Creates ellipsoidal ore bodies with plunging structures. Simulates massive sulfide, skarn, or VMS deposits.</p>
+                    <ul>
+                        <li>Configurable size and orientation</li>
+                        <li>Grade decreases from center outward</li>
+                        <li>Supports multiple overlapping bodies</li>
+                    </ul>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Advanced</span>Vein/Structural Ore Body</h4>
+                    <p>Creates linear or planar ore bodies following structural controls. Simulates epithermal gold, mesothermal veins, or fault-controlled deposits.</p>
+                    <ul>
+                        <li>Configurable strike and dip</li>
+                        <li>Grade variations along strike and dip</li>
+                        <li>Supports multiple parallel or intersecting veins</li>
+                    </ul>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Advanced</span>Porphyry-Style Zoning</h4>
+                    <p>Creates zoned ore bodies with concentric zones. Simulates porphyry copper-gold deposits.</p>
+                    <ul>
+                        <li>High-grade core, intermediate shell, low-grade halo</li>
+                        <li>Different Cu:Au ratios in different zones</li>
+                        <li>Depth-related grade variations (supergene enrichment)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Visualization Section -->
+            <div class="docs-section" id="visualization">
+                <h2>👁️ Visualization</h2>
+                
+                <p>The 3D visualization allows you to explore your block model interactively.</p>
+
+                <h3>View Modes</h3>
+                
+                <div class="docs-feature-card">
+                    <h4>Solid</h4>
+                    <p>Shows blocks as solid cubes. Best for seeing overall structure and material distribution.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4>Points</h4>
+                    <p>Shows blocks as individual points. Useful for large models or when you need to see through the model.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4>Transparent</h4>
+                    <p>Shows blocks with transparency. Allows you to see internal structure while maintaining shape.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4>Squares</h4>
+                    <p>Shows blocks as flat squares. Good for 2D-like visualization or when viewing from above.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4>Slices X, Y, Z</h4>
+                    <p>Shows only blocks in specific slice planes. Useful for examining cross-sections.</p>
+                </div>
+
+                <h3>Visualization Fields</h3>
+                <p>Choose which property to visualize using color:</p>
+                <ul>
+                    <li><strong>Rock Type</strong> - Color by material classification</li>
+                    <li><strong>Density</strong> - Color scale based on density values</li>
+                    <li><strong>Cu Grade</strong> - Color scale based on copper grade</li>
+                    <li><strong>Au Grade</strong> - Color scale based on gold grade</li>
+                    <li><strong>Value</strong> - Color scale based on economic value</li>
+                </ul>
+
+                <h3>3D Controls</h3>
+                <ul>
+                    <li><strong>Left-click + Drag</strong> - Rotate the model</li>
+                    <li><strong>Right-click + Drag</strong> - Pan the view</li>
+                    <li><strong>Scroll Wheel</strong> - Zoom in/out</li>
+                    <li><strong>Zoom to Fit</strong> - Reset view to show entire model</li>
+                </ul>
+
+                <div class="docs-tip">
+                    <strong>💡 Tip:</strong> Hover over blocks to see detailed information in the tooltip, including coordinates, grades, and other properties.
+                </div>
+            </div>
+
+            <!-- Filters & Tools Section -->
+            <div class="docs-section" id="filters">
+                <h2>🔍 Filters & Tools</h2>
+                
+                <p>Filters and tools help you focus on specific parts of your model or analyze particular features.</p>
+
+                <h3>Slice Tool</h3>
+                <div class="docs-feature-card">
+                    <h4>How It Works</h4>
+                    <p>The slice tool allows you to view cross-sections of your model by hiding blocks outside a specific plane.</p>
+                    <ul>
+                        <li><strong>Enable</strong> - Turn the slice tool on/off</li>
+                        <li><strong>Axis</strong> - Choose which axis to slice (X, Y, or Z)</li>
+                        <li><strong>Position</strong> - Adjust the slice position using the slider</li>
+                    </ul>
+                </div>
+
+                <h3>Value Filter</h3>
+                <div class="docs-feature-card">
+                    <h4>How It Works</h4>
+                    <p>Filter blocks based on their economic value or other numeric properties.</p>
+                    <ul>
+                        <li><strong>Enable Filter</strong> - Turn the filter on/off</li>
+                        <li><strong>Mode</strong> - Show blocks above or below the threshold</li>
+                        <li><strong>Threshold</strong> - Set the value threshold using the slider</li>
+                    </ul>
+                    <p>Useful for identifying high-value ore zones or filtering out low-value material.</p>
+                </div>
+
+                <h3>Category Filter</h3>
+                <div class="docs-feature-card">
+                    <h4>How It Works</h4>
+                    <p>Show or hide specific categories (e.g., rock types) in your visualization.</p>
+                    <ul>
+                        <li><strong>Enable Filter</strong> - Turn the filter on/off</li>
+                        <li><strong>Checkboxes</strong> - Select which categories to show/hide</li>
+                    </ul>
+                    <p>Categories are automatically detected from categorical fields like Rock Type.</p>
+                </div>
+
+                <h3>Ground Layer</h3>
+                <div class="docs-feature-card">
+                    <h4>How It Works</h4>
+                    <p>Display a ground surface plane to provide spatial context.</p>
+                    <ul>
+                        <li><strong>Show Ground</strong> - Toggle the ground plane visibility</li>
+                    </ul>
+                    <p>Helpful for understanding the relationship between your model and the surface.</p>
+                </div>
+            </div>
+
+            <!-- Export & Data Section -->
+            <div class="docs-section" id="export">
+                <h2>💾 Export & Data</h2>
+                
+                <p>Export your block model to CSV format for use in other mining software.</p>
+
+                <h3>Export Format</h3>
+                <p>The exported CSV follows a standardized schema compatible with:</p>
+                <ul>
+                    <li>MiningMath</li>
+                    <li>Vulcan</li>
+                    <li>Surpac</li>
+                    <li>MineSight</li>
+                    <li>Datamine</li>
+                </ul>
+
+                <h3>Export Process</h3>
+                <ol>
+                    <li>Generate your block model</li>
+                    <li>Click the <strong>"Export"</strong> button</li>
+                    <li>The CSV file will download automatically</li>
+                    <li>Open in Excel, mining software, or other tools</li>
+                </ol>
+
+                <h3>Exported Fields</h3>
+                <p>The CSV includes all relevant block properties:</p>
+                <ul>
+                    <li><strong>X, Y, Z</strong> - Block centroid coordinates (meters)</li>
+                    <li><strong>ROCKTYPE</strong> - Rock type classification</li>
+                    <li><strong>DENSITY</strong> - Density (tonnes/m³)</li>
+                    <li><strong>GRADE_CU</strong> - Copper grade (%)</li>
+                    <li><strong>GRADE_AU</strong> - Gold grade (g/t)</li>
+                    <li><strong>ECON_VALUE</strong> - Economic value</li>
+                    <li><strong>ZONE</strong> - Zone identifier (if applicable)</li>
+                </ul>
+
+                <div class="docs-tip">
+                    <strong>💡 Tip:</strong> The export automatically filters out "air blocks" (blocks with density = 0) to reduce file size and improve compatibility.
+                </div>
+
+                <div class="docs-warning">
+                    <strong>⚠️ Note:</strong> Large models may produce large CSV files. For models with >100,000 blocks, consider using filters before exporting.
+                </div>
+            </div>
+
+            <!-- Data Schema Section -->
+            <div class="docs-section" id="schema">
+                <h2>📊 Data Schema</h2>
+                
+                <p>The block model uses a standardized schema for maximum compatibility with mining software.</p>
+
+                <h3>Required Fields</h3>
+                <table class="docs-table">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Units</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>X</code></td>
+                            <td>number</td>
+                            <td>X coordinate (centroid)</td>
+                            <td>meters</td>
+                        </tr>
+                        <tr>
+                            <td><code>Y</code></td>
+                            <td>number</td>
+                            <td>Y coordinate (centroid)</td>
+                            <td>meters</td>
+                        </tr>
+                        <tr>
+                            <td><code>Z</code></td>
+                            <td>number</td>
+                            <td>Z coordinate (centroid)</td>
+                            <td>meters</td>
+                        </tr>
+                        <tr>
+                            <td><code>ROCKTYPE</code></td>
+                            <td>string</td>
+                            <td>Rock type classification</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td><code>DENSITY</code></td>
+                            <td>number</td>
+                            <td>Density</td>
+                            <td>tonnes/m³</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Optional Fields</h3>
+                <table class="docs-table">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Units</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>ZONE</code></td>
+                            <td>string</td>
+                            <td>Zone identifier</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td><code>GRADE_CU</code></td>
+                            <td>number</td>
+                            <td>Copper grade</td>
+                            <td>%</td>
+                        </tr>
+                        <tr>
+                            <td><code>GRADE_AU</code></td>
+                            <td>number</td>
+                            <td>Gold grade</td>
+                            <td>g/t</td>
+                        </tr>
+                        <tr>
+                            <td><code>ECON_VALUE</code></td>
+                            <td>number</td>
+                            <td>Economic value</td>
+                            <td>currency units</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Coordinate Conventions</h3>
+                <ul>
+                    <li>All coordinates represent <strong>block centroids</strong> (center points)</li>
+                    <li>Coordinates are calculated as: <code>centroid = origin + (index + 0.5) × cellSize</code></li>
+                    <li>All units are in <strong>metric</strong> (meters)</li>
+                    <li>Precision: 4 decimal places for numeric values</li>
+                </ul>
+            </div>
+
+            <!-- Controls Section -->
+            <div class="docs-section" id="controls">
+                <h2>🎮 Controls</h2>
+                
+                <h3>Mouse Controls</h3>
+                <table class="docs-table">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Control</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Rotate</td>
+                            <td>Left-click + Drag</td>
+                            <td>Rotate the 3D model around its center</td>
+                        </tr>
+                        <tr>
+                            <td>Pan</td>
+                            <td>Right-click + Drag</td>
+                            <td>Move the view horizontally/vertically</td>
+                        </tr>
+                        <tr>
+                            <td>Zoom</td>
+                            <td>Scroll Wheel</td>
+                            <td>Zoom in/out on the model</td>
+                        </tr>
+                        <tr>
+                            <td>Info</td>
+                            <td>Hover</td>
+                            <td>Show block information in tooltip</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Keyboard Shortcuts</h3>
+                <p>Currently, all controls are mouse-based. Keyboard shortcuts may be added in future versions.</p>
+
+                <h3>Button Functions</h3>
+                <ul>
+                    <li><strong>Generate</strong> - Creates a new block model based on current parameters</li>
+                    <li><strong>Export</strong> - Downloads the current model as CSV (enabled after generation)</li>
+                    <li><strong>Zoom to Fit</strong> - Resets the camera to show the entire model</li>
+                    <li><strong>About</strong> - Shows application information and credits</li>
+                    <li><strong>Memory</strong> - Displays memory usage information</li>
+                </ul>
+            </div>
+
+            <!-- Tips & Tricks Section -->
+            <div class="docs-section" id="tips">
+                <h2>💡 Tips & Tricks</h2>
+                
+                <h3>Performance Optimization</h3>
+                <ul>
+                    <li>Start with smaller models to test patterns and settings</li>
+                    <li>Use "Points" view mode for very large models (>100K blocks)</li>
+                    <li>Enable filters to reduce rendering load</li>
+                    <li>Large models are automatically cached for faster regeneration</li>
+                </ul>
+
+                <h3>Visualization Tips</h3>
+                <ul>
+                    <li>Use different view modes to see different aspects of your model</li>
+                    <li>Combine slice tool with filters for detailed cross-section analysis</li>
+                    <li>Switch between visualization fields to compare different properties</li>
+                    <li>Use transparent mode to see internal structure</li>
+                </ul>
+
+                <h3>Pattern Selection</h3>
+                <ul>
+                    <li><strong>Uniform</strong> - Best for testing and simple models</li>
+                    <li><strong>Layered</strong> - Good for sedimentary deposits</li>
+                    <li><strong>Random Clusters</strong> - Realistic for disseminated deposits</li>
+                    <li><strong>Ellipsoid Ore Body</strong> - Best for massive sulfide deposits</li>
+                    <li><strong>Porphyry-Style</strong> - Ideal for large-scale porphyry deposits</li>
+                </ul>
+
+                <h3>Export Best Practices</h3>
+                <ul>
+                    <li>Filter out unwanted blocks before exporting to reduce file size</li>
+                    <li>Verify coordinate system matches your target software</li>
+                    <li>Check that all required fields are present for your use case</li>
+                    <li>Use appropriate cell sizes for your application (e.g., 5m×5m×5m for detailed models)</li>
+                </ul>
+
+                <h3>Common Use Cases</h3>
+                <div class="docs-feature-card">
+                    <h4>Testing Mining Software</h4>
+                    <p>Generate models with known properties to test algorithms, visualization, or processing tools.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4>Training & Education</h4>
+                    <p>Create models for teaching mining concepts, visualization techniques, or data analysis.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4>Prototype Development</h4>
+                    <p>Use generated models as test data during software development when real data isn't available.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4>Visualization Testing</h4>
+                    <p>Test visualization tools with various model sizes, patterns, and properties.</p>
+                </div>
+
+                <div class="docs-tip">
+                    <strong>💡 Pro Tip:</strong> Save your parameter combinations for common use cases. The app remembers your last settings in the browser.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/docs.js"></script>
+</body>
+</html>

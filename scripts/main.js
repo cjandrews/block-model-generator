@@ -288,6 +288,7 @@ function init() {
     // Initialize modals
     initAboutModal();
     initMemoryModal();
+    initDocsButton();
     
     updateStatus('Generating initial model...');
     
@@ -678,6 +679,28 @@ function initAboutModal() {
         aboutModal.addEventListener('click', (e) => {
             if (e.target === aboutModal) {
                 aboutModal.style.display = 'none';
+            }
+        });
+    }
+}
+
+/**
+ * Initialize Documentation button
+ */
+function initDocsButton() {
+    const docsBtn = document.getElementById('docsBtn');
+    
+    if (docsBtn) {
+        docsBtn.addEventListener('click', () => {
+            // Open documentation in a new window
+            const docsWindow = window.open('docs.html', 'BlockModelDocs', 
+                'width=1200,height=800,scrollbars=yes,resizable=yes');
+            
+            if (docsWindow) {
+                docsWindow.focus();
+            } else {
+                // Fallback if popup is blocked
+                window.location.href = 'docs.html';
             }
         });
     }
