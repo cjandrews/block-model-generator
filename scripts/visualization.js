@@ -1440,8 +1440,21 @@ function centerCameraOnModel(blocks) {
     const extentZ = maxZ - minZ;
     const maxExtent = Math.max(extentX, extentY, extentZ);
     
-    const distance = maxExtent * 1.5;
-    camera.position.set(centerX + distance, centerY + distance, centerZ + distance);
+    // Use a smaller distance multiplier for a more zoomed-in view
+    // Calculate distance using bounding sphere for better fit
+    const boundingSphereRadius = Math.sqrt(
+        Math.pow(extentX / 2, 2) + 
+        Math.pow(extentY / 2, 2) + 
+        Math.pow(extentZ / 2, 2)
+    );
+    const fov = camera.fov * (Math.PI / 180);
+    // Use smaller padding (1.2 instead of 2.0) for more zoomed-in view
+    const distance = boundingSphereRadius / Math.tan(fov / 2) * 1.2;
+    
+    // Position camera slightly above and to the side (diagonal view from above)
+    // Keep the same viewing angle but closer
+    const offset = distance * 0.577; // 1/sqrt(3) for equal offsets in all directions
+    camera.position.set(centerX + offset, centerY + offset * 1.2, centerZ + offset);
     camera.lookAt(centerX, centerY, centerZ);
     
     if (controls) {

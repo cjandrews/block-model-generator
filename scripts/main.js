@@ -12,6 +12,7 @@ let currentParams = null;
 const STORAGE_KEY_PREFIX = 'blockModel_';
 const STORAGE_KEY_PARAMS = 'blockModel_params';
 const LARGE_MODEL_THRESHOLD = 50000; // Use caching for models with > 50K blocks
+let isFirstGeneration = true; // Track if this is the first model generation on startup
 
 /**
  * Generate a cache key from parameters
@@ -372,6 +373,15 @@ async function handleGenerate() {
                     params.cellSizeZ
                 );
                 
+                // Zoom to fit on first generation (startup)
+                if (isFirstGeneration && typeof zoomToFit === 'function') {
+                    // Use setTimeout to ensure visualization is complete
+                    setTimeout(() => {
+                        zoomToFit();
+                        isFirstGeneration = false;
+                    }, 100);
+                }
+                
                 document.getElementById('exportBtn').disabled = false;
                 
                 if (totalCells > 200000) {
@@ -448,6 +458,15 @@ async function handleGenerate() {
             params.cellSizeY,
             params.cellSizeZ
         );
+        
+        // Zoom to fit on first generation (startup)
+        if (isFirstGeneration && typeof zoomToFit === 'function') {
+            // Use setTimeout to ensure visualization is complete
+            setTimeout(() => {
+                zoomToFit();
+                isFirstGeneration = false;
+            }, 100);
+        }
         
         // Enable export button
         document.getElementById('exportBtn').disabled = false;
