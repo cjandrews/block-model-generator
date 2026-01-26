@@ -1,0 +1,171 @@
+{
+  "app": {
+    "title": "Générateur de Modèle de Blocs Miniers",
+    "subtitle": "Créez des modèles de blocs 3D fictifs pour tester des applications minières"
+  },
+  "buttons": {
+    "generate": "Générer",
+    "export": "Exporter",
+    "zoomToFit": "Zoom",
+    "memory": "Mémoire",
+    "about": "À propos",
+    "documentation": "📚 Documentation"
+  },
+  "modelParameters": {
+    "title": "Paramètres du Modèle",
+    "originX": "Origine X",
+    "originY": "Origine Y",
+    "originZ": "Origine Z",
+    "cellSizeX": "Taille de Cellule X",
+    "cellSizeY": "Taille de Cellule Y",
+    "cellSizeZ": "Taille de Cellule Z",
+    "cellsX": "Cellules X",
+    "cellsY": "Cellules Y",
+    "cellsZ": "Cellules Z",
+    "materialPattern": "Motif de Matériau"
+  },
+  "patterns": {
+    "uniform": "Uniforme",
+    "layered": "Stratifié",
+    "gradient": "Dégradé",
+    "checkerboard": "Damier",
+    "random": "Aléatoire",
+    "ore_horizon": "Horizon de Minerai Unique",
+    "inclined_vein": "Veine Inclinée",
+    "random_clusters": "Grappes Aléatoires",
+    "ellipsoid_ore": "Corps de Minerai Ellipsoïdal",
+    "vein_ore": "Corps de Minerai de Veine/Structurel",
+    "porphyry_ore": "Zonage Style Porphyre",
+    "salt_dome": "Réservoir de Dôme de Sel (Pétrole)"
+  },
+  "visualization": {
+    "title": "Visualisation",
+    "viewMode": "Mode d'Affichage",
+    "field": "Champ",
+    "modes": {
+      "solid": "Solide",
+      "points": "Points",
+      "transparent": "Transparent",
+      "squares": "Carrés",
+      "slicesX": "Tranches X",
+      "slicesY": "Tranches Y",
+      "slicesZ": "Tranches Z"
+    },
+    "fields": {
+      "rockType": "Type de Roche",
+      "density": "Densité",
+      "gradeCu": "Teneur en Cu",
+      "gradeAu": "Teneur en Au",
+      "econValue": "Valeur"
+    }
+  },
+  "sliceTool": {
+    "title": "Outil de Tranche",
+    "enable": "Activer",
+    "axis": "Axe",
+    "position": "Position : {{value}}",
+    "axes": {
+      "x": "X (Avant/Arrière)",
+      "y": "Y (Gauche/Droite)",
+      "z": "Z (Haut/Bas)"
+    }
+  },
+  "valueFilter": {
+    "title": "Filtre de Valeur",
+    "enable": "Activer le Filtre",
+    "mode": "Mode",
+    "threshold": "Seuil : {{value}}",
+    "modes": {
+      "above": "Au-dessus du seuil",
+      "below": "En dessous du seuil"
+    }
+  },
+  "categoryFilter": {
+    "title": "Filtre de Catégorie",
+    "enable": "Activer le Filtre",
+    "showHide": "Afficher/Masquer les Catégories :",
+    "selectField": "Sélectionnez un champ catégoriel (ex., Type de Roche) pour filtrer",
+    "noBlocks": "Aucun bloc disponible"
+  },
+  "groundLayer": {
+    "title": "Couche du Sol",
+    "showGround": "Afficher le Sol"
+  },
+  "status": {
+    "generatingInitial": "Génération du modèle initial...",
+    "generating": "Génération du modèle de blocs...",
+    "checkingCache": "Vérification du cache pour le grand modèle...",
+    "loadedFromCache": "{{count}} blocs chargés depuis le cache.",
+    "generatingBlocks": "Génération de {{count}} blocs...",
+    "generatingLarge": "Génération du grand modèle par fragments (cela peut prendre un certain temps)...",
+    "generatingProgress": "Génération des blocs : {{progress}}% ({{processed}}/{{total}})...",
+    "applyingPattern": "Application du motif de matériau...",
+    "caching": "Mise en cache des données du modèle...",
+    "modelGenerated": "Modèle généré : {{count}} blocs. Motif : {{pattern}}. Prêt à l'exportation.",
+    "modelGeneratedLarge": "Modèle généré : {{count}} blocs. Motif : {{pattern}}. Visualisation d'un échantillon pour les performances. Modèle complet disponible à l'exportation.",
+    "modelLoaded": "Modèle chargé depuis le cache : {{count}} blocs. Prêt à l'exportation.",
+    "modelLoadedLarge": "Modèle chargé depuis le cache : {{count}} blocs. Visualisation d'un échantillon pour les performances. Modèle complet disponible à l'exportation.",
+    "exporting": "Exportation vers ZIP (cela peut prendre un moment pour les grands modèles)...",
+    "zipNotAvailable": "Bibliothèque ZIP non chargée. Exportation en CSV...",
+    "exportSuccess": "ZIP exporté avec succès : {{count}} blocs. Compressé de {{originalSize}} Mo à {{compressedSize}} Mo ({{ratio}}% de réduction).",
+    "csvSuccess": "CSV exporté avec succès : {{count}} blocs.",
+    "error": "Erreur : {{message}}",
+    "noBlocksToExport": "Aucun bloc à exporter. Veuillez d'abord générer un modèle.",
+    "csvTooLarge": "Le contenu CSV est trop volumineux. Veuillez réduire la taille du modèle.",
+    "exportError": "Erreur d'exportation : {{message}}. Tentative d'exportation en CSV...",
+    "csvError": "Erreur d'exportation CSV : {{message}}"
+  },
+  "errors": {
+    "cellSizeInvalid": "Les tailles de cellule doivent être supérieures à 0",
+    "cellCountInvalid": "Le nombre de cellules doit être supérieur à 0"
+  },
+  "tooltip": {
+    "title": "Informations sur le Bloc",
+    "position": "Position :",
+    "indices": "Indices :",
+    "rockType": "Type de Roche :",
+    "density": "Densité :",
+    "cuGrade": "Teneur en Cu :",
+    "auGrade": "Teneur en Au :",
+    "econValue": "Valeur Économique :",
+    "zone": "Zone :",
+    "notAvailable": "N/D",
+    "units": {
+      "density": "t/m³",
+      "cuGrade": "%",
+      "auGrade": "g/t"
+    }
+  },
+  "controls": {
+    "hint": "Contrôles : Glisser avec clic gauche pour tourner | Glisser avec clic droit pour déplacer | Faire défiler pour zoomer"
+  },
+  "about": {
+    "title": "À propos",
+    "appName": "Générateur de Modèle de Blocs Miniers",
+    "builtBy": "Développé par <strong>{{author}}</strong>, {{company}}",
+    "license": "Licence : Licence MIT",
+    "copyright": "Copyright : © {{year}} Tous droits réservés"
+  },
+  "memory": {
+    "title": "Moniteur de Mémoire",
+    "usage": "Utilisation de la Mémoire :",
+    "loading": "Chargement...",
+    "note": "Remarque : Les informations sur la mémoire peuvent ne pas être disponibles dans tous les navigateurs.",
+    "usedHeap": "Tas JS Utilisé",
+    "totalHeap": "Tas JS Total",
+    "heapLimit": "Limite du Tas JS",
+    "heapUsage": "Utilisation du Tas",
+    "deviceMemory": "Mémoire de l'Appareil",
+    "threejsObjects": "Objets Three.js :",
+    "sceneObjects": "Objets de Scène",
+    "geometries": "Géométries",
+    "materials": "Matériaux",
+    "textures": "Textures"
+  },
+  "language": {
+    "select": "Langue",
+    "english": "English",
+    "spanish": "Español",
+    "french": "Français"
+  }
+}

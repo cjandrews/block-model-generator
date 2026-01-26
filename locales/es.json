@@ -1,0 +1,171 @@
+{
+  "app": {
+    "title": "Generador de Modelo de Bloques Mineros",
+    "subtitle": "Crea modelos de bloques 3D ficticios para probar aplicaciones mineras"
+  },
+  "buttons": {
+    "generate": "Generar",
+    "export": "Exportar",
+    "zoomToFit": "Zoom",
+    "memory": "Memoria",
+    "about": "Acerca de",
+    "documentation": "📚 Documentación"
+  },
+  "modelParameters": {
+    "title": "Parámetros del Modelo",
+    "originX": "Origen X",
+    "originY": "Origen Y",
+    "originZ": "Origen Z",
+    "cellSizeX": "Tamaño de Celda X",
+    "cellSizeY": "Tamaño de Celda Y",
+    "cellSizeZ": "Tamaño de Celda Z",
+    "cellsX": "Celdas X",
+    "cellsY": "Celdas Y",
+    "cellsZ": "Celdas Z",
+    "materialPattern": "Patrón de Material"
+  },
+  "patterns": {
+    "uniform": "Uniforme",
+    "layered": "Estratificado",
+    "gradient": "Gradiente",
+    "checkerboard": "Tablero de Ajedrez",
+    "random": "Aleatorio",
+    "ore_horizon": "Horizonte de Mineral Único",
+    "inclined_vein": "Veta Inclinada",
+    "random_clusters": "Agrupaciones Aleatorias",
+    "ellipsoid_ore": "Cuerpo de Mineral Elipsoidal",
+    "vein_ore": "Cuerpo de Mineral de Veta/Estructural",
+    "porphyry_ore": "Zonificación Estilo Pórfido",
+    "salt_dome": "Reservorio de Domo de Sal (Petróleo)"
+  },
+  "visualization": {
+    "title": "Visualización",
+    "viewMode": "Modo de Vista",
+    "field": "Campo",
+    "modes": {
+      "solid": "Sólido",
+      "points": "Puntos",
+      "transparent": "Transparente",
+      "squares": "Cuadrados",
+      "slicesX": "Cortes X",
+      "slicesY": "Cortes Y",
+      "slicesZ": "Cortes Z"
+    },
+    "fields": {
+      "rockType": "Tipo de Roca",
+      "density": "Densidad",
+      "gradeCu": "Ley de Cu",
+      "gradeAu": "Ley de Au",
+      "econValue": "Valor"
+    }
+  },
+  "sliceTool": {
+    "title": "Herramienta de Corte",
+    "enable": "Habilitar",
+    "axis": "Eje",
+    "position": "Posición: {{value}}",
+    "axes": {
+      "x": "X (Frente/Atrás)",
+      "y": "Y (Izquierda/Derecha)",
+      "z": "Z (Arriba/Abajo)"
+    }
+  },
+  "valueFilter": {
+    "title": "Filtro de Valor",
+    "enable": "Habilitar Filtro",
+    "mode": "Modo",
+    "threshold": "Umbral: {{value}}",
+    "modes": {
+      "above": "Por encima del umbral",
+      "below": "Por debajo del umbral"
+    }
+  },
+  "categoryFilter": {
+    "title": "Filtro de Categoría",
+    "enable": "Habilitar Filtro",
+    "showHide": "Mostrar/Ocultar Categorías:",
+    "selectField": "Seleccione un campo categórico (ej., Tipo de Roca) para filtrar",
+    "noBlocks": "No hay bloques disponibles"
+  },
+  "groundLayer": {
+    "title": "Capa del Suelo",
+    "showGround": "Mostrar Suelo"
+  },
+  "status": {
+    "generatingInitial": "Generando modelo inicial...",
+    "generating": "Generando modelo de bloques...",
+    "checkingCache": "Verificando caché para modelo grande...",
+    "loadedFromCache": "Cargados {{count}} bloques desde la caché.",
+    "generatingBlocks": "Generando {{count}} bloques...",
+    "generatingLarge": "Generando modelo grande en fragmentos (esto puede tardar un poco)...",
+    "generatingProgress": "Generando bloques: {{progress}}% ({{processed}}/{{total}})...",
+    "applyingPattern": "Aplicando patrón de material...",
+    "caching": "Almacenando datos del modelo en caché...",
+    "modelGenerated": "Modelo generado: {{count}} bloques. Patrón: {{pattern}}. Listo para exportar.",
+    "modelGeneratedLarge": "Modelo generado: {{count}} bloques. Patrón: {{pattern}}. Visualizando muestra para rendimiento. Modelo completo disponible para exportar.",
+    "modelLoaded": "Modelo cargado desde la caché: {{count}} bloques. Listo para exportar.",
+    "modelLoadedLarge": "Modelo cargado desde la caché: {{count}} bloques. Visualizando muestra para rendimiento. Modelo completo disponible para exportar.",
+    "exporting": "Exportando a ZIP (esto puede tardar un momento para modelos grandes)...",
+    "zipNotAvailable": "Biblioteca ZIP no cargada. Exportando como CSV...",
+    "exportSuccess": "ZIP exportado exitosamente: {{count}} bloques. Comprimido {{originalSize}} MB a {{compressedSize}} MB ({{ratio}}% de reducción).",
+    "csvSuccess": "CSV exportado exitosamente: {{count}} bloques.",
+    "error": "Error: {{message}}",
+    "noBlocksToExport": "No hay bloques para exportar. Por favor, genere un modelo primero.",
+    "csvTooLarge": "El contenido CSV es demasiado grande. Por favor, reduzca el tamaño del modelo.",
+    "exportError": "Error de exportación: {{message}}. Intentando exportar como CSV...",
+    "csvError": "Error de exportación CSV: {{message}}"
+  },
+  "errors": {
+    "cellSizeInvalid": "Los tamaños de celda deben ser mayores que 0",
+    "cellCountInvalid": "El número de celdas debe ser mayor que 0"
+  },
+  "tooltip": {
+    "title": "Información del Bloque",
+    "position": "Posición:",
+    "indices": "Índices:",
+    "rockType": "Tipo de Roca:",
+    "density": "Densidad:",
+    "cuGrade": "Ley de Cu:",
+    "auGrade": "Ley de Au:",
+    "econValue": "Valor Económico:",
+    "zone": "Zona:",
+    "notAvailable": "N/D",
+    "units": {
+      "density": "t/m³",
+      "cuGrade": "%",
+      "auGrade": "g/t"
+    }
+  },
+  "controls": {
+    "hint": "Controles: Arrastrar con clic izquierdo para rotar | Arrastrar con clic derecho para desplazar | Desplazar rueda para acercar/alejar"
+  },
+  "about": {
+    "title": "Acerca de",
+    "appName": "Generador de Modelo de Bloques Mineros",
+    "builtBy": "Desarrollado por <strong>{{author}}</strong>, {{company}}",
+    "license": "Licencia: Licencia MIT",
+    "copyright": "Copyright: © {{year}} Todos los derechos reservados"
+  },
+  "memory": {
+    "title": "Monitor de Memoria",
+    "usage": "Uso de Memoria:",
+    "loading": "Cargando...",
+    "note": "Nota: La información de memoria puede no estar disponible en todos los navegadores.",
+    "usedHeap": "Montón JS Usado",
+    "totalHeap": "Montón JS Total",
+    "heapLimit": "Límite del Montón JS",
+    "heapUsage": "Uso del Montón",
+    "deviceMemory": "Memoria del Dispositivo",
+    "threejsObjects": "Objetos Three.js:",
+    "sceneObjects": "Objetos de Escena",
+    "geometries": "Geometrías",
+    "materials": "Materiales",
+    "textures": "Texturas"
+  },
+  "language": {
+    "select": "Idioma",
+    "english": "English",
+    "spanish": "Español",
+    "french": "Français"
+  }
+}
