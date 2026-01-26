@@ -1,5 +1,7 @@
 # Mining Block Model Generator
 
+![Example](./Examples/fun2.jpg)
+
 A powerful web-based tool for generating realistic 3D block models for mining and petroleum applications. Create dummy block models for testing mining software, visualization, training, and data analysis.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
@@ -22,6 +24,8 @@ A powerful web-based tool for generating realistic 3D block models for mining an
 - Color-coded visualization by: Rock Type, Density, Cu Grade, Au Grade, Economic Value
 - Real-time camera controls (rotate, pan, zoom)
 - Block tooltips with detailed information
+
+![Example](./Examples/fun.jpg)
 
 ### Advanced Tools
 - **Slice Tool**: View cross-sections along X, Y, or Z axes
