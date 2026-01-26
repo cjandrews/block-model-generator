@@ -21,58 +21,60 @@
         }
         
         .docs-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
             background: #1a1a1a;
-            min-height: 100vh;
-            box-sizing: border-box;
+        }
+
+        .docs-sidebar {
+            width: 280px;
+            background: #252525;
+            border-right: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
         }
 
         .docs-header {
-            text-align: center;
-            color: #e0e0e0;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #7c8aff;
+            padding: 20px;
+            border-bottom: 1px solid #444;
+            background: #2a2a2a;
         }
 
         .docs-header h1 {
-            font-size: 2em;
-            margin: 0;
+            font-size: 1.4em;
+            margin: 0 0 8px 0;
             color: #7c8aff;
         }
 
         .docs-header p {
-            font-size: 1em;
+            font-size: 0.85em;
             opacity: 0.8;
-            margin-top: 10px;
+            margin: 0;
+            color: #e0e0e0;
         }
 
         .docs-nav {
-            background: #2a2a2a;
-            border-radius: 8px;
+            flex: 1;
+            overflow-y: auto;
             padding: 15px;
-            margin-bottom: 30px;
-            border: 1px solid #444;
         }
 
         .docs-nav-list {
             list-style: none;
             padding: 0;
             margin: 0;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
         }
 
         .docs-nav-item {
-            margin: 0;
+            margin: 0 0 8px 0;
         }
 
         .docs-nav-link {
             display: block;
-            padding: 8px 16px;
+            padding: 10px 12px;
             background: #1f1f1f;
             color: #7c8aff;
             text-decoration: none;
@@ -95,11 +97,23 @@
             border-color: #4a5aff;
         }
 
-        .docs-content {
+        .docs-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .docs-search-container {
+            padding: 15px 20px;
             background: #2a2a2a;
-            border-radius: 8px;
+            border-bottom: 1px solid #444;
+        }
+
+        .docs-content {
+            flex: 1;
+            background: #2a2a2a;
             padding: 30px;
-            border: 1px solid #444;
             overflow-y: auto;
             overflow-x: hidden;
         }
@@ -308,7 +322,7 @@
             border-radius: 4px;
             color: #e0e0e0;
             font-size: 0.9em;
-            margin-bottom: 15px;
+            box-sizing: border-box;
         }
 
         .search-box:focus {
@@ -328,49 +342,94 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* Scrollbar styling for sidebar */
+        .docs-nav::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .docs-nav::-webkit-scrollbar-track {
+            background: #1f1f1f;
+            border-radius: 4px;
+        }
+
+        .docs-nav::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+
+        .docs-nav::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Scrollbar styling for content */
+        .docs-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .docs-content::-webkit-scrollbar-track {
+            background: #1f1f1f;
+            border-radius: 4px;
+        }
+
+        .docs-content::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+
+        .docs-content::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
         @media (max-width: 768px) {
             .docs-container {
-                padding: 10px;
+                flex-direction: column;
+            }
+
+            .docs-sidebar {
+                width: 100%;
+                max-height: 200px;
+                border-right: none;
+                border-bottom: 1px solid #444;
             }
 
             .docs-content {
                 padding: 15px;
-            }
-
-            .docs-nav-list {
-                flex-direction: column;
             }
         }
     </style>
 </head>
 <body>
     <div class="docs-container">
-        <div class="docs-header">
-            <h1>📚 Block Model Generator Documentation</h1>
-            <p>Complete guide to using the Mining Block Model Generator</p>
+        <div class="docs-sidebar">
+            <div class="docs-header">
+                <h1>📚 Documentation</h1>
+                <p>Block Model Generator</p>
+            </div>
+            <div class="docs-nav">
+                <ul class="docs-nav-list" id="docsNav">
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link active" data-section="getting-started">Getting Started</a></li>
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="model-parameters">Model Parameters</a></li>
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="patterns">Material Patterns</a></li>
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="visualization">Visualization</a></li>
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="filters">Filters & Tools</a></li>
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="export">Export & Data</a></li>
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="schema">Data Schema</a></li>
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="controls">Controls</a></li>
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="tips">Tips & Tricks</a></li>
+                </ul>
+            </div>
         </div>
 
-        <div class="docs-nav">
-            <input type="text" id="searchBox" class="search-box" placeholder="🔍 Search documentation...">
-            <ul class="docs-nav-list" id="docsNav">
-                <li class="docs-nav-item"><a href="#" class="docs-nav-link active" data-section="getting-started">Getting Started</a></li>
-                <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="model-parameters">Model Parameters</a></li>
-                <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="patterns">Material Patterns</a></li>
-                <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="visualization">Visualization</a></li>
-                <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="filters">Filters & Tools</a></li>
-                <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="export">Export & Data</a></li>
-                <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="schema">Data Schema</a></li>
-                <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="controls">Controls</a></li>
-                <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="tips">Tips & Tricks</a></li>
-            </ul>
-        </div>
-
-        <div class="docs-content">
+        <div class="docs-main">
+            <div class="docs-search-container">
+                <input type="text" id="searchBox" class="search-box" placeholder="🔍 Search documentation...">
+            </div>
+            <div class="docs-content">
             <!-- Getting Started Section -->
             <div class="docs-section active" id="getting-started">
                 <h2>🚀 Getting Started</h2>
                 
-                <p>Welcome to the <strong>Mining Block Model Generator</strong>! This tool helps you create realistic 3D block models for testing mining applications, visualization, and data analysis.</p>
+                <p>Welcome to the <strong>Mining Block Model Generator</strong>! This tool helps you create realistic 3D block models for testing mining applications, visualization, and data analysis. The tool also supports petroleum geology applications through specialized patterns.</p>
 
                 <div class="docs-feature-card">
                     <h4>What is a Block Model?</h4>
@@ -387,11 +446,21 @@
                 <h3>Quick Start Guide</h3>
                 <ol>
                     <li><strong>Set Model Parameters</strong> - Define origin, cell size, and grid dimensions</li>
-                    <li><strong>Choose a Pattern</strong> - Select how materials are distributed (Uniform, Layered, Ore Bodies, etc.)</li>
+                    <li><strong>Choose a Pattern</strong> - Select how materials are distributed (12 patterns available: Uniform, Layered, Ore Bodies, Petroleum, etc.)</li>
                     <li><strong>Generate Model</strong> - Click "Generate" to create your block model</li>
                     <li><strong>Visualize</strong> - Explore the 3D model using interactive controls</li>
                     <li><strong>Export</strong> - Download as CSV for use in other software</li>
                 </ol>
+
+                <div class="docs-feature-card" style="margin-top: 20px;">
+                    <h4>Navigation & Help</h4>
+                    <p>The header contains quick access buttons:</p>
+                    <ul>
+                        <li><strong>📚 Docs</strong> - Opens this documentation (you're reading it now!)</li>
+                        <li><strong>Memory</strong> - Monitor memory usage for large models</li>
+                        <li><strong>About</strong> - Application information and credits</li>
+                    </ul>
+                </div>
 
                 <div class="docs-tip">
                     <strong>💡 Tip:</strong> Start with default parameters to get familiar with the tool, then adjust based on your needs.
@@ -442,60 +511,21 @@
                 
                 <p>Material patterns control how different materials (ore, waste, etc.) are distributed throughout your block model.</p>
 
-                <h3>Basic Patterns</h3>
-                
-                <div class="docs-feature-card">
-                    <h4><span class="docs-badge">Basic</span>Uniform</h4>
-                    <p>All blocks have the same material properties. Useful for testing or simple models.</p>
-                </div>
-
-                <div class="docs-feature-card">
-                    <h4><span class="docs-badge">Basic</span>Layered</h4>
-                    <p>Creates horizontal layers of different materials. Simulates sedimentary deposits.</p>
-                </div>
-
-                <div class="docs-feature-card">
-                    <h4><span class="docs-badge">Basic</span>Gradient</h4>
-                    <p>Gradual transition of properties from one side to another. Useful for testing visualization.</p>
-                </div>
-
-                <div class="docs-feature-card">
-                    <h4><span class="docs-badge">Basic</span>Checkerboard</h4>
-                    <p>Alternating pattern of materials. Good for testing filtering and visualization tools.</p>
-                </div>
-
-                <div class="docs-feature-card">
-                    <h4><span class="docs-badge">Basic</span>Random</h4>
-                    <p>Completely random distribution of materials. Useful for stress testing.</p>
-                </div>
-
-                <h3>Geological Patterns</h3>
-
-                <div class="docs-feature-card">
-                    <h4><span class="docs-badge">Geological</span>Single Ore Horizon</h4>
-                    <p>Creates a single horizontal ore layer at a specific depth. Simulates flat-lying deposits.</p>
-                </div>
-
-                <div class="docs-feature-card">
-                    <h4><span class="docs-badge">Geological</span>Inclined Vein</h4>
-                    <p>Creates an inclined planar ore body. Simulates vein deposits or fault-controlled mineralization.</p>
-                </div>
-
-                <div class="docs-feature-card">
-                    <h4><span class="docs-badge">Geological</span>Random Clusters</h4>
-                    <p>Creates multiple randomly distributed ore clusters. Simulates disseminated or stockwork deposits.</p>
-                </div>
-
                 <h3>Advanced Ore Body Patterns</h3>
 
                 <div class="docs-feature-card">
-                    <h4><span class="docs-badge">Advanced</span>Ellipsoid Ore Body</h4>
-                    <p>Creates ellipsoidal ore bodies with plunging structures. Simulates massive sulfide, skarn, or VMS deposits.</p>
+                    <h4><span class="docs-badge">Advanced</span>Porphyry-Style Zoning</h4>
+                    <p>Creates zoned ore bodies with concentric zones. Simulates porphyry copper-gold deposits.</p>
                     <ul>
-                        <li>Configurable size and orientation</li>
-                        <li>Grade decreases from center outward</li>
-                        <li>Supports multiple overlapping bodies</li>
+                        <li>High-grade core, intermediate shell, low-grade halo</li>
+                        <li>Different Cu:Au ratios in different zones</li>
+                        <li>Depth-related grade variations (supergene enrichment)</li>
+                        <li>Randomized parameters for variation between generations</li>
+                        <li>Center position, radii, grades, and structural controls are randomized</li>
                     </ul>
+                    <div class="docs-tip" style="margin-top: 10px;">
+                        <strong>💡 Tip:</strong> Each time you press Generate, the porphyry ore body will have different characteristics while maintaining realistic geological patterns.
+                    </div>
                 </div>
 
                 <div class="docs-feature-card">
@@ -509,13 +539,81 @@
                 </div>
 
                 <div class="docs-feature-card">
-                    <h4><span class="docs-badge">Advanced</span>Porphyry-Style Zoning</h4>
-                    <p>Creates zoned ore bodies with concentric zones. Simulates porphyry copper-gold deposits.</p>
+                    <h4><span class="docs-badge">Advanced</span>Ellipsoid Ore Body</h4>
+                    <p>Creates ellipsoidal ore bodies with plunging structures. Simulates massive sulfide, skarn, or VMS deposits.</p>
                     <ul>
-                        <li>High-grade core, intermediate shell, low-grade halo</li>
-                        <li>Different Cu:Au ratios in different zones</li>
-                        <li>Depth-related grade variations (supergene enrichment)</li>
+                        <li>Configurable size and orientation</li>
+                        <li>Grade decreases from center outward</li>
+                        <li>Supports multiple overlapping bodies</li>
                     </ul>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Petroleum</span>Salt Dome Reservoir</h4>
+                    <p>Creates a salt dome structure with oil and gas traps. Demonstrates petroleum geology concepts using the block model framework.</p>
+                    <ul>
+                        <li>Parabolic salt dome structure with cap rock</li>
+                        <li>Oil and gas trap zones around the dome</li>
+                        <li>Water zones below oil-water contact</li>
+                        <li>Multiple material types: Salt, CapRock, OilSand, GasSand, WaterSand, Shale</li>
+                        <li>Randomized dome position, size, trap zones, and material properties</li>
+                    </ul>
+                    <div class="docs-tip" style="margin-top: 15px;">
+                        <strong>💡 Field Mapping:</strong> For petroleum geology, the standard fields are repurposed:
+                        <ul style="margin-top: 8px; margin-left: 20px;">
+                            <li><code>gradeCu</code> = Oil Saturation (%)</li>
+                            <li><code>gradeAu</code> = Gas Saturation (%)</li>
+                            <li><code>density</code> = Porosity (%)</li>
+                            <li><code>rockType</code> = Material type (Salt, CapRock, OilSand, GasSand, WaterSand, Shale)</li>
+                        </ul>
+                    </div>
+                    <div class="docs-tip" style="margin-top: 10px;">
+                        <strong>💡 Tip:</strong> Each generation produces a different salt dome structure with randomized dimensions, positions, and material properties.
+                    </div>
+                </div>
+
+                <h3>Geological Patterns</h3>
+
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Geological</span>Random Clusters</h4>
+                    <p>Creates multiple randomly distributed ore clusters. Simulates disseminated or stockwork deposits.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Geological</span>Inclined Vein</h4>
+                    <p>Creates an inclined planar ore body. Simulates vein deposits or fault-controlled mineralization.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Geological</span>Single Ore Horizon</h4>
+                    <p>Creates a single horizontal ore layer at a specific depth. Simulates flat-lying deposits.</p>
+                </div>
+
+                <h3>Basic Patterns</h3>
+                
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Basic</span>Random</h4>
+                    <p>Completely random distribution of materials. Useful for stress testing.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Basic</span>Checkerboard</h4>
+                    <p>Alternating pattern of materials. Good for testing filtering and visualization tools.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Basic</span>Gradient</h4>
+                    <p>Gradual transition of properties from one side to another. Useful for testing visualization.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Basic</span>Layered</h4>
+                    <p>Creates horizontal layers of different materials. Simulates sedimentary deposits.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4><span class="docs-badge">Basic</span>Uniform</h4>
+                    <p>All blocks have the same material properties. Useful for testing or simple models.</p>
                 </div>
             </div>
 
@@ -549,7 +647,13 @@
 
                 <div class="docs-feature-card">
                     <h4>Slices X, Y, Z</h4>
-                    <p>Shows only blocks in specific slice planes. Useful for examining cross-sections.</p>
+                    <p>Shows only blocks in evenly-spaced slice planes along the selected axis. Automatically calculates optimal number of slices (2-5) based on model size. Useful for examining cross-sections and understanding internal structure.</p>
+                    <ul>
+                        <li><strong>Slices X</strong> - Shows slices perpendicular to X-axis (front/back cross-sections)</li>
+                        <li><strong>Slices Y</strong> - Shows slices perpendicular to Y-axis (left/right cross-sections)</li>
+                        <li><strong>Slices Z</strong> - Shows slices perpendicular to Z-axis (top/bottom cross-sections)</li>
+                    </ul>
+                    <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;"><em>Note: Slice view modes automatically skip block thinning for better visualization, even in large models.</em></p>
                 </div>
 
                 <h3>Visualization Fields</h3>
@@ -654,20 +758,23 @@
                 <p>The CSV includes all relevant block properties:</p>
                 <ul>
                     <li><strong>X, Y, Z</strong> - Block centroid coordinates (meters)</li>
-                    <li><strong>ROCKTYPE</strong> - Rock type classification</li>
-                    <li><strong>DENSITY</strong> - Density (tonnes/m³)</li>
-                    <li><strong>GRADE_CU</strong> - Copper grade (%)</li>
-                    <li><strong>GRADE_AU</strong> - Gold grade (g/t)</li>
+                    <li><strong>ROCKTYPE</strong> - Rock type classification (or material type for petroleum)</li>
+                    <li><strong>DENSITY</strong> - Density (tonnes/m³) or Porosity for petroleum patterns</li>
+                    <li><strong>GRADE_CU</strong> - Copper grade (%) or Oil Saturation for petroleum</li>
+                    <li><strong>GRADE_AU</strong> - Gold grade (g/t) or Gas Saturation for petroleum</li>
                     <li><strong>ECON_VALUE</strong> - Economic value</li>
                     <li><strong>ZONE</strong> - Zone identifier (if applicable)</li>
                 </ul>
+                <div class="docs-tip" style="margin-top: 15px;">
+                    <strong>💡 Note:</strong> For petroleum geology patterns, field meanings differ. See the <a href="#schema" style="color: #7c8aff;">Data Schema</a> section for details on petroleum field mappings.
+                </div>
 
                 <div class="docs-tip">
                     <strong>💡 Tip:</strong> The export automatically filters out "air blocks" (blocks with density = 0) to reduce file size and improve compatibility.
                 </div>
 
                 <div class="docs-warning">
-                    <strong>⚠️ Note:</strong> Large models may produce large CSV files. For models with >100,000 blocks, consider using filters before exporting.
+                    <strong>⚠️ Note:</strong> Large models may produce large CSV files. For models with >100,000 blocks, consider using filters before exporting. The export uses chunked processing to handle very large models (200x200x200+) without hitting JavaScript string length limits.
                 </div>
             </div>
 
@@ -766,6 +873,51 @@
                     <li>All units are in <strong>metric</strong> (meters)</li>
                     <li>Precision: 4 decimal places for numeric values</li>
                 </ul>
+
+                <h3>Petroleum Geology Field Mappings</h3>
+                <div class="docs-feature-card">
+                    <h4>Alternative Field Meanings</h4>
+                    <p>For petroleum geology patterns (e.g., Salt Dome Reservoir), the standard fields are repurposed to represent petroleum properties:</p>
+                    <table class="docs-table">
+                        <thead>
+                            <tr>
+                                <th>Standard Field</th>
+                                <th>Petroleum Meaning</th>
+                                <th>Units</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>GRADE_CU</code></td>
+                                <td>Oil Saturation</td>
+                                <td>%</td>
+                            </tr>
+                            <tr>
+                                <td><code>GRADE_AU</code></td>
+                                <td>Gas Saturation</td>
+                                <td>%</td>
+                            </tr>
+                            <tr>
+                                <td><code>DENSITY</code></td>
+                                <td>Porosity</td>
+                                <td>% (0-1 range)</td>
+                            </tr>
+                            <tr>
+                                <td><code>ROCKTYPE</code></td>
+                                <td>Material Type</td>
+                                <td>Salt, CapRock, OilSand, GasSand, WaterSand, Shale</td>
+                            </tr>
+                            <tr>
+                                <td><code>ECON_VALUE</code></td>
+                                <td>Economic Value</td>
+                                <td>$/barrel equivalent</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="docs-tip" style="margin-top: 15px;">
+                        <strong>💡 Note:</strong> This field mapping allows the same block model framework to be used for both mining and petroleum applications. When exporting petroleum models, be aware that field names remain the same but meanings differ.
+                    </div>
+                </div>
             </div>
 
             <!-- Controls Section -->
@@ -813,8 +965,9 @@
                     <li><strong>Generate</strong> - Creates a new block model based on current parameters</li>
                     <li><strong>Export</strong> - Downloads the current model as CSV (enabled after generation)</li>
                     <li><strong>Zoom to Fit</strong> - Resets the camera to show the entire model</li>
-                    <li><strong>About</strong> - Shows application information and credits</li>
+                    <li><strong>📚 Docs</strong> - Opens this documentation in a new window</li>
                     <li><strong>Memory</strong> - Displays memory usage information</li>
+                    <li><strong>About</strong> - Shows application information and credits</li>
                 </ul>
             </div>
 
@@ -826,8 +979,12 @@
                 <ul>
                     <li>Start with smaller models to test patterns and settings</li>
                     <li>Use "Points" view mode for very large models (>100K blocks)</li>
+                    <li>Use "Slices X/Y/Z" view modes for examining large models - automatically skips thinning</li>
                     <li>Enable filters to reduce rendering load</li>
-                    <li>Large models are automatically cached for faster regeneration</li>
+                    <li>Large models (>50K blocks) are automatically cached in browser storage for faster regeneration</li>
+                    <li>Models >200K blocks use automatic block thinning for visualization (full model available for export)</li>
+                    <li>Models >500K blocks are generated in chunks to avoid browser freezing</li>
+                    <li>Value filter uses GPU-accelerated shader-based clipping for real-time updates</li>
                 </ul>
 
                 <h3>Visualization Tips</h3>
@@ -840,11 +997,14 @@
 
                 <h3>Pattern Selection</h3>
                 <ul>
-                    <li><strong>Uniform</strong> - Best for testing and simple models</li>
-                    <li><strong>Layered</strong> - Good for sedimentary deposits</li>
-                    <li><strong>Random Clusters</strong> - Realistic for disseminated deposits</li>
-                    <li><strong>Ellipsoid Ore Body</strong> - Best for massive sulfide deposits</li>
-                    <li><strong>Porphyry-Style</strong> - Ideal for large-scale porphyry deposits</li>
+                    <li><strong>Porphyry-Style Zoning</strong> - Ideal for large-scale porphyry deposits</li>
+                    <li><strong>Vein/Structural Ore Body</strong> - Best for epithermal gold and fault-controlled deposits</li>
+                    <li><strong>Ellipsoid Ore Body</strong> - Best for massive sulfide, skarn, or VMS deposits</li>
+                    <li><strong>Salt Dome Reservoir</strong> - Perfect for petroleum geology demonstrations</li>
+                    <li><strong>Random Clusters</strong> - Realistic for disseminated or stockwork deposits</li>
+                    <li><strong>Inclined Vein</strong> - Good for simple vein deposits</li>
+                    <li><strong>Single Ore Horizon</strong> - Good for flat-lying sedimentary deposits</li>
+                    <li><strong>Basic Patterns</strong> (Random, Checkerboard, Gradient, Layered, Uniform) - Useful for testing and simple models</li>
                 </ul>
 
                 <h3>Export Best Practices</h3>
@@ -874,6 +1034,11 @@
                 <div class="docs-feature-card">
                     <h4>Visualization Testing</h4>
                     <p>Test visualization tools with various model sizes, patterns, and properties.</p>
+                </div>
+
+                <div class="docs-feature-card">
+                    <h4>Petroleum Geology</h4>
+                    <p>Use the Salt Dome Reservoir pattern to demonstrate petroleum geology concepts, reservoir modeling, and oil/gas trap visualization.</p>
                 </div>
 
                 <div class="docs-tip">

@@ -342,6 +342,49 @@ const MATERIALS = {
         gradeAu: 1.8,   // Typical porphyry Cu-Au ore: 1.0-3.0 g/t Au
         econValue: 350.0,
         zone: 'Zone2'
+    },
+    // Salt Dome / Petroleum Geology Materials
+    'Salt': {
+        color: 0xffffff,  // White for salt
+        density: 2.2,
+        gradeCu: 0,      // No oil/gas in salt
+        gradeAu: 0,
+        econValue: -10.0
+    },
+    'CapRock': {
+        color: 0x8b7355,  // Brown/tan for cap rock
+        density: 2.6,
+        gradeCu: 0,
+        gradeAu: 0,
+        econValue: -10.0
+    },
+    'OilSand': {
+        color: 0x000000,  // Black for oil sand
+        density: 2.2,
+        gradeCu: 70.0,    // Oil saturation (%)
+        gradeAu: 5.0,     // Gas saturation (%)
+        econValue: 50.0
+    },
+    'GasSand': {
+        color: 0x00ffff,  // Cyan for gas sand
+        density: 2.1,
+        gradeCu: 0,       // Oil saturation (%)
+        gradeAu: 75.0,    // Gas saturation (%)
+        econValue: 30.0
+    },
+    'WaterSand': {
+        color: 0x0066cc,  // Blue for water sand
+        density: 2.3,
+        gradeCu: 0,
+        gradeAu: 0,
+        econValue: -5.0
+    },
+    'Shale': {
+        color: 0x4a4a4a,  // Dark gray for shale
+        density: 2.4,
+        gradeCu: 0,
+        gradeAu: 0,
+        econValue: -10.0
     }
 };
 
@@ -448,25 +491,77 @@ function applyLayeredPattern(blocks, cellsX, cellsY, cellsZ) {
  * @returns {Array} Blocks with material assigned
  */
 function applyGradientPattern(blocks, cellsX, cellsY, cellsZ) {
+    // Calculate model bounds to work in coordinate space
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+    let minZ = Infinity, maxZ = -Infinity;
+    
+    blocks.forEach(block => {
+        minX = Math.min(minX, block.x);
+        maxX = Math.max(maxX, block.x);
+        minY = Math.min(minY, block.y);
+        maxY = Math.max(maxY, block.y);
+        minZ = Math.min(minZ, block.z);
+        maxZ = Math.max(maxZ, block.z);
+    });
+    
+    const modelSizeX = maxX - minX;
+    const modelSizeY = maxY - minY;
+    const modelSizeZ = maxZ - minZ;
+    const modelCenterX = (minX + maxX) / 2;
+    const modelCenterY = (minY + maxY) / 2;
+    const modelCenterZ = (minZ + maxZ) / 2;
+    
+    // Add time-based random component for variation between generations
+    const timeSeed = Date.now() % 1000000;
+    const randomComponent = Math.random() * 10000;
+    
+    // Randomization helper function
+    const rand = (seed, min, max) => {
+        const combinedSeed = (seed * 9301 + 49297 + timeSeed + randomComponent) % 233280;
+        const hash = combinedSeed / 233280;
+        return min + hash * (max - min);
+    };
+    
+    // Seeds for randomization
+    const seed1 = (Math.floor((minX + minY) * 100) + timeSeed) % 10000;
+    const seed2 = (Math.floor((minY + minZ) * 100) + timeSeed * 3) % 10000;
+    const seed3 = (Math.floor((minZ + minX) * 100) + timeSeed * 7) % 10000;
+    
+    // Randomize center position (offset from model center by up to 20% of model size)
+    const centerOffsetX = rand(seed1, -0.2, 0.2) * modelSizeX;
+    const centerOffsetY = rand(seed2, -0.2, 0.2) * modelSizeY;
+    const centerOffsetZ = rand(seed3, -0.2, 0.2) * modelSizeZ;
+    
+    const centerX = modelCenterX + centerOffsetX;
+    const centerY = modelCenterY + centerOffsetY;
+    const centerZ = modelCenterZ + centerOffsetZ;
+    
+    // Randomize gradient direction (which axis has more influence)
+    const gradientDirX = rand(seed1 * 2, 0.5, 1.5);
+    const gradientDirY = rand(seed2 * 2, 0.5, 1.5);
+    const gradientDirZ = rand(seed3 * 2, 0.5, 1.5);
+    
+    // Randomize thresholds for different rock types
+    const thresholdHigh = rand(seed1 * 3, 0.25, 0.35);  // 0.25-0.35
+    const thresholdMed = rand(seed2 * 3, 0.55, 0.65);  // 0.55-0.65
+    const thresholdLow = rand(seed3 * 3, 0.75, 0.85);  // 0.75-0.85
+    
     return blocks.map(block => {
-        // Calculate distance from center
-        const centerX = cellsX / 2;
-        const centerY = cellsY / 2;
-        const centerZ = cellsZ / 2;
-        
-        const distX = Math.abs(block.i - centerX) / centerX;
-        const distY = Math.abs(block.j - centerY) / centerY;
-        const distZ = Math.abs(block.k - centerZ) / centerZ;
+        // Calculate weighted distance from randomized center using COORDINATES (not indices)
+        const distX = Math.abs(block.x - centerX) / (modelSizeX / 2) * gradientDirX;
+        const distY = Math.abs(block.y - centerY) / (modelSizeY / 2) * gradientDirY;
+        const distZ = Math.abs(block.z - centerZ) / (modelSizeZ / 2) * gradientDirZ;
         
         const distance = Math.sqrt(distX * distX + distY * distY + distZ * distZ);
         const normalizedDist = Math.min(distance, 1.0);
         
         let rockType;
-        if (normalizedDist < 0.3) {
+        if (normalizedDist < thresholdHigh) {
             rockType = 'Ore_High';
-        } else if (normalizedDist < 0.6) {
+        } else if (normalizedDist < thresholdMed) {
             rockType = 'Ore_Med';
-        } else if (normalizedDist < 0.8) {
+        } else if (normalizedDist < thresholdLow) {
             rockType = 'Ore_Low';
         } else {
             rockType = 'Waste';
@@ -596,20 +691,45 @@ function applyInclinedVeinPattern(blocks, cellsX, cellsY, cellsZ) {
         maxZ = Math.max(maxZ, block.z);
     });
     
-    // Define a plane through the model center
-    // Plane equation: ax + by + cz + d = 0
-    // Using a plane that dips at 45° and strikes NE-SW
-    const centerX = (minX + maxX) / 2;
-    const centerY = (minY + maxY) / 2;
-    const centerZ = (minZ + maxZ) / 2;
+    const modelSizeX = maxX - minX;
+    const modelSizeY = maxY - minY;
+    const modelSizeZ = maxZ - minZ;
     
-    // Normal vector for plane (dipping 45° to SE, striking NE-SW)
-    // Normalized vector pointing down and to the SE
-    const strikeAngle = Math.PI / 4; // 45 degrees (NE-SW)
-    const dipAngle = Math.PI / 4; // 45 degrees dip
-    const nx = Math.sin(strikeAngle) * Math.sin(dipAngle);
-    const ny = -Math.cos(strikeAngle) * Math.sin(dipAngle);
-    const nz = Math.cos(dipAngle);
+    // Add time-based random component for variation between generations
+    const timeSeed = Date.now() % 1000000;
+    const randomComponent = Math.random() * 10000;
+    
+    // Randomization helper function
+    const rand = (seed, min, max) => {
+        const combinedSeed = (seed * 9301 + 49297 + timeSeed + randomComponent) % 233280;
+        const hash = combinedSeed / 233280;
+        return min + hash * (max - min);
+    };
+    
+    // Seeds for randomization
+    const seed1 = (Math.floor((minX + minY) * 100) + timeSeed) % 10000;
+    const seed2 = (Math.floor((minY + minZ) * 100) + timeSeed * 3) % 10000;
+    const seed3 = (Math.floor((minZ + minX) * 100) + timeSeed * 7) % 10000;
+    
+    // Randomize plane center position (offset from model center by up to 30%)
+    const centerOffsetX = rand(seed1, -0.3, 0.3);
+    const centerOffsetY = rand(seed2, -0.3, 0.3);
+    const centerOffsetZ = rand(seed3, -0.3, 0.3);
+    
+    const centerX = (minX + maxX) / 2 + centerOffsetX * modelSizeX;
+    const centerY = (minY + maxY) / 2 + centerOffsetY * modelSizeY;
+    const centerZ = (minZ + maxZ) / 2 + centerOffsetZ * modelSizeZ;
+    
+    // Randomize strike angle (0-360 degrees, full rotation)
+    const randomStrikeAngle = rand(seed1 * 2, 0, 360) * Math.PI / 180;
+    
+    // Randomize dip angle (30-75 degrees, typical for vein deposits)
+    const randomDipAngle = rand(seed2 * 2, 30, 75) * Math.PI / 180;
+    
+    // Normal vector for plane using randomized strike and dip
+    const nx = Math.sin(randomStrikeAngle) * Math.sin(randomDipAngle);
+    const ny = -Math.cos(randomStrikeAngle) * Math.sin(randomDipAngle);
+    const nz = Math.cos(randomDipAngle);
     
     // Normalize the normal vector
     const norm = Math.sqrt(nx * nx + ny * ny + nz * nz);
@@ -620,9 +740,9 @@ function applyInclinedVeinPattern(blocks, cellsX, cellsY, cellsZ) {
     // Calculate d: d = -(ax0 + by0 + cz0) where (x0, y0, z0) is a point on the plane
     const d = -(nNormX * centerX + nNormY * centerY + nNormZ * centerZ);
     
-    // Vein thickness threshold (default: 10% of average cell size)
+    // Randomize vein thickness (1.5-3.5 cell widths)
     const avgCellSize = ((maxX - minX) / cellsX + (maxY - minY) / cellsY + (maxZ - minZ) / cellsZ) / 3;
-    const veinThickness = avgCellSize * 2; // 2 cell widths
+    const veinThickness = avgCellSize * rand(seed3, 1.5, 3.5);
     
     return blocks.map(block => {
         // Calculate distance from block to plane
@@ -857,20 +977,115 @@ function generateEllipsoidOreBody(blocks, params = {}) {
         maxZ = Math.max(maxZ, block.z);
     });
     
-    // Default parameters
-    const centerX = params.centerX !== undefined ? params.centerX : (minX + maxX) / 2;
-    const centerY = params.centerY !== undefined ? params.centerY : (minY + maxY) / 2;
-    const centerZ = params.centerZ !== undefined ? params.centerZ : (minZ + maxZ) / 2;
-    const radiusX = params.radiusX !== undefined ? params.radiusX : (maxX - minX) * 0.2;
-    const radiusY = params.radiusY !== undefined ? params.radiusY : (maxY - minY) * 0.2;
-    const radiusZ = params.radiusZ !== undefined ? params.radiusZ : (maxZ - minZ) * 0.2;
-    const plungeAngle = params.plungeAngle !== undefined ? params.plungeAngle * Math.PI / 180 : 0; // Convert to radians
-    const plungeAzimuth = params.plungeAzimuth !== undefined ? params.plungeAzimuth * Math.PI / 180 : 0; // Convert to radians
-    const maxGradeCu = params.maxGradeCu !== undefined ? params.maxGradeCu : 1.2;  // Typical porphyry: 0.3-1.5% Cu
-    const maxGradeAu = params.maxGradeAu !== undefined ? params.maxGradeAu : 2.5;  // Typical porphyry: 0.5-5 g/t Au
-    const gradeDecay = params.gradeDecay !== undefined ? params.gradeDecay : 0.3;
-    const cuAuRatio = params.cuAuRatio !== undefined ? params.cuAuRatio : 50;  // Typical Cu:Au ratio for porphyry: 50:1 to 100:1
-    const gradeVariation = params.gradeVariation !== undefined ? params.gradeVariation : 0.1;
+    const modelSizeX = maxX - minX;
+    const modelSizeY = maxY - minY;
+    const modelSizeZ = maxZ - minZ;
+    
+    // Calculate average cell size from blocks (for scaling minimum sizes)
+    // Find adjacent blocks to estimate cell size
+    let avgCellSizeX = modelSizeX / 100; // Default fallback
+    let avgCellSizeY = modelSizeY / 100;
+    let avgCellSizeZ = modelSizeZ / 100;
+    
+    // Try to find actual cell size from block spacing
+    if (blocks.length > 1) {
+        // Sort blocks by x, y, z to find adjacent blocks
+        const sortedByX = [...blocks].sort((a, b) => a.x - b.x);
+        const sortedByY = [...blocks].sort((a, b) => a.y - b.y);
+        const sortedByZ = [...blocks].sort((a, b) => a.z - b.z);
+        
+        // Find minimum non-zero differences (cell sizes)
+        let minDiffX = Infinity, minDiffY = Infinity, minDiffZ = Infinity;
+        for (let i = 1; i < Math.min(100, sortedByX.length); i++) {
+            const diff = Math.abs(sortedByX[i].x - sortedByX[i-1].x);
+            if (diff > 0.0001 && diff < minDiffX) minDiffX = diff;
+        }
+        for (let i = 1; i < Math.min(100, sortedByY.length); i++) {
+            const diff = Math.abs(sortedByY[i].y - sortedByY[i-1].y);
+            if (diff > 0.0001 && diff < minDiffY) minDiffY = diff;
+        }
+        for (let i = 1; i < Math.min(100, sortedByZ.length); i++) {
+            const diff = Math.abs(sortedByZ[i].z - sortedByZ[i-1].z);
+            if (diff > 0.0001 && diff < minDiffZ) minDiffZ = diff;
+        }
+        
+        if (minDiffX < Infinity) avgCellSizeX = minDiffX;
+        if (minDiffY < Infinity) avgCellSizeY = minDiffY;
+        if (minDiffZ < Infinity) avgCellSizeZ = minDiffZ;
+    }
+    
+    const avgCellSize = (avgCellSizeX + avgCellSizeY + avgCellSizeZ) / 3;
+    
+    // Add time-based random component for variation between generations
+    const timeSeed = Date.now() % 1000000;
+    const randomComponent = Math.random() * 10000;
+    
+    // Randomization helper function
+    const rand = (seed, min, max) => {
+        const combinedSeed = (seed * 9301 + 49297 + timeSeed + randomComponent) % 233280;
+        const hash = combinedSeed / 233280;
+        return min + hash * (max - min);
+    };
+    
+    // Seeds for randomization
+    const seed1 = (Math.floor((minX + minY) * 100) + timeSeed) % 10000;
+    const seed2 = (Math.floor((minY + minZ) * 100) + timeSeed * 3) % 10000;
+    const seed3 = (Math.floor((minZ + minX) * 100) + timeSeed * 7) % 10000;
+    
+    // Randomize center position (40-60% of range to keep it near center but varied)
+    const randomCenterX = params.centerX !== undefined ? params.centerX : 
+        minX + modelSizeX * (0.4 + rand(seed1, 0, 0.2));
+    const randomCenterY = params.centerY !== undefined ? params.centerY : 
+        minY + modelSizeY * (0.4 + rand(seed2, 0, 0.2));
+    const randomCenterZ = params.centerZ !== undefined ? params.centerZ : 
+        minZ + modelSizeZ * (0.4 + rand(seed3, 0, 0.2));
+    
+    // Randomize radii (15-25% of model size for each axis)
+    const randomRadiusX = params.radiusX !== undefined ? params.radiusX : 
+        modelSizeX * rand(seed1 * 2, 0.15, 0.25);
+    const randomRadiusY = params.radiusY !== undefined ? params.radiusY : 
+        modelSizeY * rand(seed2 * 2, 0.15, 0.25);
+    const randomRadiusZ = params.radiusZ !== undefined ? params.radiusZ : 
+        modelSizeZ * rand(seed3 * 2, 0.15, 0.25);
+    
+    // Randomize plunge angle (0-60 degrees) and azimuth (0-360 degrees)
+    const randomPlungeAngle = params.plungeAngle !== undefined ? params.plungeAngle : 
+        rand(seed1 * 5, 0, 60);
+    const randomPlungeAzimuth = params.plungeAzimuth !== undefined ? params.plungeAzimuth : 
+        rand(seed2 * 5, 0, 360);
+    
+    // Randomize grades (typical ranges for massive sulfide/skarn deposits)
+    const randomMaxGradeCu = params.maxGradeCu !== undefined ? params.maxGradeCu : 
+        rand(seed1 * 7, 0.8, 1.8);  // 0.8-1.8% Cu
+    const randomMaxGradeAu = params.maxGradeAu !== undefined ? params.maxGradeAu : 
+        rand(seed2 * 7, 1.5, 4.0);  // 1.5-4.0 g/t Au
+    
+    // Randomize grade decay (0.2-0.5, lower = sharper falloff)
+    const randomGradeDecay = params.gradeDecay !== undefined ? params.gradeDecay : 
+        rand(seed3, 0.2, 0.5);
+    
+    // Randomize Cu:Au ratio (30:1 to 80:1)
+    const randomCuAuRatio = params.cuAuRatio !== undefined ? params.cuAuRatio : 
+        rand(seed1 * 11, 30, 80);
+    
+    // Randomize grade variation (0.05-0.15)
+    const randomGradeVariation = params.gradeVariation !== undefined ? params.gradeVariation : 
+        rand(seed2 * 11, 0.05, 0.15);
+    
+    // Default parameters (now randomized)
+    const centerX = randomCenterX;
+    const centerY = randomCenterY;
+    const centerZ = randomCenterZ;
+    const radiusX = randomRadiusX;
+    const radiusY = randomRadiusY;
+    const radiusZ = randomRadiusZ;
+    const plungeAngle = randomPlungeAngle * Math.PI / 180; // Convert to radians
+    const plungeAzimuth = randomPlungeAzimuth * Math.PI / 180; // Convert to radians
+    const maxGradeCu = randomMaxGradeCu;
+    const maxGradeAu = randomMaxGradeAu;
+    const gradeDecay = randomGradeDecay;
+    const cuAuRatio = randomCuAuRatio;
+    const gradeVariation = randomGradeVariation;
     
     // Rotation matrix for plunge (simplified - rotation around Y axis then Z axis)
     const cosPlunge = Math.cos(plungeAngle);
@@ -906,11 +1121,14 @@ function generateEllipsoidOreBody(blocks, params = {}) {
             gradeFactor = Math.exp(-gradeDecay * ellipsoidDist * ellipsoidDist);
         }
         
-        // Add spatial correlation using noise
+        // Add spatial correlation using noise (scale adapts to model size)
+        // Noise scale should be inversely proportional to model size
+        // For a 100-unit model, use ~0.01; for 1000-unit model, use ~0.001
+        const noiseScale = 1.0 / Math.max(modelSizeX, modelSizeY, modelSizeZ, 1.0);
         const noise = simpleNoise3D(
-            block.x * 0.01,
-            block.y * 0.01,
-            block.z * 0.01,
+            block.x * noiseScale,
+            block.y * noiseScale,
+            block.z * noiseScale,
             1.0
         );
         const spatialVariation = 1.0 + (noise - 0.5) * gradeVariation;
@@ -984,6 +1202,10 @@ function generateVeinOreBody(blocks, params = {}) {
         minZ = Math.min(minZ, block.z);
         maxZ = Math.max(maxZ, block.z);
     });
+    
+    const modelSizeX = maxX - minX;
+    const modelSizeY = maxY - minY;
+    const modelSizeZ = maxZ - minZ;
     
     // Default parameters
     const strike = params.strike !== undefined ? params.strike * Math.PI / 180 : Math.PI / 4; // 45 degrees
@@ -1068,11 +1290,12 @@ function generateVeinOreBody(blocks, params = {}) {
             }
         }
         
-        // Add spatial noise for variation
+        // Add spatial noise for variation (scale adapts to model size)
+        const veinNoiseScale = 2.0 / Math.max(modelSizeX, modelSizeY, modelSizeZ, 1.0);
         const noise = simpleNoise3D(
-            block.x * 0.02,
-            block.y * 0.02,
-            block.z * 0.02,
+            block.x * veinNoiseScale,
+            block.y * veinNoiseScale,
+            block.z * veinNoiseScale,
             1.0
         );
         const spatialVariation = 0.9 + (noise - 0.5) * 0.2;
@@ -1120,8 +1343,13 @@ function generateVeinOreBody(blocks, params = {}) {
 }
 
 /**
- * Algorithm 3: Porphyry-Style Zoning
- * Creates zoned ore bodies with concentric zones of different grades
+ * Algorithm 3: Porphyry-Style Zoning (Improved)
+ * Creates realistic zoned ore bodies with ellipsoidal shapes, irregular boundaries, and structural controls
+ * Based on real porphyry deposit characteristics:
+ * - Ellipsoidal (not spherical) zones with different X/Y/Z radii
+ * - Irregular boundaries with natural variation
+ * - Vertical zonation patterns (core more vertical, halo more horizontal)
+ * - Structural controls (faults/fractures modify pattern)
  * @param {Array} blocks - Array of block objects
  * @param {Object} params - Zoning parameters
  * @returns {Array} Blocks with grades assigned
@@ -1141,57 +1369,210 @@ function generatePorphyryOreBody(blocks, params = {}) {
         maxZ = Math.max(maxZ, block.z);
     });
     
-    // Default parameters
-    const centerX = params.centerX !== undefined ? params.centerX : (minX + maxX) / 2;
-    const centerY = params.centerY !== undefined ? params.centerY : (minY + maxY) / 2;
-    const centerZ = params.centerZ !== undefined ? params.centerZ : (minZ + maxZ) / 2;
-    const coreRadius = params.coreRadius !== undefined ? params.coreRadius : (maxX - minX) * 0.15;
-    const shellRadius = params.shellRadius !== undefined ? params.shellRadius : (maxX - minX) * 0.3;
-    const haloRadius = params.haloRadius !== undefined ? params.haloRadius : (maxX - minX) * 0.5;
-    const coreGradeCu = params.coreGradeCu !== undefined ? params.coreGradeCu : 1.2;  // High-grade core: 1.0-1.5% Cu
-    const coreGradeAu = params.coreGradeAu !== undefined ? params.coreGradeAu : 3.0;  // High-grade core: 2.5-5.0 g/t Au
-    const shellGradeCu = params.shellGradeCu !== undefined ? params.shellGradeCu : 0.6;  // Medium-grade shell: 0.5-0.8% Cu
-    const shellGradeAu = params.shellGradeAu !== undefined ? params.shellGradeAu : 1.5;  // Medium-grade shell: 1.0-2.0 g/t Au
-    const haloGradeCu = params.haloGradeCu !== undefined ? params.haloGradeCu : 0.3;  // Low-grade halo: 0.3-0.5% Cu (cutoff)
-    const haloGradeAu = params.haloGradeAu !== undefined ? params.haloGradeAu : 0.6;  // Low-grade halo: 0.5-1.0 g/t Au
-    const verticalGradient = params.verticalGradient !== undefined ? params.verticalGradient : 0.1;
-    const horizontalGradient = params.horizontalGradient !== undefined ? params.horizontalGradient : 0.5;
-    const enrichmentDepth = params.enrichmentDepth !== undefined ? params.enrichmentDepth : 100;
-    const enrichmentFactor = params.enrichmentFactor !== undefined ? params.enrichmentFactor : 2.0;
-    const zoneTransition = params.zoneTransition !== undefined ? params.zoneTransition : 0.2;
-    const localVariation = params.localVariation !== undefined ? params.localVariation : 0.15;
+    const modelSizeX = maxX - minX;
+    const modelSizeY = maxY - minY;
+    const modelSizeZ = maxZ - minZ;
     
-    // Find ground surface (maxZ is typically closest to 0)
+    // Add time-based random component to ensure variation between generations
+    // This makes each Generate button press produce a different ore body
+    const timeSeed = Date.now() % 1000000; // Use timestamp for variation
+    const randomComponent = Math.random() * 10000; // Additional random component
+    
+    // Randomize center position if not provided (closer to center but still randomized)
+    // Combine model bounds with time-based seed for variation
+    const centerSeed = ((minX + minY + minZ) * 100 + timeSeed + randomComponent) % 10000;
+    // Randomize within 40-60% of range (closer to center) to ensure body stays within bounds
+    const randomCenterX = minX + (maxX - minX) * (0.4 + (centerSeed % 20) / 100); // 40-60% of range
+    const randomCenterY = minY + (maxY - minY) * (0.4 + ((centerSeed * 7) % 20) / 100);
+    const randomCenterZ = minZ + (maxZ - minZ) * (0.35 + ((centerSeed * 13) % 30) / 100); // 35-65% of range (slightly more vertical variation)
+    
+    // Default parameters with randomization
+    const centerX = params.centerX !== undefined ? params.centerX : randomCenterX;
+    const centerY = params.centerY !== undefined ? params.centerY : randomCenterY;
+    const centerZ = params.centerZ !== undefined ? params.centerZ : randomCenterZ;
+    
+    // Randomization helper function (now includes time-based variation)
+    const rand = (seed, min, max) => {
+        // Combine seed with time-based component for variation
+        const combinedSeed = (seed * 9301 + 49297 + timeSeed + randomComponent) % 233280;
+        const hash = combinedSeed / 233280;
+        return min + hash * (max - min);
+    };
+    
+    // Seeds now include time-based component for variation
+    const seed1 = (Math.floor((minX + minY) * 100) + timeSeed) % 10000;
+    const seed2 = (Math.floor((minY + minZ) * 100) + timeSeed * 3) % 10000;
+    const seed3 = (Math.floor((minZ + minX) * 100) + timeSeed * 7) % 10000;
+    
+    // Calculate average cell size from blocks (for scaling minimum sizes)
+    let avgCellSizeX = modelSizeX / 100; // Default fallback
+    let avgCellSizeY = modelSizeY / 100;
+    let avgCellSizeZ = modelSizeZ / 100;
+    
+    // Try to find actual cell size from block spacing
+    if (blocks.length > 1) {
+        const sortedByX = [...blocks].sort((a, b) => a.x - b.x);
+        const sortedByY = [...blocks].sort((a, b) => a.y - b.y);
+        const sortedByZ = [...blocks].sort((a, b) => a.z - b.z);
+        
+        let minDiffX = Infinity, minDiffY = Infinity, minDiffZ = Infinity;
+        for (let i = 1; i < Math.min(100, sortedByX.length); i++) {
+            const diff = Math.abs(sortedByX[i].x - sortedByX[i-1].x);
+            if (diff > 0.0001 && diff < minDiffX) minDiffX = diff;
+        }
+        for (let i = 1; i < Math.min(100, sortedByY.length); i++) {
+            const diff = Math.abs(sortedByY[i].y - sortedByY[i-1].y);
+            if (diff > 0.0001 && diff < minDiffY) minDiffY = diff;
+        }
+        for (let i = 1; i < Math.min(100, sortedByZ.length); i++) {
+            const diff = Math.abs(sortedByZ[i].z - sortedByZ[i-1].z);
+            if (diff > 0.0001 && diff < minDiffZ) minDiffZ = diff;
+        }
+        
+        if (minDiffX < Infinity) avgCellSizeX = minDiffX;
+        if (minDiffY < Infinity) avgCellSizeY = minDiffY;
+        if (minDiffZ < Infinity) avgCellSizeZ = minDiffZ;
+    }
+    
+    const avgCellSize = (avgCellSizeX + avgCellSizeY + avgCellSizeZ) / 3;
+    
+    // Minimum absolute sizes (scaled with cell size) to ensure body is always visible
+    // Use 5-15 cell widths as minimum, ensuring meaningful ore bodies even in small models
+    const MIN_CORE_RADIUS = Math.max(avgCellSize * 5, Math.min(modelSizeX, modelSizeY, modelSizeZ) * 0.05);
+    const MIN_SHELL_RADIUS = Math.max(avgCellSize * 10, Math.min(modelSizeX, modelSizeY, modelSizeZ) * 0.10);
+    const MIN_HALO_RADIUS = Math.max(avgCellSize * 15, Math.min(modelSizeX, modelSizeY, modelSizeZ) * 0.15);
+    
+    // Ellipsoidal radii (different for each axis - more realistic than spherical)
+    // Core: more vertical (taller than wide), typical of porphyry intrusions
+    // Randomize radii within reasonable ranges, but enforce minimums
+    const coreRadiusXBase = rand(seed1, 0.08, 0.16); // 8-16% of model size
+    const coreRadiusYBase = rand(seed1 * 3, 0.08, 0.16);
+    const coreRadiusZBase = rand(seed1 * 7, 0.15, 0.25); // Taller core: 15-25%
+    const coreRadiusX = params.coreRadiusX !== undefined ? params.coreRadiusX : Math.max(MIN_CORE_RADIUS, modelSizeX * coreRadiusXBase);
+    const coreRadiusY = params.coreRadiusY !== undefined ? params.coreRadiusY : Math.max(MIN_CORE_RADIUS, modelSizeY * coreRadiusYBase);
+    const coreRadiusZ = params.coreRadiusZ !== undefined ? params.coreRadiusZ : Math.max(MIN_CORE_RADIUS * 1.5, modelSizeZ * coreRadiusZBase); // Core is taller
+    
+    // Shell: intermediate shape
+    // Ensure shell is always larger than core
+    const shellRadiusXBase = rand(seed2, 0.20, 0.30); // 20-30% of model size
+    const shellRadiusYBase = rand(seed2 * 3, 0.20, 0.30);
+    const shellRadiusZBase = rand(seed2 * 7, 0.25, 0.35);
+    const shellRadiusX = params.shellRadiusX !== undefined ? params.shellRadiusX : Math.max(MIN_SHELL_RADIUS, Math.max(coreRadiusX * 1.5, modelSizeX * shellRadiusXBase));
+    const shellRadiusY = params.shellRadiusY !== undefined ? params.shellRadiusY : Math.max(MIN_SHELL_RADIUS, Math.max(coreRadiusY * 1.5, modelSizeY * shellRadiusYBase));
+    const shellRadiusZ = params.shellRadiusZ !== undefined ? params.shellRadiusZ : Math.max(MIN_SHELL_RADIUS, Math.max(coreRadiusZ * 1.3, modelSizeZ * shellRadiusZBase));
+    
+    // Halo: more horizontal (wider than tall), typical of distal alteration
+    // Keep radii smaller to ensure body stays within bounds (center is 40-60%, so max radius should be ~40%)
+    // Ensure halo is always larger than shell
+    const haloRadiusXBase = rand(seed3, 0.30, 0.40); // 30-40% of model size (reduced to fit within bounds)
+    const haloRadiusYBase = rand(seed3 * 3, 0.30, 0.40);
+    const haloRadiusZBase = rand(seed3 * 7, 0.25, 0.35); // Flatter halo: 25-35% (reduced)
+    const haloRadiusX = params.haloRadiusX !== undefined ? params.haloRadiusX : Math.max(MIN_HALO_RADIUS, Math.max(shellRadiusX * 1.3, modelSizeX * haloRadiusXBase));
+    const haloRadiusY = params.haloRadiusY !== undefined ? params.haloRadiusY : Math.max(MIN_HALO_RADIUS, Math.max(shellRadiusY * 1.3, modelSizeY * haloRadiusYBase));
+    const haloRadiusZ = params.haloRadiusZ !== undefined ? params.haloRadiusZ : Math.max(MIN_HALO_RADIUS, Math.max(shellRadiusZ * 1.1, modelSizeZ * haloRadiusZBase)); // Halo is flatter
+    
+    // Randomize grades within realistic porphyry ranges
+    const coreGradeCu = params.coreGradeCu !== undefined ? params.coreGradeCu : rand(seed1 * 11, 0.8, 1.6); // 0.8-1.6% Cu
+    const coreGradeAu = params.coreGradeAu !== undefined ? params.coreGradeAu : rand(seed1 * 13, 2.0, 4.0); // 2.0-4.0 g/t Au
+    const shellGradeCu = params.shellGradeCu !== undefined ? params.shellGradeCu : rand(seed2 * 11, 0.4, 0.8); // 0.4-0.8% Cu
+    const shellGradeAu = params.shellGradeAu !== undefined ? params.shellGradeAu : rand(seed2 * 13, 1.0, 2.0); // 1.0-2.0 g/t Au
+    const haloGradeCu = params.haloGradeCu !== undefined ? params.haloGradeCu : rand(seed3 * 11, 0.2, 0.4); // 0.2-0.4% Cu
+    const haloGradeAu = params.haloGradeAu !== undefined ? params.haloGradeAu : rand(seed3 * 13, 0.4, 0.8); // 0.4-0.8 g/t Au
+    
+    // Randomize gradients
+    const verticalGradient = params.verticalGradient !== undefined ? params.verticalGradient : rand(seed1 * 17, 0.05, 0.15);
+    const horizontalGradient = params.horizontalGradient !== undefined ? params.horizontalGradient : rand(seed2 * 17, 0.3, 0.7);
+    
+    // Randomize enrichment parameters
+    const enrichmentDepth = params.enrichmentDepth !== undefined ? params.enrichmentDepth : rand(seed1 * 19, 50, 150);
+    const enrichmentFactor = params.enrichmentFactor !== undefined ? params.enrichmentFactor : rand(seed2 * 19, 1.5, 2.5);
+    
+    // Randomize boundary and local variation
+    const boundaryIrregularity = params.boundaryIrregularity !== undefined ? params.boundaryIrregularity : rand(seed3 * 17, 0.10, 0.25);
+    const localVariation = params.localVariation !== undefined ? params.localVariation : rand(seed1 * 23, 0.10, 0.20);
+    
+    // Structural controls (optional fault/fracture influence)
+    const structuralInfluence = params.structuralInfluence !== undefined ? params.structuralInfluence : rand(seed2 * 23, 0.05, 0.20);
+    const faultStrikeDeg = params.faultStrike !== undefined ? params.faultStrike : rand(seed3 * 19, 0, 360);
+    const faultStrike = faultStrikeDeg * Math.PI / 180;
+    const faultDipDeg = params.faultDip !== undefined ? params.faultDip : rand(seed1 * 29, 15, 60);
+    const faultDip = faultDipDeg * Math.PI / 180;
+    
+    // Find ground surface
     const groundSurface = maxZ;
     
     return blocks.map(block => {
-        // Calculate 3D distance from center
-        const dx = block.x - centerX;
-        const dy = block.y - centerY;
-        const dz = block.z - centerZ;
-        const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        // Calculate ellipsoidal distance (not spherical) - more realistic shape
+        const dx = (block.x - centerX) / coreRadiusX;
+        const dy = (block.y - centerY) / coreRadiusY;
+        const dz = (block.z - centerZ) / coreRadiusZ;
+        const coreDist = Math.sqrt(dx * dx + dy * dy + dz * dz);
         
-        // Determine zone
+        const dxShell = (block.x - centerX) / shellRadiusX;
+        const dyShell = (block.y - centerY) / shellRadiusY;
+        const dzShell = (block.z - centerZ) / shellRadiusZ;
+        const shellDist = Math.sqrt(dxShell * dxShell + dyShell * dyShell + dzShell * dzShell);
+        
+        const dxHalo = (block.x - centerX) / haloRadiusX;
+        const dyHalo = (block.y - centerY) / haloRadiusY;
+        const dzHalo = (block.z - centerZ) / haloRadiusZ;
+        const haloDist = Math.sqrt(dxHalo * dxHalo + dyHalo * dyHalo + dzHalo * dzHalo);
+        
+        // Add boundary irregularity using noise (breaks up perfect ellipsoids)
+        // Noise scale adapts to model size
+        const boundaryNoiseScale = 2.0 / Math.max(modelSizeX, modelSizeY, modelSizeZ, 1.0);
+        const boundaryNoise = simpleNoise3D(
+            block.x * boundaryNoiseScale,
+            block.y * boundaryNoiseScale,
+            block.z * boundaryNoiseScale,
+            1.0
+        );
+        const irregularityFactor = 1.0 + (boundaryNoise - 0.5) * boundaryIrregularity;
+        
+        // Apply irregularity to distances
+        const adjustedCoreDist = coreDist / irregularityFactor;
+        const adjustedShellDist = shellDist / irregularityFactor;
+        const adjustedHaloDist = haloDist / irregularityFactor;
+        
+        // Structural control: modify distances based on proximity to structural features
+        // Blocks near faults/fractures may have enhanced mineralization
+        let structuralFactor = 1.0;
+        if (structuralInfluence > 0) {
+            // Calculate distance to a hypothetical fault plane
+            // Fault position scales with model size (30% of average model dimension)
+            const faultDistance = Math.max(modelSizeX, modelSizeY) * 0.3;
+            const faultX = centerX + Math.cos(faultStrike) * faultDistance;
+            const faultY = centerY + Math.sin(faultStrike) * faultDistance;
+            const faultDist = Math.sqrt(
+                Math.pow(block.x - faultX, 2) + 
+                Math.pow(block.y - faultY, 2)
+            );
+            const normalizedFaultDist = Math.min(1.0, faultDist / (Math.max(modelSizeX, modelSizeY) * 0.3));
+            // Enhance grades near structural features
+            structuralFactor = 1.0 + structuralInfluence * (1.0 - normalizedFaultDist) * 0.3;
+        }
+        
+        // Determine zone based on adjusted ellipsoidal distances
         let baseGradeCu, baseGradeAu;
         let zone = 'Waste';
         
-        if (distance < coreRadius) {
-            baseGradeCu = coreGradeCu;
-            baseGradeAu = coreGradeAu;
+        if (adjustedCoreDist < 1.0) {
+            baseGradeCu = coreGradeCu * structuralFactor;
+            baseGradeAu = coreGradeAu * structuralFactor;
             zone = 'Core';
-        } else if (distance < shellRadius) {
+        } else if (adjustedShellDist < 1.0) {
             // Smooth transition from core to shell
-            const t = (distance - coreRadius) / (shellRadius - coreRadius);
-            const smoothT = t * t * (3 - 2 * t); // Smooth step
-            baseGradeCu = coreGradeCu * (1 - smoothT) + shellGradeCu * smoothT;
-            baseGradeAu = coreGradeAu * (1 - smoothT) + shellGradeAu * smoothT;
+            const t = (adjustedCoreDist - 1.0) / (adjustedShellDist - adjustedCoreDist + 0.1);
+            const smoothT = Math.max(0, Math.min(1, t * t * (3 - 2 * t)));
+            baseGradeCu = (coreGradeCu * (1 - smoothT) + shellGradeCu * smoothT) * structuralFactor;
+            baseGradeAu = (coreGradeAu * (1 - smoothT) + shellGradeAu * smoothT) * structuralFactor;
             zone = 'Shell';
-        } else if (distance < haloRadius) {
+        } else if (adjustedHaloDist < 1.0) {
             // Smooth transition from shell to halo
-            const t = (distance - shellRadius) / (haloRadius - shellRadius);
-            const smoothT = t * t * (3 - 2 * t);
-            baseGradeCu = shellGradeCu * (1 - smoothT) + haloGradeCu * smoothT;
-            baseGradeAu = shellGradeAu * (1 - smoothT) + haloGradeAu * smoothT;
+            const t = (adjustedShellDist - 1.0) / (adjustedHaloDist - adjustedShellDist + 0.1);
+            const smoothT = Math.max(0, Math.min(1, t * t * (3 - 2 * t)));
+            baseGradeCu = (shellGradeCu * (1 - smoothT) + haloGradeCu * smoothT) * structuralFactor;
+            baseGradeAu = (shellGradeAu * (1 - smoothT) + haloGradeAu * smoothT) * structuralFactor;
             zone = 'Halo';
         } else {
             baseGradeCu = 0;
@@ -1200,29 +1581,34 @@ function generatePorphyryOreBody(blocks, params = {}) {
         }
         
         // Apply horizontal gradient (distance from center within zone)
+        const horizontalDist = Math.sqrt(
+            Math.pow((block.x - centerX) / haloRadiusX, 2) +
+            Math.pow((block.y - centerY) / haloRadiusY, 2)
+        );
         let horizontalFactor = 1.0;
-        if (distance > 0) {
-            const normalizedDist = Math.min(1.0, distance / haloRadius);
+        if (horizontalDist > 0) {
+            const normalizedDist = Math.min(1.0, horizontalDist);
             horizontalFactor = 1.0 - (normalizedDist * horizontalGradient);
         }
         
         // Apply vertical gradient (depth-related)
         const depth = groundSurface - block.z; // Positive = deeper
-        const verticalFactor = 1.0 + (depth / 1000) * verticalGradient; // Increase with depth
+        const verticalFactor = 1.0 + (depth / 1000) * verticalGradient;
         
         // Apply supergene enrichment
         let enrichmentMultiplier = 1.0;
         if (depth < enrichmentDepth && depth > 0) {
-            // Enrichment zone near surface
             const enrichmentT = depth / enrichmentDepth;
             enrichmentMultiplier = 1.0 + (enrichmentFactor - 1.0) * (1.0 - enrichmentT);
         }
         
-        // Add local variation (noise)
+        // Add local variation (fine-scale noise)
+        // Noise scale adapts to model size
+        const localNoiseScale = 1.5 / Math.max(modelSizeX, modelSizeY, modelSizeZ, 1.0);
         const noise = simpleNoise3D(
-            block.x * 0.015,
-            block.y * 0.015,
-            block.z * 0.015,
+            block.x * localNoiseScale,
+            block.y * localNoiseScale,
+            block.z * localNoiseScale,
             1.0
         );
         const variationFactor = 1.0 + (noise - 0.5) * localVariation;
@@ -1272,6 +1658,217 @@ function generatePorphyryOreBody(blocks, params = {}) {
 }
 
 /**
+ * Salt Dome Reservoir Pattern (Petroleum Geology Demonstration)
+ * Models a salt dome structure with oil/gas traps
+ * Field mapping for petroleum:
+ *   - gradeCu = Oil Saturation (%)
+ *   - gradeAu = Gas Saturation (%)
+ *   - density = Porosity (%)
+ *   - rockType = Material type (Salt, CapRock, OilSand, WaterSand, Shale)
+ * @param {Array} blocks - Array of block objects
+ * @param {number} cellsX - Number of cells in X direction
+ * @param {number} cellsY - Number of cells in Y direction
+ * @param {number} cellsZ - Number of cells in Z direction
+ * @returns {Array} Blocks with material assigned
+ */
+function generateSaltDomeReservoir(blocks, cellsX, cellsY, cellsZ) {
+    // Calculate model bounds
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+    let minZ = Infinity, maxZ = -Infinity;
+    
+    blocks.forEach(block => {
+        minX = Math.min(minX, block.x);
+        maxX = Math.max(maxX, block.x);
+        minY = Math.min(minY, block.y);
+        maxY = Math.max(maxY, block.y);
+        minZ = Math.min(minZ, block.z);
+        maxZ = Math.max(maxZ, block.z);
+    });
+    
+    const modelSizeX = maxX - minX;
+    const modelSizeY = maxY - minY;
+    const modelSizeZ = maxZ - minZ;
+    
+    // Add time-based random component to ensure variation between generations
+    const timeSeed = Date.now() % 1000000;
+    const randomComponent = Math.random() * 10000;
+    
+    // Randomization helper function (deterministic based on seed)
+    const rand = (seed, min, max) => {
+        const combinedSeed = (seed * 9301 + 49297 + timeSeed + randomComponent) % 233280;
+        const hash = combinedSeed / 233280;
+        return min + hash * (max - min);
+    };
+    
+    const seed1 = (Math.floor((minX + minY) * 100) + timeSeed) % 10000;
+    const seed2 = (Math.floor((minY + minZ) * 100) + timeSeed * 3) % 10000;
+    const seed3 = (Math.floor((minZ + minX) * 100) + timeSeed * 7) % 10000;
+    
+    // Salt dome center (randomized but near center, similar to porphyry)
+    const centerSeed = ((minX + minY + minZ) * 100 + timeSeed + randomComponent) % 10000;
+    const centerX = minX + (maxX - minX) * rand(centerSeed, 0.4, 0.6); // 40-60% of range
+    const centerY = minY + (maxY - minY) * rand(centerSeed * 7, 0.4, 0.6);
+    
+    // Randomize dome vertical position and height
+    const domeTopZBase = rand(seed1, 0.05, 0.15); // 5-15% from top
+    const domeBaseZBase = rand(seed1 * 3, 0.25, 0.40); // 25-40% from bottom
+    const domeTopZ = maxZ - modelSizeZ * domeTopZBase;
+    const domeBaseZ = minZ + modelSizeZ * domeBaseZBase;
+    const domeHeight = domeTopZ - domeBaseZ;
+    
+    // Salt dome dimensions (elliptical in plan, randomized)
+    const domeRadiusXBase = rand(seed2, 0.12, 0.22); // 12-22% of model
+    const domeRadiusYBase = rand(seed2 * 3, 0.12, 0.22);
+    const domeRadiusX = modelSizeX * domeRadiusXBase;
+    const domeRadiusY = modelSizeY * domeRadiusYBase;
+    
+    // Cap rock thickness (randomized)
+    const capRockThickness = modelSizeZ * rand(seed2 * 5, 0.03, 0.08); // 3-8% of model height
+    
+    // Oil trap zone (around salt dome, above oil-water contact)
+    const trapWidth = modelSizeX * rand(seed3, 0.20, 0.35); // 20-35% of model width
+    const oilWaterContactBase = rand(seed3 * 3, 0.15, 0.30); // 15-30% from dome base
+    const oilWaterContact = domeBaseZ + modelSizeZ * oilWaterContactBase;
+    
+    // Gas cap (above oil)
+    const gasOilContactBase = rand(seed3 * 7, 0.10, 0.25); // 10-25% from dome top
+    const gasOilContact = domeTopZ - modelSizeZ * gasOilContactBase;
+    
+    return blocks.map(block => {
+        // Calculate distance from dome center (horizontal)
+        const dx = block.x - centerX;
+        const dy = block.y - centerY;
+        const horizontalDist = Math.sqrt(dx * dx + dy * dy);
+        
+        // Calculate normalized distance from dome center (for elliptical shape)
+        const normalizedDistX = Math.abs(dx) / domeRadiusX;
+        const normalizedDistY = Math.abs(dy) / domeRadiusY;
+        const normalizedDist = Math.sqrt(normalizedDistX * normalizedDistX + normalizedDistY * normalizedDistY);
+        
+        // Salt dome shape (parabolic in vertical section)
+        // Dome top is at domeTopZ, base at domeBaseZ
+        const relativeZ = (block.z - domeBaseZ) / domeHeight; // 0 at base, 1 at top
+        // Radius at this Z level (narrower at top, wider at base)
+        const domeRadiusAtZ = 1.0 - relativeZ * 0.3; // 1.0 at base, 0.7 at top
+        
+        let rockType = 'Shale'; // Default: surrounding shale
+        let oilSaturation = 0; // Oil saturation (%)
+        let gasSaturation = 0; // Gas saturation (%)
+        let porosity = 0.15; // Porosity (%) - default for shale
+        let density = 2.4; // Density (tonnes/m³) - default for shale
+        
+        // Determine if block is in salt dome
+        if (normalizedDist < domeRadiusAtZ && block.z >= domeBaseZ && block.z <= domeTopZ) {
+            // Inside salt dome
+            rockType = 'Salt';
+            porosity = rand(seed1 * 11, 0.005, 0.015); // Salt has very low porosity (0.5-1.5%)
+            density = rand(seed1 * 13, 2.15, 2.25); // Salt density (2.15-2.25 tonnes/m³)
+            oilSaturation = 0;
+            gasSaturation = 0;
+        } else if (normalizedDist < domeRadiusAtZ && block.z > domeTopZ && block.z <= domeTopZ + capRockThickness) {
+            // Cap rock (impermeable layer on top of salt)
+            rockType = 'CapRock';
+            porosity = rand(seed2 * 11, 0.03, 0.07); // Very low porosity (3-7%)
+            density = rand(seed2 * 13, 2.5, 2.7); // Dense cap rock (2.5-2.7 tonnes/m³)
+            oilSaturation = 0;
+            gasSaturation = 0;
+        } else if (normalizedDist < domeRadiusAtZ + (trapWidth / Math.max(domeRadiusX, domeRadiusY)) && 
+                   block.z < oilWaterContact && block.z > domeBaseZ) {
+            // Oil/gas trap zone (around salt dome, above oil-water contact)
+            // Normalize trap width to match normalized distance units
+            const normalizedTrapWidth = trapWidth / Math.max(domeRadiusX, domeRadiusY);
+            const trapDist = Math.max(0, (normalizedDist - domeRadiusAtZ) / normalizedTrapWidth);
+            const trapFactor = Math.max(0, 1.0 - trapDist); // Decreases away from dome
+            
+            if (block.z > gasOilContact) {
+                // Gas cap zone
+                rockType = 'GasSand';
+                // Randomize base porosity and saturation ranges
+                const basePorosity = rand(seed1 * 19, 0.18, 0.25);
+                const baseGasSat = rand(seed1 * 23, 55, 70);
+                porosity = basePorosity + trapFactor * rand(seed1 * 27, 0.08, 0.12); // 18-30% porosity
+                density = 2.1; // Lower density with gas
+                oilSaturation = 0;
+                gasSaturation = baseGasSat + trapFactor * rand(seed1 * 29, 25, 35); // 55-90% gas saturation
+            } else {
+                // Oil zone
+                rockType = 'OilSand';
+                // Randomize base porosity and saturation ranges
+                const basePorosity = rand(seed2 * 19, 0.16, 0.22);
+                const baseOilSat = rand(seed2 * 23, 45, 60);
+                porosity = basePorosity + trapFactor * rand(seed2 * 27, 0.10, 0.14); // 16-30% porosity
+                density = 2.2; // Slightly higher with oil
+                oilSaturation = baseOilSat + trapFactor * rand(seed2 * 29, 35, 45); // 45-90% oil saturation
+                gasSaturation = rand(seed2 * 31, 3, 8) + trapFactor * rand(seed2 * 33, 3, 7); // 3-15% gas saturation (solution gas)
+            }
+        } else if (block.z < oilWaterContact && block.z > domeBaseZ) {
+            // Water zone (below oil-water contact)
+            rockType = 'WaterSand';
+            // Use deterministic randomization for consistency
+            const waterSeed = Math.floor((block.x + block.y + block.z) * 100) % 10000;
+            porosity = rand(waterSeed, 0.15, 0.25); // 15-25% porosity
+            density = 2.3; // Higher with water
+            oilSaturation = 0;
+            gasSaturation = 0;
+        } else {
+            // Surrounding shale/rock
+            rockType = 'Shale';
+            // Use deterministic randomization for consistency
+            const shaleSeed = Math.floor((block.x + block.y + block.z) * 100) % 10000;
+            porosity = rand(shaleSeed, 0.10, 0.15); // 10-15% porosity
+            density = rand(shaleSeed * 3, 2.4, 2.6); // 2.4-2.6 tonnes/m³
+            oilSaturation = 0;
+            gasSaturation = 0;
+        }
+        
+        // Add some natural variation using noise
+        // Noise scale adapts to model size
+        const noiseScale = 1.0 / Math.max(modelSizeX, modelSizeY, modelSizeZ, 1.0);
+        const noise = simpleNoise3D(
+            block.x * noiseScale,
+            block.y * noiseScale,
+            block.z * noiseScale,
+            1.0
+        );
+        const variation = 0.9 + (noise - 0.5) * 0.2; // ±10% variation
+        
+        // Apply variation to saturations and porosity
+        oilSaturation = Math.max(0, Math.min(100, oilSaturation * variation));
+        gasSaturation = Math.max(0, Math.min(100, gasSaturation * variation));
+        porosity = Math.max(0.01, Math.min(0.35, porosity * variation));
+        
+        // Calculate economic value (for petroleum: $/barrel equivalent)
+        // Simplified: oil value ~$50/barrel, gas value ~$3/MCF
+        // Using density to estimate barrels per tonne
+        let econValue = 0;
+        if (rockType === 'OilSand' && oilSaturation > 10) {
+            const barrelsPerTonne = (porosity * oilSaturation / 100) * 6.29; // Approximate conversion
+            econValue = barrelsPerTonne * 50 - 20; // Revenue minus extraction cost
+        } else if (rockType === 'GasSand' && gasSaturation > 10) {
+            const mcfPerTonne = (porosity * gasSaturation / 100) * 35; // Approximate conversion
+            econValue = mcfPerTonne * 3 - 15; // Revenue minus extraction cost
+        } else if (rockType === 'Salt' || rockType === 'CapRock' || rockType === 'Shale') {
+            econValue = -10; // Negative value (no economic resource)
+        } else {
+            econValue = -5; // Water zone or low saturation
+        }
+        
+        return {
+            ...block,
+            rockType: rockType,
+            density: density,
+            gradeCu: oilSaturation, // Using gradeCu field for oil saturation
+            gradeAu: gasSaturation, // Using gradeAu field for gas saturation
+            // Note: porosity could be stored in a custom field, but we'll use density as a proxy
+            // In a real implementation, you'd add a porosity field
+            econValue: econValue,
+            zone: rockType // Use rockType as zone identifier
+        };
+    });
+}
+
+/**
  * Apply material pattern to blocks
  * @param {Array} blocks - Array of block objects
  * @param {string} patternType - Type of pattern to apply
@@ -1304,6 +1901,8 @@ function applyMaterialPattern(blocks, patternType, cellsX, cellsY, cellsZ) {
             return generateVeinOreBody(blocks);
         case 'porphyry_ore':
             return generatePorphyryOreBody(blocks);
+        case 'salt_dome':
+            return generateSaltDomeReservoir(blocks, cellsX, cellsY, cellsZ);
         default:
             return applyUniformPattern(blocks);
     }

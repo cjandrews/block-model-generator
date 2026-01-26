@@ -14,7 +14,6 @@
             <h1>Mining Block Model Generator</h1>
             <p>Create dummy 3D block models for testing mining applications</p>
             <div class="header-buttons">
-                <button id="docsBtn" class="header-btn">📚 Docs</button>
                 <button id="memoryBtn" class="header-btn">Memory</button>
                 <button id="aboutBtn" class="header-btn">About</button>
             </div>
@@ -75,17 +74,18 @@
                     <div class="form-group">
                         <label for="patternType">Material Pattern</label>
                         <select id="patternType">
-                            <option value="uniform">Uniform</option>
-                            <option value="layered">Layered</option>
-                            <option value="gradient">Gradient</option>
-                            <option value="checkerboard">Checkerboard</option>
-                            <option value="random">Random</option>
-                            <option value="ore_horizon">Single Ore Horizon</option>
-                            <option value="inclined_vein">Inclined Vein</option>
-                            <option value="random_clusters" selected>Random Clusters</option>
-                            <option value="ellipsoid_ore">Ellipsoid Ore Body</option>
-                            <option value="vein_ore">Vein/Structural Ore Body</option>
                             <option value="porphyry_ore">Porphyry-Style Zoning</option>
+                            <option value="vein_ore">Vein/Structural Ore Body</option>
+                            <option value="ellipsoid_ore">Ellipsoid Ore Body</option>
+                            <option value="salt_dome">Salt Dome Reservoir (Petroleum)</option>
+                            <option value="random_clusters" selected>Random Clusters</option>
+                            <option value="inclined_vein">Inclined Vein</option>
+                            <option value="ore_horizon">Single Ore Horizon</option>
+                            <option value="random">Random</option>
+                            <option value="checkerboard">Checkerboard</option>
+                            <option value="gradient">Gradient</option>
+                            <option value="layered">Layered</option>
+                            <option value="uniform">Uniform</option>
                         </select>
                     </div>
                     
@@ -93,6 +93,9 @@
                         <button type="button" id="generateBtn">Generate</button>
                         <button type="button" id="exportBtn" disabled>Export</button>
                         <button type="button" id="zoomResetBtn">Zoom to Fit</button>
+                    </div>
+                    <div class="button-group" style="margin-top: 8px;">
+                        <button type="button" id="docsBtnControl" class="header-btn" style="width: 100%;">📚 Documentation</button>
                     </div>
                 </form>
                 

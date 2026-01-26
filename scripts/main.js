@@ -688,21 +688,29 @@ function initAboutModal() {
  * Initialize Documentation button
  */
 function initDocsButton() {
-    const docsBtn = document.getElementById('docsBtn');
+    const openDocs = () => {
+        // Open documentation in a new window
+        const docsWindow = window.open('docs.html', 'BlockModelDocs', 
+            'width=1200,height=800,scrollbars=yes,resizable=yes');
+        
+        if (docsWindow) {
+            docsWindow.focus();
+        } else {
+            // Fallback if popup is blocked
+            window.location.href = 'docs.html';
+        }
+    };
     
+    // Handle header button (if it still exists)
+    const docsBtn = document.getElementById('docsBtn');
     if (docsBtn) {
-        docsBtn.addEventListener('click', () => {
-            // Open documentation in a new window
-            const docsWindow = window.open('docs.html', 'BlockModelDocs', 
-                'width=1200,height=800,scrollbars=yes,resizable=yes');
-            
-            if (docsWindow) {
-                docsWindow.focus();
-            } else {
-                // Fallback if popup is blocked
-                window.location.href = 'docs.html';
-            }
-        });
+        docsBtn.addEventListener('click', openDocs);
+    }
+    
+    // Handle control panel button (for mobile visibility)
+    const docsBtnControl = document.getElementById('docsBtnControl');
+    if (docsBtnControl) {
+        docsBtnControl.addEventListener('click', openDocs);
     }
 }
 

@@ -1541,9 +1541,10 @@ function zoomToFit() {
  * @param {number} cellSizeX - Size of each cell in X direction
  * @param {number} cellSizeY - Size of each cell in Y direction
  * @param {number} cellSizeZ - Size of each cell in Z direction
+ * @param {boolean} centerCamera - Whether to center camera on model (default: false)
  */
-function updateVisualization(blocks, cellSizeX, cellSizeY, cellSizeZ) {
-    renderBlocks(blocks, cellSizeX, cellSizeY, cellSizeZ);
+function updateVisualization(blocks, cellSizeX, cellSizeY, cellSizeZ, centerCamera = false) {
+    renderBlocks(blocks, cellSizeX, cellSizeY, cellSizeZ, centerCamera);
 }
 
 /**
