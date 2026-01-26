@@ -216,6 +216,12 @@ function init() {
             const value = parseFloat(e.target.value);
             if (slicePositionValue) {
                 slicePositionValue.textContent = value.toFixed(1);
+                // Update label text with translation
+                const label = document.querySelector('label[for="slicePosition"]');
+                if (label) {
+                    const labelText = t('sliceTool.position', { value: value.toFixed(1) });
+                    label.innerHTML = labelText;
+                }
             }
             setSlicePosition(value);
         });
@@ -247,6 +253,12 @@ function init() {
             const value = parseFloat(e.target.value);
             if (valueVisibilityThresholdValue) {
                 valueVisibilityThresholdValue.textContent = value.toFixed(2);
+                // Update label text with translation
+                const label = document.querySelector('label[for="valueVisibilityThreshold"]');
+                if (label) {
+                    const labelText = t('valueFilter.threshold', { value: value.toFixed(2) });
+                    label.innerHTML = labelText;
+                }
             }
             setValueVisibilityThreshold(value);
         });
@@ -290,7 +302,7 @@ function init() {
     initMemoryModal();
     initDocsButton();
     
-    updateStatus('Generating initial model...');
+    updateStatus(t('status.generatingInitial'));
     
     // Automatically generate a model on initial load
     // Use setTimeout to ensure DOM is fully ready
@@ -304,7 +316,7 @@ function init() {
  */
 async function handleGenerate() {
     try {
-        updateStatus('Generating block model...');
+        updateStatus(t('status.generating'));
         
         // Get form values
         const params = {
@@ -322,11 +334,11 @@ async function handleGenerate() {
         
         // Validate inputs
         if (params.cellSizeX <= 0 || params.cellSizeY <= 0 || params.cellSizeZ <= 0) {
-            throw new Error('Cell sizes must be greater than 0');
+            throw new Error(t('errors.cellSizeInvalid'));
         }
         
         if (params.cellsX <= 0 || params.cellsY <= 0 || params.cellsZ <= 0) {
-            throw new Error('Number of cells must be greater than 0');
+            throw new Error(t('errors.cellCountInvalid'));
         }
         
         const totalCells = params.cellsX * params.cellsY * params.cellsZ;
@@ -336,10 +348,10 @@ async function handleGenerate() {
         let blocks = null;
         
         if (totalCells >= LARGE_MODEL_THRESHOLD) {
-            updateStatus('Checking cache for large model...');
+            updateStatus(t('status.checkingCache'));
             blocks = loadBlocksFromCache(cacheKey);
             if (blocks) {
-                updateStatus(`Loaded ${blocks.length} blocks from cache.`, 'success');
+                updateStatus(t('status.loadedFromCache', { count: blocks.length.toLocaleString() }), 'success');
                 currentBlocks = blocks;
                 currentParams = params;
                 
@@ -364,13 +376,12 @@ async function handleGenerate() {
                 
                 if (totalCells > 200000) {
                     updateStatus(
-                        `Model loaded from cache: ${blocks.length} blocks. ` +
-                        `Visualizing sample for performance. Full model available for export.`,
+                        t('status.modelLoadedLarge', { count: blocks.length.toLocaleString() }),
                         'success'
                     );
                 } else {
                     updateStatus(
-                        `Model loaded from cache: ${blocks.length} blocks. Ready to export.`,
+                        t('status.modelLoaded', { count: blocks.length.toLocaleString() }),
                         'success'
                     );
                 }
@@ -379,7 +390,7 @@ async function handleGenerate() {
         }
         
         // Generate blocks using standard format
-        updateStatus(`Generating ${totalCells.toLocaleString()} blocks...`);
+        updateStatus(t('status.generatingBlocks', { count: totalCells.toLocaleString() }));
         
         const gridParams = {
             xmOrig: params.originX,
@@ -395,14 +406,14 @@ async function handleGenerate() {
         
         // Generate in chunks for very large models to avoid blocking
         if (totalCells > 500000) {
-            updateStatus('Generating large model in chunks (this may take a while)...');
+            updateStatus(t('status.generatingLarge'));
             blocks = await generateLargeModel(gridParams);
         } else {
             blocks = generateRegularGrid(gridParams);
         }
         
         // Apply material pattern
-        updateStatus('Applying material pattern...');
+        updateStatus(t('status.applyingPattern'));
         const blocksWithMaterials = applyMaterialPattern(
             blocks,
             params.patternType,
@@ -417,7 +428,7 @@ async function handleGenerate() {
         
         // Cache large models
         if (totalCells >= LARGE_MODEL_THRESHOLD) {
-            updateStatus('Caching model data...');
+            updateStatus(t('status.caching'));
             saveBlocksToCache(cacheKey, blocksWithMaterials);
         }
         
@@ -444,21 +455,24 @@ async function handleGenerate() {
         // Update status
         if (totalCells > 200000) {
             updateStatus(
-                `Model generated: ${currentBlocks.length.toLocaleString()} blocks. ` +
-                `Pattern: ${params.patternType}. ` +
-                `Visualizing sample for performance. Full model available for export.`,
+                t('status.modelGeneratedLarge', { 
+                    count: currentBlocks.length.toLocaleString(),
+                    pattern: t(`patterns.${params.patternType}`)
+                }),
                 'success'
             );
         } else {
             updateStatus(
-                `Model generated: ${currentBlocks.length.toLocaleString()} blocks. ` +
-                `Pattern: ${params.patternType}. Ready to export.`,
+                t('status.modelGenerated', { 
+                    count: currentBlocks.length.toLocaleString(),
+                    pattern: t(`patterns.${params.patternType}`)
+                }),
                 'success'
             );
         }
         
     } catch (error) {
-        updateStatus(`Error: ${error.message}`, 'error');
+        updateStatus(t('status.error', { message: error.message }), 'error');
         console.error('Generation error:', error);
     }
 }
@@ -510,7 +524,11 @@ function generateLargeModel(gridParams) {
             
             // Update progress
             const progress = Math.floor((processed / total) * 100);
-            updateStatus(`Generating blocks: ${progress}% (${processed.toLocaleString()}/${total.toLocaleString()})...`);
+            updateStatus(t('status.generatingProgress', {
+                progress: progress,
+                processed: processed.toLocaleString(),
+                total: total.toLocaleString()
+            }));
             
             if (processed < total) {
                 // Use setTimeout to allow UI updates
@@ -529,20 +547,20 @@ function generateLargeModel(gridParams) {
  */
 async function handleExport() {
     if (currentBlocks.length === 0) {
-        updateStatus('No blocks to export. Please generate a model first.', 'error');
+        updateStatus(t('status.noBlocksToExport'), 'error');
         return;
     }
     
     // Check if JSZip is available
     if (typeof JSZip === 'undefined') {
-        updateStatus('ZIP library not loaded. Exporting as CSV...', 'info');
+        updateStatus(t('status.zipNotAvailable'), 'info');
         // Fallback to non-compressed CSV
         exportAsCsv();
         return;
     }
     
     try {
-        updateStatus('Exporting to ZIP (this may take a moment for large models)...');
+        updateStatus(t('status.exporting'));
         
         // Use standard CSV export (chunked to avoid string length limits)
         // blocksToCsv now handles chunking internally for very large models
@@ -559,7 +577,7 @@ async function handleExport() {
         
         // Check if CSV content is too large for a single string (safety check)
         if (csvContent.length > 500 * 1024 * 1024) { // 500MB limit
-            updateStatus('CSV content too large. Please reduce model size.', 'error');
+            updateStatus(t('status.csvTooLarge'), 'error');
             return;
         }
         
@@ -601,13 +619,17 @@ async function handleExport() {
         const compressionRatio = ((1 - compressedSize / originalSize) * 100).toFixed(1);
         
         updateStatus(
-            `ZIP exported successfully: ${currentBlocks.length.toLocaleString()} blocks. ` +
-            `Compressed ${(originalSize / 1024 / 1024).toFixed(2)} MB to ${(compressedSize / 1024 / 1024).toFixed(2)} MB (${compressionRatio}% reduction).`,
+            t('status.exportSuccess', {
+                count: currentBlocks.length.toLocaleString(),
+                originalSize: (originalSize / 1024 / 1024).toFixed(2),
+                compressedSize: (compressedSize / 1024 / 1024).toFixed(2),
+                ratio: compressionRatio
+            }),
             'success'
         );
         
     } catch (error) {
-        updateStatus(`Export error: ${error.message}. Trying CSV export...`, 'error');
+        updateStatus(t('status.exportError', { message: error.message }), 'error');
         console.error('ZIP export error:', error);
         // Fallback to non-compressed CSV
         exportAsCsv();
@@ -647,11 +669,11 @@ function exportAsCsv() {
         setTimeout(() => URL.revokeObjectURL(url), 100);
         
         updateStatus(
-            `CSV exported successfully: ${currentBlocks.length.toLocaleString()} blocks.`,
+            t('status.csvSuccess', { count: currentBlocks.length.toLocaleString() }),
             'success'
         );
     } catch (error) {
-        updateStatus(`CSV export error: ${error.message}`, 'error');
+        updateStatus(t('status.csvError', { message: error.message }), 'error');
         console.error('CSV export error:', error);
     }
 }
@@ -689,15 +711,18 @@ function initAboutModal() {
  */
 function initDocsButton() {
     const openDocs = () => {
-        // Open documentation in a new window
-        const docsWindow = window.open('docs.html', 'BlockModelDocs', 
+        // Get current locale to pass to documentation
+        const currentLocale = typeof getLocale === 'function' ? getLocale() : 'en';
+        
+        // Open documentation in a new window with locale parameter
+        const docsWindow = window.open(`docs.html?locale=${currentLocale}`, 'BlockModelDocs', 
             'width=1200,height=800,scrollbars=yes,resizable=yes');
         
         if (docsWindow) {
             docsWindow.focus();
         } else {
             // Fallback if popup is blocked
-            window.location.href = 'docs.html';
+            window.location.href = `docs.html?locale=${currentLocale}`;
         }
     };
     
@@ -726,6 +751,10 @@ function initMemoryModal() {
     let memoryUpdateInterval = null;
     
     function formatBytes(bytes) {
+        // Use i18n formatBytes function if available, otherwise fallback
+        if (typeof formatBytes === 'function' && window.formatBytes) {
+            return window.formatBytes(bytes);
+        }
         if (bytes === 0) return '0 B';
         const k = 1024;
         const sizes = ['B', 'KB', 'MB', 'GB'];
@@ -741,19 +770,19 @@ function initMemoryModal() {
         // Try to get memory info from performance API (Chrome/Edge)
         if (performance.memory) {
             const mem = performance.memory;
-            info.push(`Used JS Heap: ${formatBytes(mem.usedJSHeapSize)}`);
-            info.push(`Total JS Heap: ${formatBytes(mem.totalJSHeapSize)}`);
-            info.push(`JS Heap Limit: ${formatBytes(mem.jsHeapSizeLimit)}`);
+            info.push(`${t('memory.usedHeap')}: ${formatBytes(mem.usedJSHeapSize)}`);
+            info.push(`${t('memory.totalHeap')}: ${formatBytes(mem.totalJSHeapSize)}`);
+            info.push(`${t('memory.heapLimit')}: ${formatBytes(mem.jsHeapSizeLimit)}`);
             
             const percentUsed = ((mem.usedJSHeapSize / mem.jsHeapSizeLimit) * 100).toFixed(1);
-            info.push(`Heap Usage: ${percentUsed}%`);
+            info.push(`${t('memory.heapUsage')}: ${percentUsed}%`);
         } else {
-            info.push('Memory API not available in this browser.');
+            info.push(t('memory.note'));
         }
         
         // Try to get memory info from navigator.deviceMemory (if available)
         if (navigator.deviceMemory) {
-            info.push(`Device Memory: ${navigator.deviceMemory} GB`);
+            info.push(`${t('memory.deviceMemory')}: ${navigator.deviceMemory} GB`);
         }
         
         // Count Three.js objects if available
@@ -826,11 +855,11 @@ function initMemoryModal() {
                 textureCount = textures.size;
                 
                 info.push('');
-                info.push('Three.js Objects:');
-                info.push(`  Scene Objects: ${objectCount}`);
-                info.push(`  Geometries: ${geometryCount}`);
-                info.push(`  Materials: ${materialCount}`);
-                info.push(`  Textures: ${textureCount}`);
+                info.push(t('memory.threejsObjects'));
+                info.push(`  ${t('memory.sceneObjects')}: ${objectCount}`);
+                info.push(`  ${t('memory.geometries')}: ${geometryCount}`);
+                info.push(`  ${t('memory.materials')}: ${materialCount}`);
+                info.push(`  ${t('memory.textures')}: ${textureCount}`);
             } catch (e) {
                 // Silently fail if scene is not accessible
             }
@@ -883,9 +912,32 @@ function updateStatus(message, type = 'info') {
     statusEl.className = `status ${type}`;
 }
 
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
+// Initialize when DOM is ready AND i18n is loaded
+async function initializeApp() {
+    // Wait for i18n to be ready (check if initI18n has completed)
+    if (typeof initI18n === 'function') {
+        // Wait a bit for i18n to initialize if it's still loading
+        let attempts = 0;
+        while (typeof getLocale === 'undefined' && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 10));
+            attempts++;
+        }
+    }
+    
+    // Also listen for localeChanged event to ensure translations are loaded
+    if (typeof getLocale === 'undefined') {
+        await new Promise(resolve => {
+            window.addEventListener('localeChanged', () => resolve(), { once: true });
+            // Timeout after 1 second if event doesn't fire
+            setTimeout(() => resolve(), 1000);
+        });
+    }
+    
     init();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    initializeApp();
 }
