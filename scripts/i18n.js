@@ -1522,38 +1522,56 @@ async function initI18n(locale = null) {
  * @returns {string} Translated text
  */
 function t(key, params = {}) {
-    // If translations haven't loaded yet, return key (silently)
-    if (!translations || typeof translations !== 'object' || Object.keys(translations).length === 0) {
-        return key;
-    }
-    
-    // Navigate through nested object using dot notation
-    const keys = key.split('.');
-    let value = translations;
-    
-    for (const k of keys) {
-        if (value && typeof value === 'object' && k in value) {
-            value = value[k];
-        } else {
-            // Key not found, return the key itself (helps identify missing translations)
-            // Only warn if translations are loaded (to avoid spam during initial load)
-            if (Object.keys(translations).length > 0) {
-                console.warn(`Translation key not found: ${key}`);
+    // Helper function to get value from a translations object
+    const getValueFromTranslations = (transObj, keyPath) => {
+        if (!transObj || typeof transObj !== 'object' || Object.keys(transObj).length === 0) {
+            return null;
+        }
+        
+        const keys = keyPath.split('.');
+        let value = transObj;
+        
+        for (const k of keys) {
+            if (value && typeof value === 'object' && k in value) {
+                value = value[k];
+            } else {
+                return null;
             }
-            return key;
+        }
+        
+        if (typeof value === 'string') {
+            return value;
+        }
+        
+        return null;
+    };
+    
+    // Try to get translation from loaded translations first
+    let translation = getValueFromTranslations(translations, key);
+    
+    // If not found in loaded translations, try embedded translations as fallback
+    if (!translation && EMBEDDED_TRANSLATIONS && currentLocale) {
+        const embedded = EMBEDDED_TRANSLATIONS[currentLocale];
+        if (embedded) {
+            translation = getValueFromTranslations(embedded, key);
+        }
+        // If still not found, try English as fallback
+        if (!translation && currentLocale !== 'en' && EMBEDDED_TRANSLATIONS['en']) {
+            translation = getValueFromTranslations(EMBEDDED_TRANSLATIONS['en'], key);
         }
     }
     
-    // If value is not a string, return the key
-    if (typeof value !== 'string') {
-        if (Object.keys(translations).length > 0) {
-            console.warn(`Translation value is not a string for key: ${key}`);
+    // If still not found, return the key (helps identify missing translations)
+    if (!translation) {
+        // Only warn if translations are loaded (to avoid spam during initial load)
+        if (translations && Object.keys(translations).length > 0) {
+            console.warn(`Translation key not found: ${key}`);
         }
         return key;
     }
     
     // Substitute parameters (simple {{param}} replacement)
-    let result = value;
+    let result = translation;
     Object.keys(params).forEach(param => {
         const regex = new RegExp(`\\{\\{${param}\\}\\}`, 'g');
         result = result.replace(regex, params[param]);
