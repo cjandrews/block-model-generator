@@ -259,6 +259,3 @@ For issues, questions, or contributions:
 - Check the interactive documentation (📚 Docs button)
 - Review the documentation files in the repository
 
----
-
-**Made with ❤️ for the mining and petroleum geology community**
