@@ -1095,8 +1095,11 @@ function updateClippingPlanes() {
             // Mining X -> Three.js X: Rectangle in YZ plane (perpendicular to X axis)
             // Blocks are at (block.x, block.z, block.y) in Three.js coords
             // So Y extent is from block.z (minY to maxY), Z extent is from block.y (minZ to maxZ)
-            rectangleWidth = (modelBounds.maxY - modelBounds.minY) * 1.1;  // Y extent (vertical in Three.js)
-            rectangleHeight = (modelBounds.maxZ - modelBounds.minZ) * 1.1; // Z extent (forward in Three.js)
+            // PlaneGeometry is in XY plane by default (width=X, height=Y)
+            // When rotated 90° around Y axis: width (X) -> Z in world, height (Y) -> Y in world
+            // So we need: width = Z extent, height = Y extent
+            rectangleWidth = (modelBounds.maxZ - modelBounds.minZ) * 1.1; // Z extent (forward in Three.js) -> width
+            rectangleHeight = (modelBounds.maxY - modelBounds.minY) * 1.1; // Y extent (vertical in Three.js) -> height
             rectangleCenterX = slicePosition;  // X position of slice plane
             rectangleCenterY = (modelBounds.minY + modelBounds.maxY) / 2;  // Center in Y (vertical)
             rectangleCenterZ = (modelBounds.minZ + modelBounds.maxZ) / 2;  // Center in Z (forward)
@@ -1108,8 +1111,11 @@ function updateClippingPlanes() {
             maxValue = modelBounds.maxZ;
             minValue = modelBounds.minZ;
             // Mining Y -> Three.js Z: Rectangle in XY plane
-            rectangleWidth = (modelBounds.maxX - modelBounds.minX) * 1.1;
-            rectangleHeight = (modelBounds.maxY - modelBounds.minY) * 1.1;
+            // PlaneGeometry is in XY plane by default (width=X, height=Y)
+            // When rotated 90° around Z axis: width (X) -> Y in world, height (Y) -> -X in world
+            // So we need: width = Y extent, height = X extent
+            rectangleWidth = (modelBounds.maxY - modelBounds.minY) * 1.1; // Y extent (vertical) -> width
+            rectangleHeight = (modelBounds.maxX - modelBounds.minX) * 1.1; // X extent (horizontal) -> height
             rectangleCenterX = (modelBounds.minX + modelBounds.maxX) / 2;
             rectangleCenterY = (modelBounds.minY + modelBounds.maxY) / 2;
             rectangleCenterZ = slicePosition;
@@ -1161,11 +1167,11 @@ function updateClippingPlanes() {
         const handleRadius = Math.max(0.5, Math.min(handleSize, 5)); // Clamp between 0.5 and 5 units
         
         // Calculate arrow dimensions based on handle size
-        // Make it 2x bigger/thicker as requested
-        const arrowLength = handleRadius * 8; // 2x: was 4, now 8
-        const arrowShaftRadius = handleRadius * 0.3; // 2x: was 0.15, now 0.3
-        const arrowHeadLength = handleRadius * 1.6; // 2x: was 0.8, now 1.6
-        const arrowHeadRadius = handleRadius * 0.8; // 2x: was 0.4, now 0.8
+        // Make it 2x bigger/thicker as requested (additional 2x on top of previous 2x = 4x total from original)
+        const arrowLength = handleRadius * 16; // 4x: was 4 originally, now 16
+        const arrowShaftRadius = handleRadius * 0.6; // 4x: was 0.15 originally, now 0.6
+        const arrowHeadLength = handleRadius * 3.2; // 4x: was 0.8 originally, now 3.2
+        const arrowHeadRadius = handleRadius * 1.6; // 4x: was 0.4 originally, now 1.6
         
         // Update handle geometry if size changed significantly or if it's not an arrow group yet
         const params = sliceHandle.userData.arrowParams || {};
@@ -2553,9 +2559,6 @@ function onMouseMove(event) {
         const deltaX = mouse.x - sliceDragStartPos.x;
         const deltaY = mouse.y - sliceDragStartPos.y;
         
-        // Debug: Log deltas to verify both are being calculated
-        // console.log('Deltas - X:', deltaX.toFixed(4), 'Y:', deltaY.toFixed(4));
-        
         // Get bounds for the current axis
         let min, max, range;
         switch (sliceAxis) {
@@ -2655,32 +2658,12 @@ function onMouseMove(event) {
             movement = projectedMovement * (range / 2.0);
         }
         
-        // Debug: Log screen direction and projection
-        console.log('Screen projection:', {
-            axis: sliceAxis,
-            screenDir: `(${screenDirection.x.toFixed(3)}, ${screenDirection.y.toFixed(3)})`,
-            screenDirLength: screenDirLength.toFixed(3),
-            mouseDelta: `(${deltaX.toFixed(3)}, ${deltaY.toFixed(3)})`,
-            projectedMovement: projectedMovement.toFixed(4),
-            movement: movement.toFixed(4)
-        });
-        
         // Calculate new position
         const newPos = Math.max(min, Math.min(max, sliceDragStartSlicePos + movement));
-        
-        // Debug: Log the calculation details
-        const calculatedPos = sliceDragStartSlicePos + movement;
-        const diff = Math.abs(newPos - slicePosition);
-        const willUpdate = diff > 0.001;
-        
-        // Log key values separately for easier debugging
-        console.log(`Drag [${sliceAxis}]: deltaX=${deltaX.toFixed(4)}, deltaY=${deltaY.toFixed(4)}, movement=${movement.toFixed(4)}, pos=${newPos.toFixed(4)}, update=${willUpdate}`);
         
         // Only update if position actually changed (avoid unnecessary updates)
         // Lower threshold to 0.001 to allow smaller movements
         if (Math.abs(newPos - slicePosition) > 0.001) {
-            console.log('Updating slice position from', slicePosition.toFixed(4), 'to', newPos.toFixed(4));
-            
             // Use setSlicePosition to ensure all updates happen correctly
             setSlicePosition(newPos);
             
@@ -2688,7 +2671,6 @@ function onMouseMove(event) {
             const slider = document.getElementById('slicePosition');
             if (slider) {
                 slider.value = newPos;
-                console.log('Slider value set to:', newPos);
             }
             const valueDisplay = document.getElementById('slicePositionValue');
             if (valueDisplay) {
@@ -2700,10 +2682,6 @@ function onMouseMove(event) {
                     label.innerHTML = labelText;
                 }
             }
-            
-            console.log('Slice position updated, clipping planes should be updated');
-        } else {
-            console.warn('Update skipped - diff too small:', diff.toFixed(6), '< 0.001');
         }
         
         // Set cursor and return - don't check blocks or tooltip while dragging
