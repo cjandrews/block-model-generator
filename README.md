@@ -24,6 +24,8 @@ A powerful web-based tool for generating realistic 3D block models for mining an
 - Color-coded visualization by: Rock Type, Density, Cu Grade, Au Grade, Economic Value
 - Real-time camera controls (rotate, pan, zoom)
 - Block tooltips with detailed information
+- **Save Viewport Image**: Export the current 3D view as a PNG image
+- **Model Statistics Display**: On-canvas button opens detailed statistics modal
 
 ![Example](./Examples/fun.jpg)
 
@@ -60,24 +62,49 @@ A powerful web-based tool for generating realistic 3D block models for mining an
   - See which patterns you've tried and most used patterns
   - Monitor feature usage (view modes, tools)
   - Track model characteristics (largest model, average size, total volume)
+  - Accessible via user icon button in header
 - **Model Statistics Display**: View detailed statistics for each generated model
-  - Block count, volume, and dimensions
+  - On-canvas circular button (lower left) opens detailed statistics modal
+  - Block count, volume, and dimensions displayed in compact table format
   - Ore vs waste percentages
   - Zone distribution
   - Grade ranges (Cu, Au) if available
   - Economic value statistics
   - Interesting facts about your model
-- **Model Gallery**: Save and reload your favorite models
+- **Model Gallery**: Save and reload your favorite models with full state preservation
   - Save models with custom names
+  - **Saves complete visualization state**: view mode, field, slice settings, filters, ground layer
+  - **Saves camera position**: exact viewing angle and position restored on load
+  - **Saves random seed**: regenerates identical patterns for reproducible results
   - Quick access to saved model parameters
   - Automatic model regeneration from saved parameters
   - Gallery limited to 50 models (most recent kept)
+  - Accessible via gallery icon button in header
 
-### Documentation
-- Interactive documentation tool (opens in new window)
-- Comprehensive guides and tutorials
-- Search functionality
-- Pattern selection guide
+### User Interface
+- **Modern Icon-Based Design**: Font Awesome icons replace text labels for cleaner interface
+  - All buttons use icon-only design with tooltips on hover
+  - Consistent styling and hover effects throughout
+  - Responsive button sizing and spacing
+- **Header Toolbar**: Quick access to key features
+  - Language selector (flag icon) - Switch between English, Spanish, French
+  - Statistics dashboard (user icon) - View usage statistics with badge count
+  - Model gallery (images icon) - Access saved models with badge count
+  - Documentation (question mark icon) - Open interactive help
+  - About (info icon) - Application information and memory monitoring
+- **Control Panel**: Main action buttons with icon-only design
+  - Generate (play icon) - Create new model
+  - Zoom to Fit (zoom icon) - Reset camera view
+  - Export (download icon) - Download CSV file
+  - Save Model (star icon) - Save to gallery (opens name dialog)
+  - Save Image (camera icon) - Export viewport as PNG
+- **On-Canvas Controls**: 
+  - Model Statistics button (circular, lower left) - Opens detailed statistics modal
+- **Internationalization**: Full support for English, Spanish, and French
+  - Automatic language detection based on browser settings
+  - All UI elements, buttons, labels, and messages translated
+  - Tooltips and status messages localized
+  - Language preference saved in browser storage
 
 ## 🚀 Quick Start
 
@@ -272,6 +299,18 @@ Copyright (c) 2026 BuildIT Design Lab, LLC
 
 - Three.js community for excellent 3D graphics library
 - Mining software industry for standardized block model formats
+
+## 🔒 Privacy
+
+**Privacy-First Design**: This application runs entirely in your browser with no server-side components. 
+
+- **No Data Collection**: No user statistics, usage data, or personal information is collected or transmitted
+- **Local Storage Only**: All statistics, saved models, and preferences are stored locally in your browser using localStorage
+- **No External Tracking**: No analytics, cookies, or tracking scripts are used
+- **No Network Requests**: The application does not send any data to external servers
+- **Your Data Stays Yours**: All data remains on your device and can be cleared at any time through your browser settings
+
+The statistics dashboard and model gallery features use only browser-local storage. You have complete control over your data, and nothing leaves your browser.
 
 ## 📧 Support
 

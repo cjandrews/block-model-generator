@@ -19,7 +19,7 @@
             <p data-i18n="app.subtitle">Create dummy 3D block models for testing mining applications</p>
             <div class="header-buttons">
                 <div class="language-selector">
-                    <button id="languageSelectBtn" class="header-btn language-btn" style="margin-right: 8px; padding: 6px 8px; display: flex; align-items: center; justify-content: center;">
+                    <button id="languageSelectBtn" class="header-btn language-btn" style="margin-right: 8px;">
                         <img id="languageFlag" src="images/Flag_of_the_United_Kingdom.svg" alt="Language" style="width: 24px; height: 18px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
                     </button>
                     <div id="languageDropdown" class="language-dropdown" style="display: none;">
@@ -34,8 +34,9 @@
                         </div>
                     </div>
                 </div>
-                <button id="statsBtn" class="header-btn" data-i18n="buttons.stats" title="Stats"><i class="fas fa-chart-bar"></i></button>
+                <button id="statsBtn" class="header-btn" data-i18n="buttons.stats" title="Stats"><i class="fas fa-user"></i></button>
                 <button id="galleryBtn" class="header-btn" data-i18n="buttons.gallery" title="Gallery"><i class="fas fa-images"></i></button>
+                <button id="docsBtnControl" class="header-btn" data-i18n="buttons.documentation" title="Documentation"><i class="fas fa-question-circle"></i></button>
                 <button id="aboutBtn" class="header-btn" data-i18n="buttons.about" title="About"><i class="fas fa-info-circle"></i></button>
             </div>
         </header>
@@ -115,7 +116,7 @@
                         <button type="button" id="zoomResetBtn" data-i18n="buttons.zoomToFit" title="Zoom to Fit"><i class="fas fa-search-plus"></i></button>
                         <button type="button" id="exportBtn" disabled data-i18n="buttons.export" title="Export"><i class="fas fa-download"></i></button>
                         <button type="button" id="saveModelBtn" disabled class="header-btn" data-i18n="gallery.saveCurrent" title="Save Model"><i class="fas fa-star"></i></button>
-                        <button type="button" id="docsBtnControl" class="header-btn" data-i18n="buttons.documentation" title="Documentation"><i class="fas fa-question-circle"></i></button>
+                        <button type="button" id="saveImageBtn" disabled data-i18n="buttons.saveImage" title="Save Image"><i class="fas fa-camera"></i></button>
                     </div>
                 </form>
                 
@@ -252,19 +253,6 @@
                 </div>
                 
                 <div id="status" class="status"></div>
-                
-                <!-- Model Statistics Display -->
-                <div id="modelStatsSection" class="collapsible-section" style="margin-top: 16px; display: none;">
-                    <div class="section-header collapsible-header" onclick="toggleSection(this)">
-                        <h3 data-i18n="modelStats.title">📈 Model Statistics</h3>
-                        <span class="toggle-icon">▼</span>
-                    </div>
-                    <div class="collapsible-content">
-                        <div id="modelStatsContent" style="font-size: 0.9em; line-height: 1.6;">
-                            <!-- Statistics will be populated here -->
-                        </div>
-                    </div>
-                </div>
             </aside>
 
             <main class="visualization-area">
@@ -273,6 +261,10 @@
                 <div class="controls-hint">
                     <p data-i18n="controls.hint">Controls: Left-click drag to rotate | Right-click drag to pan | Scroll to zoom</p>
                 </div>
+                <!-- Model Statistics Button (On-Canvas) -->
+                <button id="modelStatsBtn" class="canvas-button" title="Model Statistics" style="display: none;">
+                    <i class="fas fa-file-invoice"></i>
+                </button>
             </main>
         </div>
     </div>
@@ -324,7 +316,7 @@
                 <div style="margin-bottom: 12px;">
                     <button id="saveCurrentModelBtn" class="header-btn" style="width: 100%;" data-i18n="gallery.saveCurrent"><i class="fas fa-star"></i> <span>Save Current Model</span></button>
                 </div>
-                <div id="galleryContent" style="max-height: 400px; overflow-y: auto;">
+                <div id="galleryContent">
                     <!-- Gallery items will be populated here -->
                 </div>
             </div>
@@ -345,7 +337,21 @@
                 </div>
                 <div style="margin-top: 16px; text-align: right;">
                     <button id="saveModelConfirmBtn" class="header-btn" data-i18n="buttons.save"><i class="fas fa-star"></i> <span>Save</span></button>
-                    <button id="saveModelCancelBtn" class="header-btn" style="margin-left: 8px;" data-i18n="buttons.cancel"><i class="fas fa-times"></i> <span>Cancel</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model Statistics Modal -->
+    <div id="modelStatsModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 data-i18n="modelStats.title">Model Statistics</h2>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="modelStatsContent" style="font-size: 0.9em; line-height: 1.6;">
+                    <!-- Statistics will be populated here -->
                 </div>
             </div>
         </div>

@@ -13,7 +13,8 @@
     "stats": "Estadísticas",
     "gallery": "Galería",
     "save": "Guardar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "saveImage": "Guardar Imagen"
   },
   "modelParameters": {
     "title": "Parámetros del Modelo",
@@ -117,10 +118,12 @@
     "noBlocksToExport": "No hay bloques para exportar. Por favor, genere un modelo primero.",
     "csvTooLarge": "El contenido CSV es demasiado grande. Por favor, reduzca el tamaño del modelo.",
     "exportError": "Error de exportación: {{message}}. Intentando exportar como CSV...",
-    "csvError": "Error de exportación CSV: {{message}}"
+    "csvError": "Error de exportación CSV: {{message}}",
+    "imageExportSuccess": "Imagen del viewport guardada exitosamente",
+    "imageExportError": "Error al exportar imagen: {{message}}"
   },
   "stats": {
-    "title": "Panel de Estadísticas",
+    "title": "Estadísticas de Uso",
     "overview": "Resumen",
     "totalModels": "Total de Modelos",
     "totalExports": "Total de Exportaciones",
@@ -145,7 +148,7 @@
     "millionM3": "millones de m³"
   },
   "modelStats": {
-    "title": "📈 Estadísticas del Modelo",
+    "title": "Estadísticas del Modelo",
     "blocks": "Bloques",
     "volume": "Volumen",
     "ore": "Mineral",
@@ -248,23 +251,25 @@
     "french": "Français"
   },
   "docs": {
-    "title": "📚 Documentación",
+    "title": "Documentación",
     "subtitle": "Generador de Modelo de Bloques",
-    "searchPlaceholder": "🔍 Buscar documentación...",
+    "searchPlaceholder": "Buscar documentación...",
     "nav": {
       "gettingStarted": "Primeros Pasos",
       "modelParameters": "Parámetros del Modelo",
       "patterns": "Patrones de Material",
       "visualization": "Visualización",
       "filters": "Filtros y Herramientas",
+      "statistics": "Estadísticas del Modelo",
       "export": "Exportar y Datos",
+      "gallery": "Galería de Modelos",
       "schema": "Esquema de Datos",
       "controls": "Controles",
       "tips": "Consejos y Trucos"
     },
     "sections": {
       "gettingStarted": {
-        "title": "🚀 Primeros Pasos",
+        "title": "Primeros Pasos",
         "welcome": "¡Bienvenido al <strong>Generador de Modelo de Bloques Mineros</strong>! Esta herramienta te ayuda a crear modelos de bloques 3D realistas para probar aplicaciones mineras, visualización y análisis de datos. La herramienta también admite aplicaciones de geología petrolera a través de patrones especializados.",
         "whatIsBlockModel": "¿Qué es un Modelo de Bloques?",
         "blockModelDesc": "Un modelo de bloques es una representación de cuadrícula 3D de un depósito minero, donde cada bloque (celda) contiene propiedades como:",
@@ -280,14 +285,12 @@
         "step4": "Visualizar - Explorar el modelo 3D usando controles interactivos",
         "step5": "Exportar - Descargar como CSV para usar en otro software",
         "navigationHelp": "Navegación y Ayuda",
-        "headerButtons": "El encabezado contiene botones de acceso rápido:",
-        "docsButton": "📚 Docs - Abre esta documentación (¡la estás leyendo ahora!)",
-        "memoryButton": "Memoria - Monitorear el uso de memoria para modelos grandes",
-        "aboutButton": "Acerca de - Información de la aplicación y créditos",
-        "tipStart": "💡 Consejo: Comienza con parámetros predeterminados para familiarizarte con la herramienta, luego ajusta según tus necesidades."
+        "headerButtons": "El encabezado contiene botones de acceso rápido (diseño solo con iconos y tooltips):",
+        "controlPanelButtons": "Botones del Panel de Control:",
+        "tipStart": "Consejo: Comienza con parámetros predeterminados para familiarizarte con la herramienta, luego ajusta según tus necesidades."
       },
       "modelParameters": {
-        "title": "⚙️ Parámetros del Modelo",
+        "title": "Parámetros del Modelo",
         "intro": "Los parámetros del modelo definen la estructura física y las dimensiones de tu modelo de bloques.",
         "originCoordinates": "Coordenadas de Origen",
         "originDesc": "El origen (X, Y, Z) define el punto de partida de tu modelo. Todas las coordenadas de los bloques se calculan en relación con este origen.",
@@ -303,11 +306,11 @@
         "cellsXyz": "Celdas X, Y, Z - Número de bloques en cada dirección (predeterminado: 25 × 25 × 25)",
         "totalBlocks": "Total de bloques = Celdas X × Celdas Y × Celdas Z",
         "largerModels": "Los modelos más grandes tardan más en generarse y renderizarse",
-        "performanceNote": "⚠️ Nota de Rendimiento: Los modelos con más de 50,000 bloques pueden tardar más en generarse. La aplicación usa automáticamente caché para modelos grandes.",
-        "tipTesting": "💡 Consejo: Para pruebas, comienza con modelos más pequeños (10×10×10 = 1,000 bloques). Para producción, usa dimensiones mineras realistas (ej., 50×50×30 = 75,000 bloques)."
+        "performanceNote": "Nota de Rendimiento: Los modelos con más de 50,000 bloques pueden tardar más en generarse. La aplicación usa automáticamente caché para modelos grandes.",
+        "tipTesting": "Consejo: Para pruebas, comienza con modelos más pequeños (10×10×10 = 1,000 bloques). Para producción, usa dimensiones mineras realistas (ej., 50×50×30 = 75,000 bloques)."
       },
       "patterns": {
-        "title": "🎨 Patrones de Material",
+        "title": "Patrones de Material",
         "intro": "Los patrones de material controlan cómo se distribuyen diferentes materiales (mineral, desecho, etc.) en todo tu modelo de bloques.",
         "advancedPatterns": "Patrones Avanzados de Cuerpos de Mineral",
         "geologicalPatterns": "Patrones Geológicos",
@@ -318,7 +321,7 @@
         "porphyryFeature3": "Variaciones de ley relacionadas con la profundidad (enriquecimiento supergénico)",
         "porphyryFeature4": "Parámetros aleatorizados para variación entre generaciones",
         "porphyryFeature5": "La posición del centro, los radios, las leyes y los controles estructurales están aleatorizados",
-        "porphyryTip": "💡 Consejo: Cada vez que presionas Generar, el cuerpo de mineral de pórfido tendrá diferentes características mientras mantiene patrones geológicos realistas.",
+        "porphyryTip": "Consejo: Cada vez que presionas Generar, el cuerpo de mineral de pórfido tendrá diferentes características mientras mantiene patrones geológicos realistas.",
         "veinDesc": "Crea cuerpos de mineral lineales o planares siguiendo controles estructurales. Simula depósitos de oro epitermal, vetas mesotermales o depósitos controlados por fallas.",
         "veinFeature1": "Rumbo e inclinación configurables",
         "veinFeature2": "Variaciones de ley a lo largo del rumbo y la inclinación",
@@ -333,12 +336,12 @@
         "saltDomeFeature3": "Zonas de agua debajo del contacto agua-petróleo",
         "saltDomeFeature4": "Múltiples tipos de material: Sal, CapRock, OilSand, GasSand, WaterSand, Shale",
         "saltDomeFeature5": "Posición del domo, tamaño, zonas de trampa y propiedades del material aleatorizados",
-        "saltDomeFieldMapping": "💡 Mapeo de Campos: Para geología petrolera, los campos estándar se reutilizan:",
+        "saltDomeFieldMapping": "Mapeo de Campos: Para geología petrolera, los campos estándar se reutilizan:",
         "saltDomeField1": "gradeCu = Saturación de Petróleo (%)",
         "saltDomeField2": "gradeAu = Saturación de Gas (%)",
         "saltDomeField3": "density = Porosidad (%)",
         "saltDomeField4": "rockType = Tipo de material (Sal, CapRock, OilSand, GasSand, WaterSand, Shale)",
-        "saltDomeTip": "💡 Consejo: Cada generación produce una estructura de domo de sal diferente con dimensiones, posiciones y propiedades del material aleatorizadas.",
+        "saltDomeTip": "Consejo: Cada generación produce una estructura de domo de sal diferente con dimensiones, posiciones y propiedades del material aleatorizadas.",
         "randomClustersDesc": "Crea múltiples agrupaciones de mineral distribuidas aleatoriamente. Simula depósitos diseminados o de stockwork.",
         "inclinedVeinDesc": "Crea un cuerpo de mineral planar inclinado. Simula depósitos de veta o mineralización controlada por fallas.",
         "singleOreHorizonDesc": "Crea una sola capa de mineral horizontal a una profundidad específica. Simula depósitos planos.",
@@ -349,7 +352,7 @@
         "uniformDesc": "Todos los bloques tienen las mismas propiedades de material. Útil para pruebas o modelos simples."
       },
       "visualization": {
-        "title": "👁️ Visualización",
+        "title": "Visualización",
         "intro": "La visualización 3D te permite explorar tu modelo de bloques de forma interactiva.",
         "viewModes": "Modos de Vista",
         "solidDesc": "Muestra los bloques como cubos sólidos. Ideal para ver la estructura general y la distribución de materiales.",
@@ -369,10 +372,10 @@
         "auGradeField": "Ley de Au - Escala de color basada en la ley de oro",
         "valueField": "Valor - Escala de color basada en el valor económico",
         "controls3d": "Controles 3D",
-        "tipHover": "💡 Consejo: Pasa el mouse sobre los bloques para ver información detallada en la información sobre herramientas, incluidas coordenadas, leyes y otras propiedades."
+        "tipHover": "Consejo: Pasa el mouse sobre los bloques para ver información detallada en la información sobre herramientas, incluidas coordenadas, leyes y otras propiedades."
       },
       "filters": {
-        "title": "🔍 Filtros y Herramientas",
+        "title": "Filtros y Herramientas",
         "intro": "Los filtros y herramientas te ayudan a enfocarte en partes específicas de tu modelo o analizar características particulares.",
         "sliceTool": "Herramienta de Corte",
         "valueFilter": "Filtro de Valor",
@@ -396,8 +399,26 @@
         "groundLayerFeature1": "Mostrar Suelo - Alternar la visibilidad del plano del suelo",
         "groundLayerUseful": "Útil para entender la relación entre tu modelo y la superficie."
       },
+      "statistics": {
+        "title": "Estadísticas del Modelo",
+        "intro": "Cada modelo generado incluye estadísticas detalladas que te ayudan a entender sus características.",
+        "accessing": "Acceder a las Estadísticas",
+        "accessingDesc": "Después de generar un modelo, aparece un botón circular de Estadísticas del Modelo en la esquina inferior izquierda del lienzo. Haz clic en él para abrir un modal de estadísticas detalladas.",
+        "display": "Visualización de Estadísticas",
+        "displayDesc": "El modal de estadísticas muestra:",
+        "blockCount": "Conteo de Bloques: Número total de bloques en el modelo",
+        "totalVolume": "Volumen Total: Volumen combinado de todos los bloques (metros cúbicos)",
+        "dimensions": "Dimensiones: Ancho, alto y profundidad del modelo",
+        "oreWaste": "Distribución Mineral/Desecho: Desglose porcentual por tipo de roca",
+        "zoneInfo": "Información de Zonas: Número de zonas distintas (si aplica)",
+        "gradeRanges": "Rangos de Leyes: Valores mínimos, máximos y promedio para las leyes de Cu y Au (si están disponibles)",
+        "econValue": "Valor Económico: Estadísticas sobre la distribución del valor económico",
+        "interestingFacts": "Datos Interesantes: Perspectivas generadas automáticamente sobre tu modelo",
+        "tableFormat": "Las estadísticas se muestran en formato de tabla compacta para facilitar la lectura.",
+        "tip": "Consejo: Las estadísticas se actualizan automáticamente cuando generas un nuevo modelo. El modal se puede cerrar haciendo clic fuera de él o usando el botón de cerrar."
+      },
       "export": {
-        "title": "💾 Exportar y Datos",
+        "title": "Exportar y Datos",
         "intro": "Exporta tu modelo de bloques al formato CSV para usar en otro software minero.",
         "exportFormat": "Formato de Exportación",
         "exportFormatDesc": "El CSV exportado sigue un esquema estandarizado compatible con:",
@@ -420,12 +441,18 @@
         "exportedField5": "GRADE_AU - Ley de oro (g/t) o Saturación de Gas para petróleo",
         "exportedField6": "ECON_VALUE - Valor económico",
         "exportedField7": "ZONE - Identificador de zona (si aplica)",
-        "exportPetroleumNote": "💡 Nota: Para patrones de geología petrolera, los significados de los campos difieren. Consulta la sección Esquema de Datos para detalles sobre los mapeos de campos de petróleo.",
-        "exportTip": "💡 Consejo: La exportación filtra automáticamente los \"bloques de aire\" (bloques con densidad = 0) para reducir el tamaño del archivo y mejorar la compatibilidad.",
-        "exportWarning": "⚠️ Nota: Los modelos grandes pueden producir archivos CSV grandes. Para modelos con >100,000 bloques, considera usar filtros antes de exportar. La exportación usa procesamiento por fragmentos para manejar modelos muy grandes (200x200x200+) sin alcanzar los límites de longitud de cadena de JavaScript."
+        "saveImage": "Guardar Imagen del Viewport",
+        "saveImageDesc": "El botón Guardar Imagen (icono de cámara) te permite exportar el viewport 3D actual como una imagen PNG.",
+        "saveImageUsage": "Uso: Después de generar un modelo, haz clic en el botón del icono de cámara",
+        "saveImageOutput": "Salida: Descarga un archivo PNG con marca de tiempo en el nombre del archivo",
+        "saveImageUseCases": "Casos de Uso: Crear capturas de pantalla para informes, presentaciones o documentación",
+        "saveImageTip": "Consejo: La imagen captura exactamente lo que ves en el viewport, incluyendo filtros, vistas de corte y ángulo de cámara actual.",
+        "exportPetroleumNote": "Nota: Para patrones de geología petrolera, los significados de los campos difieren. Consulta la sección Esquema de Datos para detalles sobre los mapeos de campos de petróleo.",
+        "exportTip": "Consejo: La exportación filtra automáticamente los \"bloques de aire\" (bloques con densidad = 0) para reducir el tamaño del archivo y mejorar la compatibilidad.",
+        "exportWarning": "Nota: Los modelos grandes pueden producir archivos CSV grandes. Para modelos con >100,000 bloques, considera usar filtros antes de exportar. La exportación usa procesamiento por fragmentos para manejar modelos muy grandes (200x200x200+) sin alcanzar los límites de longitud de cadena de JavaScript."
       },
       "schema": {
-        "title": "📊 Esquema de Datos",
+        "title": "Esquema de Datos",
         "intro": "El modelo de bloques usa un esquema estandarizado para máxima compatibilidad con software minero.",
         "requiredFields": "Campos Requeridos",
         "optionalFields": "Campos Opcionales",
@@ -466,10 +493,10 @@
         "petroleumMapping5": "Valor Económico",
         "petroleumMapping6": "Sal, CapRock, OilSand, GasSand, WaterSand, Shale",
         "petroleumMapping7": "$/barril equivalente",
-        "petroleumMappingsNote": "💡 Nota: Este mapeo de campos permite que el mismo marco de modelo de bloques se use tanto para aplicaciones mineras como petroleras. Al exportar modelos petroleros, ten en cuenta que los nombres de los campos permanecen iguales pero los significados difieren."
+        "petroleumMappingsNote": "Nota: Este mapeo de campos permite que el mismo marco de modelo de bloques se use tanto para aplicaciones mineras como petroleras. Al exportar modelos petroleros, ten en cuenta que los nombres de los campos permanecen iguales pero los significados difieren."
       },
       "controls": {
-        "title": "🎮 Controles",
+        "title": "Controles",
         "mouseControls": "Controles del Mouse",
         "mouseControlsTableAction": "Acción",
         "mouseControlsTableControl": "Control",
@@ -492,12 +519,12 @@
         "buttonGenerate": "Generar - Crea un nuevo modelo de bloques basado en los parámetros actuales",
         "buttonExport": "Exportar - Descarga el modelo actual como CSV (habilitado después de la generación)",
         "buttonZoom": "Ajustar Zoom - Restablece la cámara para mostrar todo el modelo",
-        "buttonDocs": "📚 Docs - Abre esta documentación en una nueva ventana",
+        "buttonDocs": "Documentación - Abre esta documentación en una nueva ventana",
         "buttonMemory": "Memoria - Muestra información de uso de memoria",
         "buttonAbout": "Acerca de - Muestra información de la aplicación y créditos"
       },
       "tips": {
-        "title": "💡 Consejos y Trucos",
+        "title": "Consejos y Trucos",
         "performanceOptimization": "Optimización de Rendimiento",
         "perfTip1": "Comienza con modelos más pequeños para probar patrones y configuraciones",
         "perfTip2": "Usa el modo de vista \"Puntos\" para modelos muy grandes (>100K bloques)",
@@ -537,7 +564,7 @@
         "useCase4Desc": "Prueba herramientas de visualización con varios tamaños de modelo, patrones y propiedades.",
         "useCase5Title": "Geología Petrolera",
         "useCase5Desc": "Usa el patrón Reservorio de Domo de Sal para demostrar conceptos de geología petrolera, modelado de reservorios y visualización de trampas de petróleo/gas.",
-        "proTip": "💡 Consejo Profesional: Guarda tus combinaciones de parámetros para casos de uso comunes. La aplicación recuerda tu última configuración en el navegador."
+        "proTip": "Consejo Profesional: Guarda tus combinaciones de parámetros para casos de uso comunes. La aplicación recuerda tu última configuración en el navegador."
       }
     }
   }

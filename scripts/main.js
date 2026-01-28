@@ -17,6 +17,9 @@ let isFirstGeneration = true; // Track if this is the first model generation on 
 // Gamification: Statistics and Gallery
 const STATS_STORAGE_KEY = 'app_stats';
 const GALLERY_STORAGE_KEY = 'app_savedModels';
+
+// Track current random seed for deterministic regeneration
+let currentRandomSeed = null;
 const MAX_SAVED_MODELS = 50; // Limit gallery size
 const MAX_MODEL_NAME_LENGTH = 100; // Maximum model name length
 const VOLUME_CONVERSION_FACTOR = 1000000; // Convert to million m³
@@ -210,6 +213,38 @@ function init() {
         });
     }
     
+    // Save viewport image button
+    const saveImageBtn = document.getElementById('saveImageBtn');
+    if (saveImageBtn) {
+        // Use a wrapper function to ensure saveViewportImage is available
+        saveImageBtn.addEventListener('click', () => {
+            if (typeof saveViewportImage === 'function') {
+                saveViewportImage();
+            } else {
+                console.error('saveViewportImage function not available');
+                updateStatus(t('status.imageExportError', { message: 'Function not available' }), 'error');
+            }
+        });
+        
+        // Update tooltip with translation
+        function updateSaveImageTooltip() {
+            if (saveImageBtn && typeof t === 'function') {
+                const translated = t('buttons.saveImage');
+                if (translated && translated !== 'buttons.saveImage') {
+                    saveImageBtn.setAttribute('title', translated);
+                }
+            }
+        }
+        
+        // Initial update
+        updateSaveImageTooltip();
+        
+        // Update on locale change
+        window.addEventListener('localeChanged', () => {
+            setTimeout(updateSaveImageTooltip, 50);
+        });
+    }
+    
     // Prevent form submission
     modelForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -347,8 +382,23 @@ function init() {
     // Automatically generate a model on initial load
     // Use setTimeout to ensure DOM is fully ready
     setTimeout(() => {
-        handleGenerate();
-    }, 100);
+        if (typeof handleGenerate === 'function') {
+            handleGenerate().catch(error => {
+                console.error('Error during initial generation:', error);
+                updateStatus(t('status.error', { message: error.message }), 'error');
+            });
+        } else {
+            console.warn('handleGenerate function not available yet, retrying...');
+            setTimeout(() => {
+                if (typeof handleGenerate === 'function') {
+                    handleGenerate().catch(error => {
+                        console.error('Error during initial generation:', error);
+                        updateStatus(t('status.error', { message: error.message }), 'error');
+                    });
+                }
+            }, 300);
+        }
+    }, 200);
 }
 
 /**
@@ -356,11 +406,19 @@ function init() {
  */
 async function handleGenerate() {
     try {
+        // Verify form elements exist
+        const originXEl = document.getElementById('originX');
+        const patternTypeEl = document.getElementById('patternType');
+        if (!originXEl || !patternTypeEl) {
+            console.warn('Form elements not found, cannot generate model');
+            return;
+        }
+        
         updateStatus(t('status.generating'));
         
         // Get form values
         const params = {
-            originX: parseFloat(document.getElementById('originX').value),
+            originX: parseFloat(originXEl.value),
             originY: parseFloat(document.getElementById('originY').value),
             originZ: parseFloat(document.getElementById('originZ').value),
             cellSizeX: parseFloat(document.getElementById('cellSizeX').value),
@@ -369,7 +427,7 @@ async function handleGenerate() {
             cellsX: parseInt(document.getElementById('cellsX').value),
             cellsY: parseInt(document.getElementById('cellsY').value),
             cellsZ: parseInt(document.getElementById('cellsZ').value),
-            patternType: document.getElementById('patternType').value
+            patternType: patternTypeEl.value
         };
         
         // Validate inputs - prevent DoS attacks with extremely large numbers
@@ -454,6 +512,10 @@ async function handleGenerate() {
                 }
                 
                 document.getElementById('exportBtn').disabled = false;
+                const saveImageBtn = document.getElementById('saveImageBtn');
+                if (saveImageBtn) {
+                    saveImageBtn.disabled = false;
+                }
                 
                 if (totalCells > 200000) {
                     updateStatus(
@@ -493,6 +555,15 @@ async function handleGenerate() {
             blocks = generateRegularGrid(gridParams);
         }
         
+        // Generate or use saved random seed
+        if (!currentRandomSeed) {
+            // Generate new seed values
+            currentRandomSeed = {
+                timeSeed: Date.now() % 1000000,
+                randomComponent: Math.random() * 10000
+            };
+        }
+        
         // Apply material pattern
         updateStatus(t('status.applyingPattern'));
         const blocksWithMaterials = applyMaterialPattern(
@@ -500,8 +571,15 @@ async function handleGenerate() {
             params.patternType,
             params.cellsX,
             params.cellsY,
-            params.cellsZ
+            params.cellsZ,
+            currentRandomSeed // Pass seed for deterministic generation
         );
+        
+        // Clear seed after use so next generation gets new random values
+        // (unless loading from gallery, which will set it before generation)
+        if (!currentRandomSeed || !currentRandomSeed.fromGallery) {
+            currentRandomSeed = null;
+        }
         
         // Store current blocks and params
         currentBlocks = blocksWithMaterials;
@@ -544,6 +622,10 @@ async function handleGenerate() {
         const saveModelBtn = document.getElementById('saveModelBtn');
         if (saveModelBtn && currentBlocks.length > 0) {
             saveModelBtn.disabled = false;
+        }
+        const saveImageBtn = document.getElementById('saveImageBtn');
+        if (saveImageBtn && currentBlocks.length > 0) {
+            saveImageBtn.disabled = false;
         }
         
         // Track model generation for statistics
@@ -743,6 +825,58 @@ async function handleExport() {
         console.error('ZIP export error:', error);
         // Fallback to non-compressed CSV
         exportAsCsv();
+    }
+}
+
+/**
+ * Save viewport image as PNG
+ */
+function saveViewportImage() {
+    // Access renderer from visualization module
+    // Check if renderer is available globally or through window
+    let canvas = null;
+    if (typeof window !== 'undefined' && window.renderer && window.renderer.domElement) {
+        canvas = window.renderer.domElement;
+    } else if (typeof renderer !== 'undefined' && renderer && renderer.domElement) {
+        canvas = renderer.domElement;
+    } else {
+        // Try to find canvas element directly
+        const canvasContainer = document.getElementById('canvasContainer');
+        if (canvasContainer) {
+            canvas = canvasContainer.querySelector('canvas');
+        }
+    }
+    
+    if (!canvas) {
+        updateStatus(t('status.imageExportError', { message: 'Canvas not found' }), 'error');
+        return;
+    }
+    
+    try {
+        // Ensure the scene is rendered before capturing
+        // Access renderer and scene from window (set by visualization.js)
+        if (window.renderer && window.scene && window.camera) {
+            window.renderer.render(window.scene, window.camera);
+        }
+        
+        // Get image data from canvas
+        const imageData = canvas.toDataURL('image/png');
+        
+        // Create download link
+        const link = document.createElement('a');
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+        link.setAttribute('href', imageData);
+        link.setAttribute('download', `block_model_viewport_${timestamp}.png`);
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        updateStatus(t('status.imageExportSuccess'), 'success');
+    } catch (error) {
+        updateStatus(t('status.imageExportError', { message: error.message }), 'error');
+        console.error('Image export error:', error);
     }
 }
 
@@ -1067,25 +1201,28 @@ function initStatsPanel() {
         const stats = loadStats();
         const html = [];
         
+        // Start table
+        html.push('<table class="stats-table">');
+        
         // Overview section
-        html.push(`<div style="margin-bottom: 16px;"><strong>${t('stats.overview')}</strong></div>`);
-        html.push(`<div style="margin-bottom: 8px;">${t('stats.totalModels')}: <strong>${stats.totalModels}</strong></div>`);
-        html.push(`<div style="margin-bottom: 8px;">${t('stats.totalExports')}: <strong>${stats.totalExports}</strong></div>`);
+        html.push('<tr><th colspan="2">' + escapeHtml(t('stats.overview')) + '</th></tr>');
+        html.push('<tr><td>' + escapeHtml(t('stats.totalModels')) + '</td><td><strong>' + stats.totalModels + '</strong></td></tr>');
+        html.push('<tr><td>' + escapeHtml(t('stats.totalExports')) + '</td><td><strong>' + stats.totalExports + '</strong></td></tr>');
         
         if (stats.firstModelDate) {
             const firstDate = new Date(stats.firstModelDate).toLocaleDateString();
-            html.push(`<div style="margin-bottom: 8px;">${t('stats.firstModel')}: ${firstDate}</div>`);
+            html.push('<tr><td>' + escapeHtml(t('stats.firstModel')) + '</td><td>' + escapeHtml(firstDate) + '</td></tr>');
         }
         
         if (stats.lastModelDate) {
             const lastDate = new Date(stats.lastModelDate).toLocaleDateString();
-            html.push(`<div style="margin-bottom: 16px;">${t('stats.lastModel')}: ${lastDate}</div>`);
+            html.push('<tr><td>' + escapeHtml(t('stats.lastModel')) + '</td><td>' + escapeHtml(lastDate) + '</td></tr>');
         }
         
         // Patterns section
         if (stats.patternsTried.length > 0) {
-            html.push(`<div style="margin-bottom: 16px;"><strong>${t('stats.patternsExplored')}</strong></div>`);
-            html.push(`<div style="margin-bottom: 8px;">${t('stats.patternsTried')}: <strong>${stats.patternsTried.length}</strong> ${t('stats.of12')}</div>`);
+            html.push('<tr><th colspan="2">' + escapeHtml(t('stats.patternsExplored')) + '</th></tr>');
+            html.push('<tr><td>' + escapeHtml(t('stats.patternsTried')) + '</td><td><strong>' + stats.patternsTried.length + '</strong> ' + escapeHtml(t('stats.of12')) + '</td></tr>');
             
             // Most used pattern
             let mostUsed = '';
@@ -1098,34 +1235,35 @@ function initStatsPanel() {
             });
             if (mostUsed) {
                 const patternName = t(`patterns.${mostUsed}`) || mostUsed;
-                html.push(`<div style="margin-bottom: 16px;">${t('stats.mostUsed')}: <strong>${escapeHtml(patternName)}</strong> (${mostUsedCount}x)</div>`);
+                html.push('<tr><td>' + escapeHtml(t('stats.mostUsed')) + '</td><td><strong>' + escapeHtml(patternName) + '</strong> (' + mostUsedCount + 'x)</td></tr>');
             }
         }
         
         // Features section
-        html.push(`<div style="margin-bottom: 16px;"><strong>${t('stats.featuresUsed')}</strong></div>`);
-        html.push(`<div style="margin-bottom: 8px;">${t('stats.viewModes')}: <strong>${stats.viewModesUsed.length}</strong> ${t('stats.of7')}</div>`);
+        html.push('<tr><th colspan="2">' + escapeHtml(t('stats.featuresUsed')) + '</th></tr>');
+        html.push('<tr><td>' + escapeHtml(t('stats.viewModes')) + '</td><td><strong>' + stats.viewModesUsed.length + '</strong> ' + escapeHtml(t('stats.of7')) + '</td></tr>');
         
         const toolsUsedCount = Object.values(stats.toolsUsed).filter(v => v).length;
-        html.push(`<div style="margin-bottom: 16px;">${t('stats.toolsUsed')}: <strong>${toolsUsedCount}</strong> ${t('stats.of4')}</div>`);
+        html.push('<tr><td>' + escapeHtml(t('stats.toolsUsed')) + '</td><td><strong>' + toolsUsedCount + '</strong> ' + escapeHtml(t('stats.of4')) + '</td></tr>');
         
         // Model characteristics
         if (stats.largestModel > 0) {
-            html.push(`<div style="margin-bottom: 16px;"><strong>${t('stats.modelCharacteristics')}</strong></div>`);
-            html.push(`<div style="margin-bottom: 8px;">${t('stats.largestModel')}: <strong>${stats.largestModel.toLocaleString()}</strong> ${t('stats.blocks')}</div>`);
-            html.push(`<div style="margin-bottom: 8px;">${t('stats.averageModelSize')}: <strong>${stats.averageModelSize.toLocaleString()}</strong> ${t('stats.blocks')}</div>`);
+            html.push('<tr><th colspan="2">' + escapeHtml(t('stats.modelCharacteristics')) + '</th></tr>');
+            html.push('<tr><td>' + escapeHtml(t('stats.largestModel')) + '</td><td><strong>' + stats.largestModel.toLocaleString() + '</strong> ' + escapeHtml(t('stats.blocks')) + '</td></tr>');
+            html.push('<tr><td>' + escapeHtml(t('stats.averageModelSize')) + '</td><td><strong>' + stats.averageModelSize.toLocaleString() + '</strong> ' + escapeHtml(t('stats.blocks')) + '</td></tr>');
             if (stats.totalVolume > 0) {
                 const volumeKm3 = stats.totalVolume / VOLUME_CONVERSION_FACTOR;
-                html.push(`<div style="margin-bottom: 16px;">${t('stats.totalVolume')}: <strong>${volumeKm3.toFixed(2)}</strong> ${t('stats.millionM3')}</div>`);
+                html.push('<tr><td>' + escapeHtml(t('stats.totalVolume')) + '</td><td><strong>' + volumeKm3.toFixed(2) + '</strong> ' + escapeHtml(t('stats.millionM3')) + '</td></tr>');
             }
         }
         
         // Current session
         if (stats.currentSession.modelsGenerated > 0) {
-            html.push(`<div style="margin-bottom: 16px;"><strong>${t('stats.currentSession')}</strong></div>`);
-            html.push(`<div style="margin-bottom: 8px;">${t('stats.modelsGenerated')}: <strong>${stats.currentSession.modelsGenerated}</strong></div>`);
+            html.push('<tr><th colspan="2">' + escapeHtml(t('stats.currentSession')) + '</th></tr>');
+            html.push('<tr><td>' + escapeHtml(t('stats.modelsGenerated')) + '</td><td><strong>' + stats.currentSession.modelsGenerated + '</strong></td></tr>');
         }
         
+        html.push('</table>');
         statsContent.innerHTML = html.join('');
     }
     
@@ -1188,7 +1326,6 @@ function initGalleryPanel() {
     const saveModelBtn = document.getElementById('saveModelBtn');
     const saveModelModal = document.getElementById('saveModelModal');
     const saveModelConfirmBtn = document.getElementById('saveModelConfirmBtn');
-    const saveModelCancelBtn = document.getElementById('saveModelCancelBtn');
     const modelNameInput = document.getElementById('modelNameInput');
     const saveModelModalClose = saveModelModal?.querySelector('.modal-close');
     
@@ -1214,8 +1351,8 @@ function initGalleryPanel() {
             html.push(`<div style="font-size: 0.85em; opacity: 0.8;">${escapeHtml(patternName)} • ${model.stats.blockCount.toLocaleString()} ${t('gallery.blocks')} • ${date}</div>`);
             html.push(`</div>`);
             html.push(`<div style="display: flex; gap: 4px;">`);
-            html.push(`<button class="header-btn gallery-load-btn" style="padding: 4px 8px; font-size: 0.85em;" data-model-id="${escapeHtml(model.id)}">${t('gallery.load')}</button>`);
-            html.push(`<button class="header-btn gallery-delete-btn" style="padding: 4px 8px; font-size: 0.85em;" data-model-id="${escapeHtml(model.id)}">${t('gallery.delete')}</button>`);
+            html.push(`<button class="header-btn gallery-load-btn" style="padding: 4px 8px; font-size: 0.85em;" data-model-id="${escapeHtml(model.id)}" title="${t('gallery.load')}"><i class="fas fa-folder-open"></i> <span>${t('gallery.load')}</span></button>`);
+            html.push(`<button class="header-btn gallery-delete-btn" style="padding: 4px 8px; font-size: 0.85em;" data-model-id="${escapeHtml(model.id)}" title="${t('gallery.delete')}"><i class="fas fa-trash"></i> <span>${t('gallery.delete')}</span></button>`);
             html.push(`</div>`);
             html.push(`</div>`);
             html.push(`</div>`);
@@ -1248,7 +1385,19 @@ function initGalleryPanel() {
         }
         
         try {
-            saveModelToGallery(name, currentParams, currentModelStats);
+            // Capture visualization state
+            let visualizationState = null;
+            if (typeof getVisualizationState === 'function') {
+                visualizationState = getVisualizationState();
+            }
+            
+            // Capture random seed if available
+            let randomSeed = null;
+            if (currentRandomSeed !== undefined && currentRandomSeed !== null) {
+                randomSeed = currentRandomSeed;
+            }
+            
+            saveModelToGallery(name, currentParams, currentModelStats, visualizationState, randomSeed);
             updateStatus(t('gallery.modelSaved', { name: name }), 'success');
             saveModelModal.style.display = 'none';
             updateGalleryDisplay();
@@ -1273,8 +1422,35 @@ function initGalleryPanel() {
             if (model) {
                 updateStatus(t('gallery.loading', { name: model.name }), 'info');
                 galleryPanel.style.display = 'none';
+                
+                // Restore visualization state if available (delay until after generation)
+                const visualizationStateToRestore = model.visualizationState;
+                
+                // Set random seed if available (mark as from gallery to preserve it)
+                if (model.randomSeed) {
+                    currentRandomSeed = {
+                        ...model.randomSeed,
+                        fromGallery: true
+                    };
+                } else {
+                    // Clear seed so new random values are generated
+                    currentRandomSeed = null;
+                }
+                
                 setTimeout(() => {
-                    handleGenerate();
+                    handleGenerate().then(() => {
+                        // Clear the gallery flag after generation
+                        if (currentRandomSeed) {
+                            currentRandomSeed.fromGallery = false;
+                        }
+                        
+                        // Restore visualization state after generation completes
+                        if (visualizationStateToRestore && typeof restoreVisualizationState === 'function') {
+                            setTimeout(() => {
+                                restoreVisualizationState(visualizationStateToRestore);
+                            }, 100);
+                        }
+                    });
                     updateStatus(t('gallery.modelLoaded', { name: model.name }), 'success');
                 }, 100);
             }
@@ -1314,11 +1490,6 @@ function initGalleryPanel() {
             saveModelConfirmBtn.addEventListener('click', saveCurrentModel);
         }
         
-        if (saveModelCancelBtn) {
-            saveModelCancelBtn.addEventListener('click', () => {
-                saveModelModal.style.display = 'none';
-            });
-        }
         
         if (saveModelModalClose) {
             saveModelModalClose.addEventListener('click', () => {
@@ -1389,46 +1560,68 @@ function initGalleryPanel() {
  * Initialize Model Statistics Display
  */
 function initModelStatsDisplay() {
-    const modelStatsSection = document.getElementById('modelStatsSection');
+    const modelStatsModal = document.getElementById('modelStatsModal');
     const modelStatsContent = document.getElementById('modelStatsContent');
+    const modelStatsBtn = document.getElementById('modelStatsBtn');
+    const modelStatsClose = modelStatsModal?.querySelector('.modal-close');
     
-    // Ensure title is translated when section becomes visible
-    function ensureTitleTranslated() {
-        if (modelStatsSection) {
-            const titleElement = modelStatsSection.querySelector('h3[data-i18n="modelStats.title"]');
-            if (titleElement && typeof t === 'function') {
-                const translated = t('modelStats.title');
-                // Only update if translation is loaded (not the key itself)
-                if (translated && translated !== 'modelStats.title') {
-                    titleElement.textContent = translated;
-                }
+    if (!modelStatsModal || !modelStatsContent || !modelStatsBtn) {
+        console.warn('Model stats elements not found');
+        return;
+    }
+    
+    // Update button title with translation
+    function updateButtonTitle() {
+        if (modelStatsBtn && typeof t === 'function') {
+            const translated = t('modelStats.title');
+            if (translated && translated !== 'modelStats.title') {
+                modelStatsBtn.setAttribute('title', translated);
             }
         }
     }
     
-    // Initial translation check
-    function initModelStatsTitle() {
-        const translated = t('modelStats.title');
-        if (translated && translated !== 'modelStats.title') {
-            ensureTitleTranslated();
-        } else {
-            // Wait for translations to load
-            setTimeout(initModelStatsTitle, 100);
+    // Open modal
+    function openModelStatsModal() {
+        if (currentModelStats && modelStatsModal) {
+            updateModelStatsDisplay();
+            modelStatsModal.style.display = 'block';
         }
     }
-    initModelStatsTitle();
+    
+    // Close modal
+    function closeModelStatsModal() {
+        if (modelStatsModal) {
+            modelStatsModal.style.display = 'none';
+        }
+    }
+    
+    // Set up button click handler
+    modelStatsBtn.addEventListener('click', openModelStatsModal);
+    
+    // Set up close button handler
+    if (modelStatsClose) {
+        modelStatsClose.addEventListener('click', closeModelStatsModal);
+    }
+    
+    // Close modal when clicking outside
+    modelStatsModal.addEventListener('click', (e) => {
+        if (e.target === modelStatsModal) {
+            closeModelStatsModal();
+        }
+    });
     
     function updateModelStatsDisplay() {
         if (!modelStatsContent || !currentModelStats) {
-            if (modelStatsSection) {
-                modelStatsSection.style.display = 'none';
+            // Hide button if no stats available
+            if (modelStatsBtn) {
+                modelStatsBtn.style.display = 'none';
             }
             return;
         }
         
-        if (modelStatsSection) {
-            modelStatsSection.style.display = 'block';
-            ensureTitleTranslated(); // Ensure title is translated when shown
+        // Show button when stats are available
+        if (modelStatsBtn) {
+            modelStatsBtn.style.display = 'flex';
         }
         
         const stats = currentModelStats;
@@ -1457,9 +1650,9 @@ function initModelStatsDisplay() {
         // Interesting facts
         if (stats.interestingFacts.length > 0) {
             html.push('<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1);">');
-            html.push(`<div style="font-size: 0.85em; opacity: 0.9;"><strong>${t('modelStats.interestingFacts')}:</strong></div>`);
+            html.push(`<div style="font-size: 1em; opacity: 0.9;"><strong>${t('modelStats.interestingFacts')}:</strong></div>`);
             stats.interestingFacts.forEach(fact => {
-                html.push(`<div style="font-size: 0.85em; opacity: 0.8; margin-top: 4px;">• ${escapeHtml(fact)}</div>`);
+                html.push(`<div style="font-size: 0.95em; opacity: 0.85; margin-top: 6px;">• ${escapeHtml(fact)}</div>`);
             });
             html.push('</div>');
         }
@@ -1470,8 +1663,13 @@ function initModelStatsDisplay() {
     // Expose function to update display
     window.updateModelStatsDisplay = updateModelStatsDisplay;
     
-    // Ensure title is translated on locale change
-    window.addEventListener('localeChanged', ensureTitleTranslated);
+    // Initial button title update
+    updateButtonTitle();
+    
+    // Listen for locale changes to re-translate button title
+    window.addEventListener('localeChanged', () => {
+        setTimeout(updateButtonTitle, 50);
+    });
 }
 
 // ============================================================================
@@ -1929,9 +2127,11 @@ function saveModelsToGallery(models) {
  * @param {string} name - Model name
  * @param {Object} params - Model parameters
  * @param {Object} stats - Model statistics
+ * @param {Object} visualizationState - Current visualization state (optional)
+ * @param {Object} randomSeed - Random seed values used for generation (optional)
  * @returns {Object} Saved model object
  */
-function saveModelToGallery(name, params, stats) {
+function saveModelToGallery(name, params, stats, visualizationState = null, randomSeed = null) {
     const models = loadSavedModels();
     
     const savedModel = {
@@ -1965,6 +2165,16 @@ function saveModelToGallery(name, params, stats) {
             hasZones: stats.zoneCount > 0
         }
     };
+    
+    // Add visualization state if provided
+    if (visualizationState) {
+        savedModel.visualizationState = visualizationState;
+    }
+    
+    // Add random seed if provided
+    if (randomSeed) {
+        savedModel.randomSeed = randomSeed;
+    }
     
     models.push(savedModel);
     saveModelsToGallery(models);

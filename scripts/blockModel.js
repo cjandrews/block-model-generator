@@ -490,7 +490,7 @@ function applyLayeredPattern(blocks, cellsX, cellsY, cellsZ) {
  * @param {number} cellsZ - Number of cells in Z direction
  * @returns {Array} Blocks with material assigned
  */
-function applyGradientPattern(blocks, cellsX, cellsY, cellsZ) {
+function applyGradientPattern(blocks, cellsX, cellsY, cellsZ, seed = null) {
     // Calculate model bounds to work in coordinate space
     let minX = Infinity, maxX = -Infinity;
     let minY = Infinity, maxY = -Infinity;
@@ -512,9 +512,9 @@ function applyGradientPattern(blocks, cellsX, cellsY, cellsZ) {
     const modelCenterY = (minY + maxY) / 2;
     const modelCenterZ = (minZ + maxZ) / 2;
     
-    // Add time-based random component for variation between generations
-    const timeSeed = Date.now() % 1000000;
-    const randomComponent = Math.random() * 10000;
+    // Use provided seed or generate new random values
+    const timeSeed = seed ? seed.timeSeed : (Date.now() % 1000000);
+    const randomComponent = seed ? seed.randomComponent : (Math.random() * 10000);
     
     // Randomization helper function
     const rand = (seed, min, max) => {
@@ -676,7 +676,7 @@ function applyOreHorizonPattern(blocks, cellsX, cellsY, cellsZ) {
  * @param {number} cellsZ - Number of cells in Z direction
  * @returns {Array} Blocks with material assigned
  */
-function applyInclinedVeinPattern(blocks, cellsX, cellsY, cellsZ) {
+function applyInclinedVeinPattern(blocks, cellsX, cellsY, cellsZ, seed = null) {
     // Calculate model bounds
     let minX = Infinity, maxX = -Infinity;
     let minY = Infinity, maxY = -Infinity;
@@ -695,9 +695,9 @@ function applyInclinedVeinPattern(blocks, cellsX, cellsY, cellsZ) {
     const modelSizeY = maxY - minY;
     const modelSizeZ = maxZ - minZ;
     
-    // Add time-based random component for variation between generations
-    const timeSeed = Date.now() % 1000000;
-    const randomComponent = Math.random() * 10000;
+    // Use provided seed or generate new random values
+    const timeSeed = seed ? seed.timeSeed : (Date.now() % 1000000);
+    const randomComponent = seed ? seed.randomComponent : (Math.random() * 10000);
     
     // Randomization helper function
     const rand = (seed, min, max) => {
@@ -867,7 +867,7 @@ function simpleNoise3D(x, y, z, scale) {
  * @param {number} cellsZ - Number of cells in Z direction
  * @returns {Array} Blocks with material assigned
  */
-function applyRandomClustersPattern(blocks, cellsX, cellsY, cellsZ) {
+function applyRandomClustersPattern(blocks, cellsX, cellsY, cellsZ, seed = null) {
     // Calculate model bounds for noise scaling
     let minX = Infinity, maxX = -Infinity;
     let minY = Infinity, maxY = -Infinity;
@@ -887,11 +887,13 @@ function applyRandomClustersPattern(blocks, cellsX, cellsY, cellsZ) {
     const yRange = maxY - minY || 1;
     const zRange = maxZ - minZ || 1;
     
+    // Use provided seed or generate new random values
     // Generate random seed offsets for this generation
     // This ensures different cluster patterns each time
-    const seedOffsetX = Math.random() * 10000;
-    const seedOffsetY = Math.random() * 10000;
-    const seedOffsetZ = Math.random() * 10000;
+    const seedBase = seed ? (seed.timeSeed + seed.randomComponent) : Date.now();
+    const seedOffsetX = seed ? ((seedBase * 1.1) % 10000) : (Math.random() * 10000);
+    const seedOffsetY = seed ? ((seedBase * 1.3) % 10000) : (Math.random() * 10000);
+    const seedOffsetZ = seed ? ((seedBase * 1.7) % 10000) : (Math.random() * 10000);
     
     // Use multiple octaves for better cluster distribution
     // Base scale - creates larger clusters (lower = larger clusters)
@@ -1016,9 +1018,9 @@ function generateEllipsoidOreBody(blocks, params = {}) {
     
     const avgCellSize = (avgCellSizeX + avgCellSizeY + avgCellSizeZ) / 3;
     
-    // Add time-based random component for variation between generations
-    const timeSeed = Date.now() % 1000000;
-    const randomComponent = Math.random() * 10000;
+    // Use provided seed or generate new random values
+    const timeSeed = (params && params.seed) ? params.seed.timeSeed : (Date.now() % 1000000);
+    const randomComponent = (params && params.seed) ? params.seed.randomComponent : (Math.random() * 10000);
     
     // Randomization helper function
     const rand = (seed, min, max) => {
@@ -1373,10 +1375,10 @@ function generatePorphyryOreBody(blocks, params = {}) {
     const modelSizeY = maxY - minY;
     const modelSizeZ = maxZ - minZ;
     
-    // Add time-based random component to ensure variation between generations
-    // This makes each Generate button press produce a different ore body
-    const timeSeed = Date.now() % 1000000; // Use timestamp for variation
-    const randomComponent = Math.random() * 10000; // Additional random component
+    // Use provided seed or generate new random values
+    // This makes each Generate button press produce a different ore body (unless seed is provided)
+    const timeSeed = (params && params.seed) ? params.seed.timeSeed : (Date.now() % 1000000);
+    const randomComponent = (params && params.seed) ? params.seed.randomComponent : (Math.random() * 10000);
     
     // Randomize center position if not provided (closer to center but still randomized)
     // Combine model bounds with time-based seed for variation
@@ -1671,7 +1673,7 @@ function generatePorphyryOreBody(blocks, params = {}) {
  * @param {number} cellsZ - Number of cells in Z direction
  * @returns {Array} Blocks with material assigned
  */
-function generateSaltDomeReservoir(blocks, cellsX, cellsY, cellsZ) {
+function generateSaltDomeReservoir(blocks, cellsX, cellsY, cellsZ, seed = null) {
     // Calculate model bounds
     let minX = Infinity, maxX = -Infinity;
     let minY = Infinity, maxY = -Infinity;
@@ -1690,9 +1692,9 @@ function generateSaltDomeReservoir(blocks, cellsX, cellsY, cellsZ) {
     const modelSizeY = maxY - minY;
     const modelSizeZ = maxZ - minZ;
     
-    // Add time-based random component to ensure variation between generations
-    const timeSeed = Date.now() % 1000000;
-    const randomComponent = Math.random() * 10000;
+    // Use provided seed or generate new random values
+    const timeSeed = seed ? seed.timeSeed : (Date.now() % 1000000);
+    const randomComponent = seed ? seed.randomComponent : (Math.random() * 10000);
     
     // Randomization helper function (deterministic based on seed)
     const rand = (seed, min, max) => {
@@ -1877,14 +1879,14 @@ function generateSaltDomeReservoir(blocks, cellsX, cellsY, cellsZ) {
  * @param {number} cellsZ - Number of cells in Z direction
  * @returns {Array} Blocks with material assigned
  */
-function applyMaterialPattern(blocks, patternType, cellsX, cellsY, cellsZ) {
+function applyMaterialPattern(blocks, patternType, cellsX, cellsY, cellsZ, seed = null) {
     switch (patternType) {
         case 'uniform':
             return applyUniformPattern(blocks);
         case 'layered':
             return applyLayeredPattern(blocks, cellsX, cellsY, cellsZ);
         case 'gradient':
-            return applyGradientPattern(blocks, cellsX, cellsY, cellsZ);
+            return applyGradientPattern(blocks, cellsX, cellsY, cellsZ, seed);
         case 'checkerboard':
             return applyCheckerboardPattern(blocks);
         case 'random':
@@ -1892,17 +1894,17 @@ function applyMaterialPattern(blocks, patternType, cellsX, cellsY, cellsZ) {
         case 'ore_horizon':
             return applyOreHorizonPattern(blocks, cellsX, cellsY, cellsZ);
         case 'inclined_vein':
-            return applyInclinedVeinPattern(blocks, cellsX, cellsY, cellsZ);
+            return applyInclinedVeinPattern(blocks, cellsX, cellsY, cellsZ, seed);
         case 'random_clusters':
-            return applyRandomClustersPattern(blocks, cellsX, cellsY, cellsZ);
+            return applyRandomClustersPattern(blocks, cellsX, cellsY, cellsZ, seed);
         case 'ellipsoid_ore':
-            return generateEllipsoidOreBody(blocks);
+            return generateEllipsoidOreBody(blocks, seed ? { seed: seed } : {});
         case 'vein_ore':
             return generateVeinOreBody(blocks);
         case 'porphyry_ore':
-            return generatePorphyryOreBody(blocks);
+            return generatePorphyryOreBody(blocks, seed ? { seed: seed } : {});
         case 'salt_dome':
-            return generateSaltDomeReservoir(blocks, cellsX, cellsY, cellsZ);
+            return generateSaltDomeReservoir(blocks, cellsX, cellsY, cellsZ, seed);
         default:
             return applyUniformPattern(blocks);
     }

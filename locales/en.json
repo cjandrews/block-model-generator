@@ -117,10 +117,12 @@
     "noBlocksToExport": "No blocks to export. Please generate a model first.",
     "csvTooLarge": "CSV content too large. Please reduce model size.",
     "exportError": "Export error: {{message}}. Trying CSV export...",
-    "csvError": "CSV export error: {{message}}"
+    "csvError": "CSV export error: {{message}}",
+    "imageExportSuccess": "Viewport image saved successfully",
+    "imageExportError": "Image export error: {{message}}"
   },
-  "stats": {
-    "title": "Statistics Dashboard",
+    "stats": {
+    "title": "Usage Statistics",
     "overview": "Overview",
     "totalModels": "Total Models",
     "totalExports": "Total Exports",
@@ -145,7 +147,7 @@
     "millionM3": "million m³"
   },
   "modelStats": {
-    "title": "📈 Model Statistics",
+    "title": "Model Statistics",
     "blocks": "Blocks",
     "volume": "Volume",
     "ore": "Ore",
@@ -248,23 +250,25 @@
     "french": "Français"
   },
   "docs": {
-    "title": "📚 Documentation",
+    "title": "Documentation",
     "subtitle": "Block Model Generator",
-    "searchPlaceholder": "🔍 Search documentation...",
+    "searchPlaceholder": "Search documentation...",
     "nav": {
       "gettingStarted": "Getting Started",
       "modelParameters": "Model Parameters",
       "patterns": "Material Patterns",
       "visualization": "Visualization",
       "filters": "Filters & Tools",
+      "statistics": "Model Statistics",
       "export": "Export & Data",
+      "gallery": "Model Gallery",
       "schema": "Data Schema",
       "controls": "Controls",
       "tips": "Tips & Tricks"
     },
     "sections": {
       "gettingStarted": {
-        "title": "🚀 Getting Started",
+        "title": "Getting Started",
         "welcome": "Welcome to the <strong>Mining Block Model Generator</strong>! This tool helps you create realistic 3D block models for testing mining applications, visualization, and data analysis. The tool also supports petroleum geology applications through specialized patterns.",
         "whatIsBlockModel": "What is a Block Model?",
         "blockModelDesc": "A block model is a 3D grid representation of a mining deposit, where each block (cell) contains properties like:",
@@ -280,14 +284,12 @@
         "step4": "Visualize - Explore the 3D model using interactive controls",
         "step5": "Export - Download as CSV for use in other software",
         "navigationHelp": "Navigation & Help",
-        "headerButtons": "The header contains quick access buttons:",
-        "docsButton": "📚 Docs - Opens this documentation (you're reading it now!)",
-        "memoryButton": "Memory - Monitor memory usage for large models",
-        "aboutButton": "About - Application information and credits",
-        "tipStart": "💡 Tip: Start with default parameters to get familiar with the tool, then adjust based on your needs."
+        "headerButtons": "The header contains quick access buttons (icon-only design with tooltips):",
+        "controlPanelButtons": "Control Panel Buttons:",
+        "tipStart": "Tip: Start with default parameters to get familiar with the tool, then adjust based on your needs."
       },
       "modelParameters": {
-        "title": "⚙️ Model Parameters",
+        "title": "Model Parameters",
         "intro": "Model parameters define the physical structure and dimensions of your block model.",
         "originCoordinates": "Origin Coordinates",
         "originDesc": "The origin (X, Y, Z) defines the starting point of your model. All block coordinates are calculated relative to this origin.",
@@ -303,11 +305,11 @@
         "cellsXyz": "Cells X, Y, Z - Number of blocks in each direction (default: 25 × 25 × 25)",
         "totalBlocks": "Total blocks = Cells X × Cells Y × Cells Z",
         "largerModels": "Larger models take more time to generate and render",
-        "performanceNote": "⚠️ Performance Note: Models with more than 50,000 blocks may take longer to generate. The app automatically uses caching for large models.",
-        "tipTesting": "💡 Tip: For testing, start with smaller models (10×10×10 = 1,000 blocks). For production, use realistic mining dimensions (e.g., 50×50×30 = 75,000 blocks)."
+        "performanceNote": "Performance Note: Models with more than 50,000 blocks may take longer to generate. The app automatically uses caching for large models.",
+        "tipTesting": "Tip: For testing, start with smaller models (10×10×10 = 1,000 blocks). For production, use realistic mining dimensions (e.g., 50×50×30 = 75,000 blocks)."
       },
       "patterns": {
-        "title": "🎨 Material Patterns",
+        "title": "Material Patterns",
         "intro": "Material patterns control how different materials (ore, waste, etc.) are distributed throughout your block model.",
         "advancedPatterns": "Advanced Ore Body Patterns",
         "geologicalPatterns": "Geological Patterns",
@@ -318,7 +320,7 @@
         "porphyryFeature3": "Depth-related grade variations (supergene enrichment)",
         "porphyryFeature4": "Randomized parameters for variation between generations",
         "porphyryFeature5": "Center position, radii, grades, and structural controls are randomized",
-        "porphyryTip": "💡 Tip: Each time you press Generate, the porphyry ore body will have different characteristics while maintaining realistic geological patterns.",
+        "porphyryTip": "Tip: Each time you press Generate, the porphyry ore body will have different characteristics while maintaining realistic geological patterns.",
         "veinDesc": "Creates linear or planar ore bodies following structural controls. Simulates epithermal gold, mesothermal veins, or fault-controlled deposits.",
         "veinFeature1": "Configurable strike and dip",
         "veinFeature2": "Grade variations along strike and dip",
@@ -333,12 +335,12 @@
         "saltDomeFeature3": "Water zones below oil-water contact",
         "saltDomeFeature4": "Multiple material types: Salt, CapRock, OilSand, GasSand, WaterSand, Shale",
         "saltDomeFeature5": "Randomized dome position, size, trap zones, and material properties",
-        "saltDomeFieldMapping": "💡 Field Mapping: For petroleum geology, the standard fields are repurposed:",
+        "saltDomeFieldMapping": "Field Mapping: For petroleum geology, the standard fields are repurposed:",
         "saltDomeField1": "gradeCu = Oil Saturation (%)",
         "saltDomeField2": "gradeAu = Gas Saturation (%)",
         "saltDomeField3": "density = Porosity (%)",
         "saltDomeField4": "rockType = Material type (Salt, CapRock, OilSand, GasSand, WaterSand, Shale)",
-        "saltDomeTip": "💡 Tip: Each generation produces a different salt dome structure with randomized dimensions, positions, and material properties.",
+        "saltDomeTip": "Tip: Each generation produces a different salt dome structure with randomized dimensions, positions, and material properties.",
         "randomClustersDesc": "Creates multiple randomly distributed ore clusters. Simulates disseminated or stockwork deposits.",
         "inclinedVeinDesc": "Creates an inclined planar ore body. Simulates vein deposits or fault-controlled mineralization.",
         "singleOreHorizonDesc": "Creates a single horizontal ore layer at a specific depth. Simulates flat-lying deposits.",
@@ -349,7 +351,7 @@
         "uniformDesc": "All blocks have the same material properties. Useful for testing or simple models."
       },
       "visualization": {
-        "title": "👁️ Visualization",
+        "title": "Visualization",
         "intro": "The 3D visualization allows you to explore your block model interactively.",
         "viewModes": "View Modes",
         "solidDesc": "Shows blocks as solid cubes. Best for seeing overall structure and material distribution.",
@@ -369,10 +371,10 @@
         "auGradeField": "Au Grade - Color scale based on gold grade",
         "valueField": "Value - Color scale based on economic value",
         "controls3d": "3D Controls",
-        "tipHover": "💡 Tip: Hover over blocks to see detailed information in the tooltip, including coordinates, grades, and other properties."
+        "tipHover": "Tip: Hover over blocks to see detailed information in the tooltip, including coordinates, grades, and other properties."
       },
       "filters": {
-        "title": "🔍 Filters & Tools",
+        "title": "Filters & Tools",
         "intro": "Filters and tools help you focus on specific parts of your model or analyze particular features.",
         "sliceTool": "Slice Tool",
         "valueFilter": "Value Filter",
@@ -396,8 +398,62 @@
         "groundLayerFeature1": "Show Ground - Toggle the ground plane visibility",
         "groundLayerUseful": "Helpful for understanding the relationship between your model and the surface."
       },
+      "statistics": {
+        "title": "Model Statistics",
+        "intro": "Each generated model includes detailed statistics that help you understand its characteristics.",
+        "accessing": "Accessing Statistics",
+        "accessingDesc": "After generating a model, a circular Model Statistics button appears in the lower left corner of the canvas. Click it to open a detailed statistics modal.",
+        "display": "Statistics Display",
+        "displayDesc": "The statistics modal shows:",
+        "blockCount": "Block Count: Total number of blocks in the model",
+        "totalVolume": "Total Volume: Combined volume of all blocks (cubic meters)",
+        "dimensions": "Dimensions: Width, height, and depth of the model",
+        "oreWaste": "Ore/Waste Distribution: Percentage breakdown by rock type",
+        "zoneInfo": "Zone Information: Number of distinct zones (if applicable)",
+        "gradeRanges": "Grade Ranges: Min, max, and average values for Cu and Au grades (if available)",
+        "econValue": "Economic Value: Statistics on economic value distribution",
+        "interestingFacts": "Interesting Facts: Automatically generated insights about your model",
+        "tableFormat": "Statistics are displayed in a compact table format for easy reading.",
+        "tip": "Tip: The statistics update automatically when you generate a new model. The modal can be closed by clicking outside it or using the close button."
+      },
+      "gallery": {
+        "title": "Model Gallery",
+        "intro": "The Model Gallery allows you to save and reload your favorite models with complete state preservation.",
+        "accessing": "Accessing the Gallery",
+        "accessingDesc": "Click the Gallery button (images icon) in the header to open the gallery panel. The button displays a badge showing the number of saved models.",
+        "saving": "Saving Models",
+        "savingStep1": "Generate a model with your desired parameters",
+        "savingStep2": "Adjust visualization settings (view mode, filters, camera angle) as desired",
+        "savingStep3": "Click the Save Model button (star icon) in the control panel",
+        "savingStep4": "Enter a name for your model in the dialog",
+        "savingStep5": "Click Save to store the model",
+        "whatSaved": "What Gets Saved:",
+        "savedParams": "Model Parameters: Origin, cell sizes, grid dimensions, pattern type",
+        "savedViz": "Visualization State: View mode, visualization field, slice settings, filters, ground layer",
+        "savedCamera": "Camera Position: Exact viewing angle and camera target",
+        "savedSeed": "Random Seed: Values used for pattern generation (ensures identical regeneration)",
+        "savedStats": "Model Statistics: Block count, volume, ore percentages, zone distribution",
+        "loading": "Loading Models",
+        "loadingStep1": "Open the Gallery panel",
+        "loadingStep2": "Find your saved model in the list",
+        "loadingStep3": "Click Load on the desired model",
+        "loadingStep4": "The model will regenerate with saved parameters",
+        "loadingStep5": "Visualization state and camera position are automatically restored",
+        "whatRestored": "What Gets Restored:",
+        "restoredParams": "All form parameters are set to saved values",
+        "restoredPattern": "Model regenerates with identical pattern (same random seed)",
+        "restoredViz": "View mode, field, and all filter settings are restored",
+        "restoredCamera": "Camera returns to the exact position when saved",
+        "restoredSlice": "Slice tool position and settings are restored",
+        "managing": "Managing Saved Models",
+        "galleryLimit": "Gallery Limit: Maximum of 50 saved models (oldest automatically deleted when limit reached)",
+        "deleteModels": "Delete Models: Click Delete button on any saved model to remove it",
+        "modelPreview": "Model Preview: Each saved model shows name, pattern type, block count, and date created",
+        "tip": "Tip: Use the gallery to create a library of reference models with different patterns and configurations. The complete state preservation means you can return to exactly the same view and analysis setup.",
+        "warning": "Note: Saved models store parameters and state, not the actual block data. Models are regenerated on load, which means loading may take a moment for large models."
+      },
       "export": {
-        "title": "💾 Export & Data",
+        "title": "Export & Data",
         "intro": "Export your block model to CSV format for use in other mining software.",
         "exportFormat": "Export Format",
         "exportFormatDesc": "The exported CSV follows a standardized schema compatible with:",
@@ -420,12 +476,18 @@
         "exportedField5": "GRADE_AU - Gold grade (g/t) or Gas Saturation for petroleum",
         "exportedField6": "ECON_VALUE - Economic value",
         "exportedField7": "ZONE - Zone identifier (if applicable)",
-        "exportPetroleumNote": "💡 Note: For petroleum geology patterns, field meanings differ. See the Data Schema section for details on petroleum field mappings.",
-        "exportTip": "💡 Tip: The export automatically filters out \"air blocks\" (blocks with density = 0) to reduce file size and improve compatibility.",
-        "exportWarning": "⚠️ Note: Large models may produce large CSV files. For models with >100,000 blocks, consider using filters before exporting. The export uses chunked processing to handle very large models (200x200x200+) without hitting JavaScript string length limits."
+        "saveImage": "Save Viewport Image",
+        "saveImageDesc": "The Save Image button (camera icon) allows you to export the current 3D viewport as a PNG image.",
+        "saveImageUsage": "Usage: After generating a model, click the camera icon button",
+        "saveImageOutput": "Output: Downloads a PNG file with timestamp in the filename",
+        "saveImageUseCases": "Use Cases: Create screenshots for reports, presentations, or documentation",
+        "saveImageTip": "Tip: The image captures exactly what you see in the viewport, including filters, slice views, and current camera angle.",
+        "exportPetroleumNote": "Note: For petroleum geology patterns, field meanings differ. See the Data Schema section for details on petroleum field mappings.",
+        "exportTip": "Tip: The export automatically filters out \"air blocks\" (blocks with density = 0) to reduce file size and improve compatibility.",
+        "exportWarning": "Note: Large models may produce large CSV files. For models with >100,000 blocks, consider using filters before exporting. The export uses chunked processing to handle very large models (200x200x200+) without hitting JavaScript string length limits."
       },
       "schema": {
-        "title": "📊 Data Schema",
+        "title": "Data Schema",
         "intro": "The block model uses a standardized schema for maximum compatibility with mining software.",
         "requiredFields": "Required Fields",
         "optionalFields": "Optional Fields",
@@ -466,10 +528,10 @@
         "petroleumMapping5": "Economic Value",
         "petroleumMapping6": "Salt, CapRock, OilSand, GasSand, WaterSand, Shale",
         "petroleumMapping7": "$/barrel equivalent",
-        "petroleumMappingsNote": "💡 Note: This field mapping allows the same block model framework to be used for both mining and petroleum applications. When exporting petroleum models, be aware that field names remain the same but meanings differ."
+        "petroleumMappingsNote": "Note: This field mapping allows the same block model framework to be used for both mining and petroleum applications. When exporting petroleum models, be aware that field names remain the same but meanings differ."
       },
       "controls": {
-        "title": "🎮 Controls",
+        "title": "Controls",
         "mouseControls": "Mouse Controls",
         "mouseControlsTableAction": "Action",
         "mouseControlsTableControl": "Control",
@@ -489,15 +551,24 @@
         "keyboardShortcuts": "Keyboard Shortcuts",
         "keyboardDesc": "Currently, all controls are mouse-based. Keyboard shortcuts may be added in future versions.",
         "buttonFunctions": "Button Functions",
-        "buttonGenerate": "Generate - Creates a new block model based on current parameters",
-        "buttonExport": "Export - Downloads the current model as CSV (enabled after generation)",
-        "buttonZoom": "Zoom to Fit - Resets the camera to show the entire model",
-        "buttonDocs": "📚 Docs - Opens this documentation in a new window",
-        "buttonMemory": "Memory - Displays memory usage information",
-        "buttonAbout": "About - Shows application information and credits"
+        "headerButtonsTitle": "Header Buttons (Icon-Only Design):",
+        "buttonLanguage": "Language Selector (flag icon) - Switch interface language (English, Spanish, French)",
+        "buttonStats": "Statistics (user icon) - View usage statistics dashboard with badges showing model count",
+        "buttonGallery": "Gallery (images icon) - Access saved models gallery with badge showing saved count",
+        "buttonDocs": "Documentation (question mark icon) - Opens this documentation in a new window",
+        "buttonAbout": "About (info icon) - Shows application information, credits, and memory monitoring",
+        "controlPanelTitle": "Control Panel Buttons:",
+        "buttonGenerate": "Generate (play icon) - Creates a new block model based on current parameters",
+        "buttonExport": "Export (download icon) - Downloads the current model as CSV (enabled after generation)",
+        "buttonZoom": "Zoom to Fit (zoom icon) - Resets the camera to show the entire model",
+        "buttonSaveModel": "Save Model (star icon) - Saves current model to gallery with name dialog",
+        "buttonSaveImage": "Save Image (camera icon) - Exports the current 3D viewport as a PNG image",
+        "onCanvasTitle": "On-Canvas Buttons:",
+        "buttonStatsCanvas": "Model Statistics (circular button, lower left) - Opens detailed statistics modal for current model",
+        "buttonTip": "Tip: All buttons use Font Awesome icons with tooltips. Hover over any button to see its function. The interface supports three languages with automatic detection."
       },
       "tips": {
-        "title": "💡 Tips & Tricks",
+        "title": "Tips & Tricks",
         "performanceOptimization": "Performance Optimization",
         "perfTip1": "Start with smaller models to test patterns and settings",
         "perfTip2": "Use \"Points\" view mode for very large models (>100K blocks)",
@@ -537,7 +608,7 @@
         "useCase4Desc": "Test visualization tools with various model sizes, patterns, and properties.",
         "useCase5Title": "Petroleum Geology",
         "useCase5Desc": "Use the Salt Dome Reservoir pattern to demonstrate petroleum geology concepts, reservoir modeling, and oil/gas trap visualization.",
-        "proTip": "💡 Pro Tip: Save your parameter combinations for common use cases. The app remembers your last settings in the browser."
+        "proTip": "Pro Tip: Save your parameter combinations for common use cases. The app remembers your last settings in the browser."
       }
     }
   }

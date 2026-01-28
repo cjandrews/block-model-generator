@@ -79,11 +79,18 @@ function initVisualization(container) {
     camera.lookAt(0, 0, 0);
     
     // Renderer setup
-    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer = new THREE.WebGLRenderer({ 
+        antialias: true,
+        preserveDrawingBuffer: true // Required for canvas.toDataURL() to work
+    });
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.localClippingEnabled = true; // Enable local clipping for slice tool
     container.appendChild(renderer.domElement);
+    
+    // Make renderer and camera accessible globally for image export
+    window.renderer = renderer;
+    window.camera = camera;
     
     // Controls setup (using OrbitControls)
     // Try different ways OrbitControls might be loaded
@@ -2893,6 +2900,217 @@ function showTooltip(event, block) {
     
     tooltipElement.style.left = left + 'px';
     tooltipElement.style.top = top + 'px';
+}
+
+/**
+ * Get current visualization state for saving
+ * @returns {Object} Current visualization state
+ */
+function getVisualizationState() {
+    // Capture camera position and controls target
+    let cameraState = null;
+    if (camera && controls) {
+        cameraState = {
+            position: {
+                x: camera.position.x,
+                y: camera.position.y,
+                z: camera.position.z
+            },
+            target: {
+                x: controls.target.x,
+                y: controls.target.y,
+                z: controls.target.z
+            }
+        };
+    }
+    
+    return {
+        viewMode: currentViewMode,
+        field: currentVisualizationField,
+        slice: {
+            enabled: sliceEnabled,
+            axis: sliceAxis,
+            position: slicePosition
+        },
+        valueFilter: {
+            enabled: valueVisibilityEnabled,
+            threshold: valueVisibilityThreshold,
+            mode: valueVisibilityMode
+        },
+        categoryFilter: {
+            enabled: categoryFilterEnabled,
+            visibleCategories: Array.from(visibleCategories) // Convert Set to Array for JSON
+        },
+        ground: {
+            enabled: groundEnabled
+        },
+        camera: cameraState
+    };
+}
+
+/**
+ * Restore visualization state from saved data
+ * @param {Object} state - Saved visualization state
+ */
+function restoreVisualizationState(state) {
+    if (!state) return;
+    
+    // IMPORTANT: Restore filter checkboxes FIRST before setting visualization field
+    // This ensures that updateValueVisibilitySliderRange() reads the correct checkbox state
+    
+    // Restore value filter checkbox state first (before field is set)
+    if (state.valueFilter) {
+        const valueVisibilityCheckbox = document.getElementById('valueVisibilityEnabled');
+        if (valueVisibilityCheckbox && state.valueFilter.enabled !== undefined) {
+            valueVisibilityCheckbox.checked = state.valueFilter.enabled;
+            // Set the internal state variable immediately
+            valueVisibilityEnabled = state.valueFilter.enabled;
+        }
+    }
+    
+    // Restore category filter checkbox state first (before field is set)
+    if (state.categoryFilter) {
+        const categoryFilterCheckbox = document.getElementById('categoryFilterEnabled');
+        if (categoryFilterCheckbox && state.categoryFilter.enabled !== undefined) {
+            categoryFilterCheckbox.checked = state.categoryFilter.enabled;
+            // Set the internal state variable immediately
+            categoryFilterEnabled = state.categoryFilter.enabled;
+        }
+    }
+    
+    // Restore slice tool checkbox state first
+    if (state.slice) {
+        const sliceEnabledCheckbox = document.getElementById('sliceEnabled');
+        if (sliceEnabledCheckbox && state.slice.enabled !== undefined) {
+            sliceEnabledCheckbox.checked = state.slice.enabled;
+            // Set the internal state variable immediately
+            sliceEnabled = state.slice.enabled;
+        }
+    }
+    
+    // Restore ground layer checkbox state first
+    if (state.ground) {
+        const groundCheckbox = document.getElementById('groundEnabled');
+        if (groundCheckbox && state.ground.enabled !== undefined) {
+            groundCheckbox.checked = state.ground.enabled;
+            // Set the internal state variable immediately
+            groundEnabled = state.ground.enabled;
+        }
+    }
+    
+    // Restore view mode
+    if (state.viewMode && ['solid', 'points', 'transparent', 'squares', 'slicesX', 'slicesY', 'slicesZ'].includes(state.viewMode)) {
+        const viewModeSelect = document.getElementById('viewMode');
+        if (viewModeSelect) {
+            viewModeSelect.value = state.viewMode;
+            setViewMode(state.viewMode);
+        }
+    }
+    
+    // Restore visualization field (now that checkboxes are set)
+    if (state.field && ['rockType', 'density', 'gradeCu', 'gradeAu', 'econValue'].includes(state.field)) {
+        const fieldSelect = document.getElementById('visualizationField');
+        if (fieldSelect) {
+            fieldSelect.value = state.field;
+            setVisualizationField(state.field);
+        }
+    }
+    
+    // Now restore slice tool settings (after field is set)
+    if (state.slice) {
+        // Checkbox already set above, now set the function to update UI
+        if (state.slice.enabled !== undefined) {
+            setSliceEnabled(state.slice.enabled);
+        }
+        
+        if (state.slice.axis && ['x', 'y', 'z'].includes(state.slice.axis)) {
+            const sliceAxisSelect = document.getElementById('sliceAxis');
+            if (sliceAxisSelect) {
+                sliceAxisSelect.value = state.slice.axis;
+                setSliceAxis(state.slice.axis);
+            }
+        }
+        
+        if (state.slice.position !== undefined) {
+            const slicePositionSlider = document.getElementById('slicePosition');
+            if (slicePositionSlider) {
+                slicePositionSlider.value = state.slice.position;
+                setSlicePosition(state.slice.position);
+            }
+        }
+    }
+    
+    // Now restore value filter settings (after field is set)
+    if (state.valueFilter) {
+        // Checkbox already set above, now call the function to update UI and apply filter
+        if (state.valueFilter.enabled !== undefined) {
+            setValueVisibilityEnabled(state.valueFilter.enabled);
+        }
+        
+        if (state.valueFilter.mode && ['above', 'below'].includes(state.valueFilter.mode)) {
+            const valueVisibilityModeSelect = document.getElementById('valueVisibilityMode');
+            if (valueVisibilityModeSelect) {
+                valueVisibilityModeSelect.value = state.valueFilter.mode;
+                setValueVisibilityMode(state.valueFilter.mode);
+            }
+        }
+        
+        if (state.valueFilter.threshold !== undefined) {
+            const valueVisibilityThresholdSlider = document.getElementById('valueVisibilityThreshold');
+            if (valueVisibilityThresholdSlider) {
+                valueVisibilityThresholdSlider.value = state.valueFilter.threshold;
+                // Update threshold via the slider change event
+                valueVisibilityThresholdSlider.dispatchEvent(new Event('input'));
+            }
+        }
+    }
+    
+    // Now restore category filter settings (after field is set)
+    if (state.categoryFilter) {
+        // Checkbox already set above, now call the function to update UI and apply filter
+        if (state.categoryFilter.enabled !== undefined) {
+            setCategoryFilterEnabled(state.categoryFilter.enabled);
+        }
+        
+        if (state.categoryFilter.visibleCategories && Array.isArray(state.categoryFilter.visibleCategories)) {
+            // Restore visible categories
+            visibleCategories.clear();
+            state.categoryFilter.visibleCategories.forEach(cat => visibleCategories.add(cat));
+            // Update UI checkboxes
+            updateCategoryFilterUI();
+        }
+    }
+    
+    // Now restore ground layer (after field is set)
+    if (state.ground) {
+        // Checkbox already set above, now call the function to update UI
+        if (state.ground.enabled !== undefined) {
+            setGroundEnabled(state.ground.enabled);
+        }
+    }
+    
+    // Restore camera position and controls target
+    if (state.camera && camera && controls) {
+        if (state.camera.position) {
+            camera.position.set(
+                state.camera.position.x,
+                state.camera.position.y,
+                state.camera.position.z
+            );
+        }
+        if (state.camera.target) {
+            controls.target.set(
+                state.camera.target.x,
+                state.camera.target.y,
+                state.camera.target.z
+            );
+            controls.update(); // Update controls to apply the new target
+        }
+        // Trigger a render to show the updated camera position
+        if (renderer && scene) {
+            renderer.render(scene, camera);
+        }
+    }
 }
 
 /**

@@ -6,6 +6,8 @@
     <meta name="license" content="MIT License">
     <meta name="copyright" content="Copyright (c) 2026 BuildIT Design Labs, LLC">
     <title>Block Model Generator - Documentation</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="stylesheet" href="styles.css">
     <style>
         /* Documentation-specific styles */
@@ -402,7 +404,7 @@
     <div class="docs-container">
         <div class="docs-sidebar">
             <div class="docs-header">
-                <h1 data-i18n="docs.title">📚 Documentation</h1>
+                <h1 data-i18n="docs.title"><i class="fas fa-book"></i> Documentation</h1>
                 <p data-i18n="docs.subtitle">Block Model Generator</p>
             </div>
             <div class="docs-nav">
@@ -412,7 +414,9 @@
                     <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="patterns" data-i18n="docs.nav.patterns">Material Patterns</a></li>
                     <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="visualization" data-i18n="docs.nav.visualization">Visualization</a></li>
                     <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="filters" data-i18n="docs.nav.filters">Filters & Tools</a></li>
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="statistics" data-i18n="docs.nav.statistics">Model Statistics</a></li>
                     <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="export" data-i18n="docs.nav.export">Export & Data</a></li>
+                    <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="gallery" data-i18n="docs.nav.gallery">Model Gallery</a></li>
                     <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="schema" data-i18n="docs.nav.schema">Data Schema</a></li>
                     <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="controls" data-i18n="docs.nav.controls">Controls</a></li>
                     <li class="docs-nav-item"><a href="#" class="docs-nav-link" data-section="tips" data-i18n="docs.nav.tips">Tips & Tricks</a></li>
@@ -422,12 +426,12 @@
 
         <div class="docs-main">
             <div class="docs-search-container">
-                <input type="text" id="searchBox" class="search-box" data-i18n="docs.searchPlaceholder" placeholder="🔍 Search documentation...">
+                <input type="text" id="searchBox" class="search-box" data-i18n="docs.searchPlaceholder" placeholder="Search documentation...">
             </div>
             <div class="docs-content">
             <!-- Getting Started Section -->
             <div class="docs-section active" id="getting-started">
-                <h2 data-i18n="docs.sections.gettingStarted.title">🚀 Getting Started</h2>
+                <h2 data-i18n="docs.sections.gettingStarted.title"><i class="fas fa-rocket"></i> Getting Started</h2>
                 
                 <p data-i18n="docs.sections.gettingStarted.welcome">Welcome to the <strong>Mining Block Model Generator</strong>! This tool helps you create realistic 3D block models for testing mining applications, visualization, and data analysis. The tool also supports petroleum geology applications through specialized patterns.</p>
 
@@ -454,22 +458,32 @@
 
                 <div class="docs-feature-card" style="margin-top: 20px;">
                     <h4 data-i18n="docs.sections.gettingStarted.navigationHelp">Navigation & Help</h4>
-                    <p data-i18n="docs.sections.gettingStarted.headerButtons">The header contains quick access buttons:</p>
+                    <p data-i18n="docs.sections.gettingStarted.headerButtons">The header contains quick access buttons (icon-only design with tooltips):</p>
                     <ul>
-                        <li data-i18n="docs.sections.gettingStarted.docsButton"><strong>📚 Docs</strong> - Opens this documentation (you're reading it now!)</li>
-                        <li data-i18n="docs.sections.gettingStarted.memoryButton"><strong>Memory</strong> - Monitor memory usage for large models</li>
-                        <li data-i18n="docs.sections.gettingStarted.aboutButton"><strong>About</strong> - Application information and credits</li>
+                        <li data-i18n="docs.sections.controls.buttonLanguage"><strong><i class="fas fa-globe"></i> Language Selector</strong> (flag icon) - Switch between English, Spanish, and French</li>
+                        <li data-i18n="docs.sections.controls.buttonStats"><strong><i class="fas fa-user"></i> Statistics</strong> (user icon) - View usage statistics dashboard</li>
+                        <li data-i18n="docs.sections.controls.buttonGallery"><strong><i class="fas fa-images"></i> Gallery</strong> (images icon) - Access saved models gallery</li>
+                        <li data-i18n="docs.sections.controls.buttonDocs"><strong><i class="fas fa-question-circle"></i> Documentation</strong> (question mark icon) - Opens this documentation</li>
+                        <li data-i18n="docs.sections.controls.buttonAbout"><strong><i class="fas fa-info-circle"></i> About</strong> (info icon) - Application information and credits</li>
+                    </ul>
+                    <p data-i18n="docs.sections.gettingStarted.controlPanelButtons"><strong>Control Panel Buttons:</strong></p>
+                    <ul>
+                        <li data-i18n="docs.sections.controls.buttonGenerate"><strong><i class="fas fa-play"></i> Generate</strong> (play icon) - Creates a new block model</li>
+                        <li data-i18n="docs.sections.controls.buttonZoom"><strong><i class="fas fa-search"></i> Zoom to Fit</strong> (zoom icon) - Resets camera view</li>
+                        <li data-i18n="docs.sections.controls.buttonExport"><strong><i class="fas fa-download"></i> Export</strong> (download icon) - Downloads CSV file</li>
+                        <li data-i18n="docs.sections.controls.buttonSaveModel"><strong><i class="fas fa-star"></i> Save Model</strong> (star icon) - Saves current model to gallery</li>
+                        <li data-i18n="docs.sections.controls.buttonSaveImage"><strong><i class="fas fa-camera"></i> Save Image</strong> (camera icon) - Exports viewport as PNG image</li>
                     </ul>
                 </div>
 
                 <div class="docs-tip">
-                    <span data-i18n="docs.sections.gettingStarted.tipStart"><strong>💡 Tip:</strong> Start with default parameters to get familiar with the tool, then adjust based on your needs.</span>
+                    <span data-i18n="docs.sections.gettingStarted.tipStart"><strong><i class="fas fa-lightbulb"></i> Tip:</strong> Start with default parameters to get familiar with the tool, then adjust based on your needs.</span>
                 </div>
             </div>
 
             <!-- Model Parameters Section -->
             <div class="docs-section" id="model-parameters">
-                <h2 data-i18n="docs.sections.modelParameters.title">⚙️ Model Parameters</h2>
+                <h2 data-i18n="docs.sections.modelParameters.title"><i class="fas fa-cog"></i> Model Parameters</h2>
                 
                 <p data-i18n="docs.sections.modelParameters.intro">Model parameters define the physical structure and dimensions of your block model.</p>
 
@@ -497,17 +511,17 @@
                 </ul>
 
                 <div class="docs-warning">
-                    <span data-i18n="docs.sections.modelParameters.performanceNote"><strong>⚠️ Performance Note:</strong> Models with more than 50,000 blocks may take longer to generate. The app automatically uses caching for large models.</span>
+                    <span data-i18n="docs.sections.modelParameters.performanceNote"><strong><i class="fas fa-exclamation-triangle"></i> Performance Note:</strong> Models with more than 50,000 blocks may take longer to generate. The app automatically uses caching for large models.</span>
                 </div>
 
                 <div class="docs-tip">
-                    <span data-i18n="docs.sections.modelParameters.tipTesting"><strong>💡 Tip:</strong> For testing, start with smaller models (10×10×10 = 1,000 blocks). For production, use realistic mining dimensions (e.g., 50×50×30 = 75,000 blocks).</span>
+                    <span data-i18n="docs.sections.modelParameters.tipTesting"><strong><i class="fas fa-lightbulb"></i> Tip:</strong> For testing, start with smaller models (10×10×10 = 1,000 blocks). For production, use realistic mining dimensions (e.g., 50×50×30 = 75,000 blocks).</span>
                 </div>
             </div>
 
             <!-- Material Patterns Section -->
             <div class="docs-section" id="patterns">
-                <h2 data-i18n="docs.sections.patterns.title">🎨 Material Patterns</h2>
+                <h2 data-i18n="docs.sections.patterns.title"><i class="fas fa-palette"></i> Material Patterns</h2>
                 
                 <p data-i18n="docs.sections.patterns.intro">Material patterns control how different materials (ore, waste, etc.) are distributed throughout your block model.</p>
 
@@ -524,7 +538,7 @@
                         <li data-i18n="docs.sections.patterns.porphyryFeature5">Center position, radii, grades, and structural controls are randomized</li>
                     </ul>
                     <div class="docs-tip" style="margin-top: 10px;">
-                        <span data-i18n="docs.sections.patterns.porphyryTip"><strong>💡 Tip:</strong> Each time you press Generate, the porphyry ore body will have different characteristics while maintaining realistic geological patterns.</span>
+                        <span data-i18n="docs.sections.patterns.porphyryTip"><strong><i class="fas fa-lightbulb"></i> Tip:</strong> Each time you press Generate, the porphyry ore body will have different characteristics while maintaining realistic geological patterns.</span>
                     </div>
                 </div>
 
@@ -559,7 +573,7 @@
                         <li data-i18n="docs.sections.patterns.saltDomeFeature5">Randomized dome position, size, trap zones, and material properties</li>
                     </ul>
                     <div class="docs-tip" style="margin-top: 15px;">
-                        <span data-i18n="docs.sections.patterns.saltDomeFieldMapping"><strong>💡 Field Mapping:</strong> For petroleum geology, the standard fields are repurposed:</span>
+                        <span data-i18n="docs.sections.patterns.saltDomeFieldMapping"><strong><i class="fas fa-lightbulb"></i> Field Mapping:</strong> For petroleum geology, the standard fields are repurposed:</span>
                         <ul style="margin-top: 8px; margin-left: 20px;">
                             <li><code>gradeCu</code> = <span data-i18n="docs.sections.patterns.saltDomeField1">Oil Saturation (%)</span></li>
                             <li><code>gradeAu</code> = <span data-i18n="docs.sections.patterns.saltDomeField2">Gas Saturation (%)</span></li>
@@ -568,7 +582,7 @@
                         </ul>
                     </div>
                     <div class="docs-tip" style="margin-top: 10px;">
-                        <span data-i18n="docs.sections.patterns.saltDomeTip"><strong>💡 Tip:</strong> Each generation produces a different salt dome structure with randomized dimensions, positions, and material properties.</span>
+                        <span data-i18n="docs.sections.patterns.saltDomeTip"><strong><i class="fas fa-lightbulb"></i> Tip:</strong> Each generation produces a different salt dome structure with randomized dimensions, positions, and material properties.</span>
                     </div>
                 </div>
 
@@ -619,7 +633,7 @@
 
             <!-- Visualization Section -->
             <div class="docs-section" id="visualization">
-                <h2 data-i18n="docs.sections.visualization.title">👁️ Visualization</h2>
+                <h2 data-i18n="docs.sections.visualization.title"><i class="fas fa-eye"></i> Visualization</h2>
                 
                 <p data-i18n="docs.sections.visualization.intro">The 3D visualization allows you to explore your block model interactively.</p>
 
@@ -668,20 +682,20 @@
 
                 <h3 data-i18n="docs.sections.visualization.controls3d">3D Controls</h3>
                 <ul>
-                    <li><strong>Left-click + Drag</strong> - Rotate the model</li>
-                    <li><strong>Right-click + Drag</strong> - Pan the view</li>
-                    <li><strong>Scroll Wheel</strong> - Zoom in/out</li>
-                    <li><strong>Zoom to Fit</strong> - Reset view to show entire model</li>
+                    <li data-i18n="docs.sections.controls.mouseControlLeftClick"><strong>Left-click + Drag</strong> - Rotate the model</li>
+                    <li data-i18n="docs.sections.controls.mouseControlRightClick"><strong>Right-click + Drag</strong> - Pan the view</li>
+                    <li data-i18n="docs.sections.controls.mouseControlScroll"><strong>Scroll Wheel</strong> - Zoom in/out</li>
+                    <li data-i18n="docs.sections.controls.buttonZoom"><strong>Zoom to Fit</strong> - Reset view to show entire model</li>
                 </ul>
 
                 <div class="docs-tip">
-                    <span data-i18n="docs.sections.visualization.tipHover"><strong>💡 Tip:</strong> Hover over blocks to see detailed information in the tooltip, including coordinates, grades, and other properties.</span>
+                    <span data-i18n="docs.sections.visualization.tipHover"><strong><i class="fas fa-lightbulb"></i> Tip:</strong> Hover over blocks to see detailed information in the tooltip, including coordinates, grades, and other properties.</span>
                 </div>
             </div>
 
             <!-- Filters & Tools Section -->
             <div class="docs-section" id="filters">
-                <h2 data-i18n="docs.sections.filters.title">🔍 Filters & Tools</h2>
+                <h2 data-i18n="docs.sections.filters.title"><i class="fas fa-search"></i> Filters & Tools</h2>
                 
                 <p data-i18n="docs.sections.filters.intro">Filters and tools help you focus on specific parts of your model or analyze particular features.</p>
 
@@ -730,9 +744,39 @@
                 </div>
             </div>
 
+            <!-- Model Statistics Section -->
+            <div class="docs-section" id="statistics">
+                <h2 data-i18n="docs.sections.statistics.title"><i class="fas fa-file-invoice"></i> Model Statistics</h2>
+                
+                <p data-i18n="docs.sections.statistics.intro">Each generated model includes detailed statistics that help you understand its characteristics.</p>
+
+                <h3 data-i18n="docs.sections.statistics.accessing">Accessing Statistics</h3>
+                <p data-i18n="docs.sections.statistics.accessingDesc">After generating a model, a circular <strong><i class="fas fa-file-invoice"></i> Model Statistics</strong> button appears in the lower left corner of the canvas. Click it to open a detailed statistics modal.</p>
+
+                <h3 data-i18n="docs.sections.statistics.display">Statistics Display</h3>
+                <div class="docs-feature-card">
+                    <p data-i18n="docs.sections.statistics.displayDesc">The statistics modal shows:</p>
+                    <ul>
+                        <li data-i18n="docs.sections.statistics.blockCount"><strong>Block Count:</strong> Total number of blocks in the model</li>
+                        <li data-i18n="docs.sections.statistics.totalVolume"><strong>Total Volume:</strong> Combined volume of all blocks (cubic meters)</li>
+                        <li data-i18n="docs.sections.statistics.dimensions"><strong>Dimensions:</strong> Width, height, and depth of the model</li>
+                        <li data-i18n="docs.sections.statistics.oreWaste"><strong>Ore/Waste Distribution:</strong> Percentage breakdown by rock type</li>
+                        <li data-i18n="docs.sections.statistics.zoneInfo"><strong>Zone Information:</strong> Number of distinct zones (if applicable)</li>
+                        <li data-i18n="docs.sections.statistics.gradeRanges"><strong>Grade Ranges:</strong> Min, max, and average values for Cu and Au grades (if available)</li>
+                        <li data-i18n="docs.sections.statistics.econValue"><strong>Economic Value:</strong> Statistics on economic value distribution</li>
+                        <li data-i18n="docs.sections.statistics.interestingFacts"><strong>Interesting Facts:</strong> Automatically generated insights about your model</li>
+                    </ul>
+                    <p data-i18n="docs.sections.statistics.tableFormat">Statistics are displayed in a compact table format for easy reading.</p>
+                </div>
+
+                <div class="docs-tip">
+                    <span data-i18n="docs.sections.statistics.tip"><strong><i class="fas fa-lightbulb"></i> Tip:</strong> The statistics update automatically when you generate a new model. The modal can be closed by clicking outside it or using the close button.</span>
+                </div>
+            </div>
+
             <!-- Export & Data Section -->
             <div class="docs-section" id="export">
-                <h2 data-i18n="docs.sections.export.title">💾 Export & Data</h2>
+                <h2 data-i18n="docs.sections.export.title"><i class="fas fa-download"></i> Export & Data</h2>
                 
                 <p data-i18n="docs.sections.export.intro">Export your block model to CSV format for use in other mining software.</p>
 
@@ -766,21 +810,97 @@
                     <li data-i18n="docs.sections.export.exportedField7"><strong>ZONE</strong> - Zone identifier (if applicable)</li>
                 </ul>
                 <div class="docs-tip" style="margin-top: 15px;">
-                    <span data-i18n="docs.sections.export.exportPetroleumNote"><strong>💡 Note:</strong> For petroleum geology patterns, field meanings differ. See the <a href="#schema" style="color: #7c8aff;">Data Schema</a> section for details on petroleum field mappings.</span>
+                    <span data-i18n="docs.sections.export.exportPetroleumNote"><strong><i class="fas fa-lightbulb"></i> Note:</strong> For petroleum geology patterns, field meanings differ. See the <a href="#schema" style="color: #7c8aff;">Data Schema</a> section for details on petroleum field mappings.</span>
                 </div>
 
                 <div class="docs-tip">
-                    <span data-i18n="docs.sections.export.exportTip"><strong>💡 Tip:</strong> The export automatically filters out "air blocks" (blocks with density = 0) to reduce file size and improve compatibility.</span>
+                    <span data-i18n="docs.sections.export.exportTip"><strong><i class="fas fa-lightbulb"></i> Tip:</strong> The export automatically filters out "air blocks" (blocks with density = 0) to reduce file size and improve compatibility.</span>
                 </div>
 
                 <div class="docs-warning">
-                    <span data-i18n="docs.sections.export.exportWarning"><strong>⚠️ Note:</strong> Large models may produce large CSV files. For models with >100,000 blocks, consider using filters before exporting. The export uses chunked processing to handle very large models (200x200x200+) without hitting JavaScript string length limits.</span>
+                    <span data-i18n="docs.sections.export.exportWarning"><strong><i class="fas fa-exclamation-triangle"></i> Note:</strong> Large models may produce large CSV files. For models with >100,000 blocks, consider using filters before exporting. The export uses chunked processing to handle very large models (200x200x200+) without hitting JavaScript string length limits.</span>
+                </div>
+
+                <h3 data-i18n="docs.sections.export.saveImage">Save Viewport Image</h3>
+                <div class="docs-feature-card">
+                    <p data-i18n="docs.sections.export.saveImageDesc">The <strong><i class="fas fa-camera"></i> Save Image</strong> button (camera icon) allows you to export the current 3D viewport as a PNG image.</p>
+                    <ul>
+                        <li data-i18n="docs.sections.export.saveImageUsage"><strong>Usage:</strong> After generating a model, click the camera icon button</li>
+                        <li data-i18n="docs.sections.export.saveImageOutput"><strong>Output:</strong> Downloads a PNG file with timestamp in the filename</li>
+                        <li data-i18n="docs.sections.export.saveImageUseCases"><strong>Use Cases:</strong> Create screenshots for reports, presentations, or documentation</li>
+                    </ul>
+                    <div class="docs-tip">
+                        <span data-i18n="docs.sections.export.saveImageTip"><strong><i class="fas fa-lightbulb"></i> Tip:</strong> The image captures exactly what you see in the viewport, including filters, slice views, and current camera angle.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model Gallery Section -->
+            <div class="docs-section" id="gallery">
+                <h2 data-i18n="docs.sections.gallery.title"><i class="fas fa-images"></i> Model Gallery</h2>
+                
+                <p data-i18n="docs.sections.gallery.intro">The Model Gallery allows you to save and reload your favorite models with complete state preservation.</p>
+
+                <h3 data-i18n="docs.sections.gallery.accessing">Accessing the Gallery</h3>
+                <p data-i18n="docs.sections.gallery.accessingDesc">Click the <strong><i class="fas fa-images"></i> Gallery</strong> button (images icon) in the header to open the gallery panel. The button displays a badge showing the number of saved models.</p>
+
+                <h3 data-i18n="docs.sections.gallery.saving">Saving Models</h3>
+                <div class="docs-feature-card">
+                    <ol>
+                        <li data-i18n="docs.sections.gallery.savingStep1">Generate a model with your desired parameters</li>
+                        <li data-i18n="docs.sections.gallery.savingStep2">Adjust visualization settings (view mode, filters, camera angle) as desired</li>
+                        <li data-i18n="docs.sections.gallery.savingStep3">Click the <strong><i class="fas fa-star"></i> Save Model</strong> button (star icon) in the control panel</li>
+                        <li data-i18n="docs.sections.gallery.savingStep4">Enter a name for your model in the dialog</li>
+                        <li data-i18n="docs.sections.gallery.savingStep5">Click <strong>Save</strong> to store the model</li>
+                    </ol>
+                    <p data-i18n="docs.sections.gallery.whatSaved"><strong>What Gets Saved:</strong></p>
+                    <ul>
+                        <li data-i18n="docs.sections.gallery.savedParams"><strong>Model Parameters:</strong> Origin, cell sizes, grid dimensions, pattern type</li>
+                        <li data-i18n="docs.sections.gallery.savedViz"><strong>Visualization State:</strong> View mode, visualization field, slice settings, filters, ground layer</li>
+                        <li data-i18n="docs.sections.gallery.savedCamera"><strong>Camera Position:</strong> Exact viewing angle and camera target</li>
+                        <li data-i18n="docs.sections.gallery.savedSeed"><strong>Random Seed:</strong> Values used for pattern generation (ensures identical regeneration)</li>
+                        <li data-i18n="docs.sections.gallery.savedStats"><strong>Model Statistics:</strong> Block count, volume, ore percentages, zone distribution</li>
+                    </ul>
+                </div>
+
+                <h3 data-i18n="docs.sections.gallery.loading">Loading Models</h3>
+                <div class="docs-feature-card">
+                    <ol>
+                        <li data-i18n="docs.sections.gallery.loadingStep1">Open the Gallery panel</li>
+                        <li data-i18n="docs.sections.gallery.loadingStep2">Find your saved model in the list</li>
+                        <li data-i18n="docs.sections.gallery.loadingStep3">Click <strong>Load</strong> on the desired model</li>
+                        <li data-i18n="docs.sections.gallery.loadingStep4">The model will regenerate with saved parameters</li>
+                        <li data-i18n="docs.sections.gallery.loadingStep5">Visualization state and camera position are automatically restored</li>
+                    </ol>
+                    <p data-i18n="docs.sections.gallery.whatRestored"><strong>What Gets Restored:</strong></p>
+                    <ul>
+                        <li data-i18n="docs.sections.gallery.restoredParams">All form parameters are set to saved values</li>
+                        <li data-i18n="docs.sections.gallery.restoredPattern">Model regenerates with identical pattern (same random seed)</li>
+                        <li data-i18n="docs.sections.gallery.restoredViz">View mode, field, and all filter settings are restored</li>
+                        <li data-i18n="docs.sections.gallery.restoredCamera">Camera returns to the exact position when saved</li>
+                        <li data-i18n="docs.sections.gallery.restoredSlice">Slice tool position and settings are restored</li>
+                    </ul>
+                </div>
+
+                <h3 data-i18n="docs.sections.gallery.managing">Managing Saved Models</h3>
+                <ul>
+                    <li data-i18n="docs.sections.gallery.galleryLimit"><strong>Gallery Limit:</strong> Maximum of 50 saved models (oldest automatically deleted when limit reached)</li>
+                    <li data-i18n="docs.sections.gallery.deleteModels"><strong>Delete Models:</strong> Click <strong>Delete</strong> button on any saved model to remove it</li>
+                    <li data-i18n="docs.sections.gallery.modelPreview"><strong>Model Preview:</strong> Each saved model shows name, pattern type, block count, and date created</li>
+                </ul>
+
+                <div class="docs-tip">
+                    <span data-i18n="docs.sections.gallery.tip"><strong><i class="fas fa-lightbulb"></i> Tip:</strong> Use the gallery to create a library of reference models with different patterns and configurations. The complete state preservation means you can return to exactly the same view and analysis setup.</span>
+                </div>
+
+                <div class="docs-warning">
+                    <span data-i18n="docs.sections.gallery.warning"><strong><i class="fas fa-exclamation-triangle"></i> Note:</strong> Saved models store parameters and state, not the actual block data. Models are regenerated on load, which means loading may take a moment for large models.</span>
                 </div>
             </div>
 
             <!-- Data Schema Section -->
             <div class="docs-section" id="schema">
-                <h2 data-i18n="docs.sections.schema.title">📊 Data Schema</h2>
+                <h2 data-i18n="docs.sections.schema.title"><i class="fas fa-chart-bar"></i> Data Schema</h2>
                 
                 <p data-i18n="docs.sections.schema.intro">The block model uses a standardized schema for maximum compatibility with mining software.</p>
 
@@ -915,14 +1035,14 @@
                         </tbody>
                     </table>
                     <div class="docs-tip" style="margin-top: 15px;">
-                        <span data-i18n="docs.sections.schema.petroleumMappingsNote"><strong>💡 Note:</strong> This field mapping allows the same block model framework to be used for both mining and petroleum applications. When exporting petroleum models, be aware that field names remain the same but meanings differ.</span>
+                        <span data-i18n="docs.sections.schema.petroleumMappingsNote"><strong><i class="fas fa-lightbulb"></i> Note:</strong> This field mapping allows the same block model framework to be used for both mining and petroleum applications. When exporting petroleum models, be aware that field names remain the same but meanings differ.</span>
                     </div>
                 </div>
             </div>
 
             <!-- Controls Section -->
             <div class="docs-section" id="controls">
-                <h2 data-i18n="docs.sections.controls.title">🎮 Controls</h2>
+                <h2 data-i18n="docs.sections.controls.title"><i class="fas fa-gamepad"></i> Controls</h2>
                 
                 <h3 data-i18n="docs.sections.controls.mouseControls">Mouse Controls</h3>
                 <table class="docs-table">
@@ -961,19 +1081,34 @@
                 <p data-i18n="docs.sections.controls.keyboardDesc">Currently, all controls are mouse-based. Keyboard shortcuts may be added in future versions.</p>
 
                 <h3 data-i18n="docs.sections.controls.buttonFunctions">Button Functions</h3>
+                <p data-i18n="docs.sections.controls.headerButtonsTitle"><strong>Header Buttons (Icon-Only Design):</strong></p>
                 <ul>
-                    <li data-i18n="docs.sections.controls.buttonGenerate"><strong>Generate</strong> - Creates a new block model based on current parameters</li>
-                    <li data-i18n="docs.sections.controls.buttonExport"><strong>Export</strong> - Downloads the current model as CSV (enabled after generation)</li>
-                    <li data-i18n="docs.sections.controls.buttonZoom"><strong>Zoom to Fit</strong> - Resets the camera to show the entire model</li>
-                    <li data-i18n="docs.sections.controls.buttonDocs"><strong>📚 Docs</strong> - Opens this documentation in a new window</li>
-                    <li data-i18n="docs.sections.controls.buttonMemory"><strong>Memory</strong> - Displays memory usage information</li>
-                    <li data-i18n="docs.sections.controls.buttonAbout"><strong>About</strong> - Shows application information and credits</li>
+                    <li data-i18n="docs.sections.controls.buttonLanguage"><strong><i class="fas fa-globe"></i> Language Selector</strong> (flag icon) - Switch interface language (English, Spanish, French)</li>
+                    <li data-i18n="docs.sections.controls.buttonStats"><strong><i class="fas fa-user"></i> Statistics</strong> (user icon) - View usage statistics dashboard with badges showing model count</li>
+                    <li data-i18n="docs.sections.controls.buttonGallery"><strong><i class="fas fa-images"></i> Gallery</strong> (images icon) - Access saved models gallery with badge showing saved count</li>
+                    <li data-i18n="docs.sections.controls.buttonDocs"><strong><i class="fas fa-question-circle"></i> Documentation</strong> (question mark icon) - Opens this documentation in a new window</li>
+                    <li data-i18n="docs.sections.controls.buttonAbout"><strong><i class="fas fa-info-circle"></i> About</strong> (info icon) - Shows application information, credits, and memory monitoring</li>
                 </ul>
+                <p data-i18n="docs.sections.controls.controlPanelTitle"><strong>Control Panel Buttons:</strong></p>
+                <ul>
+                    <li data-i18n="docs.sections.controls.buttonGenerate"><strong><i class="fas fa-play"></i> Generate</strong> (play icon) - Creates a new block model based on current parameters</li>
+                    <li data-i18n="docs.sections.controls.buttonZoom"><strong><i class="fas fa-search"></i> Zoom to Fit</strong> (zoom icon) - Resets the camera to show the entire model</li>
+                    <li data-i18n="docs.sections.controls.buttonExport"><strong><i class="fas fa-download"></i> Export</strong> (download icon) - Downloads the current model as CSV (enabled after generation)</li>
+                    <li data-i18n="docs.sections.controls.buttonSaveModel"><strong><i class="fas fa-star"></i> Save Model</strong> (star icon) - Saves current model to gallery with name dialog</li>
+                    <li data-i18n="docs.sections.controls.buttonSaveImage"><strong><i class="fas fa-camera"></i> Save Image</strong> (camera icon) - Exports the current 3D viewport as a PNG image</li>
+                </ul>
+                <p data-i18n="docs.sections.controls.onCanvasTitle"><strong>On-Canvas Buttons:</strong></p>
+                <ul>
+                    <li data-i18n="docs.sections.controls.buttonStatsCanvas"><strong><i class="fas fa-file-invoice"></i> Model Statistics</strong> (circular button, lower left) - Opens detailed statistics modal for current model</li>
+                </ul>
+                <div class="docs-tip">
+                    <span data-i18n="docs.sections.controls.buttonTip"><strong><i class="fas fa-lightbulb"></i> Tip:</strong> All buttons use Font Awesome icons with tooltips. Hover over any button to see its function. The interface supports three languages with automatic detection.</span>
+                </div>
             </div>
 
             <!-- Tips & Tricks Section -->
             <div class="docs-section" id="tips">
-                <h2 data-i18n="docs.sections.tips.title">💡 Tips & Tricks</h2>
+                <h2 data-i18n="docs.sections.tips.title"><i class="fas fa-lightbulb"></i> Tips & Tricks</h2>
                 
                 <h3 data-i18n="docs.sections.tips.performanceOptimization">Performance Optimization</h3>
                 <ul>
@@ -1042,7 +1177,7 @@
                 </div>
 
                 <div class="docs-tip">
-                    <span data-i18n="docs.sections.tips.proTip"><strong>💡 Pro Tip:</strong> Save your parameter combinations for common use cases. The app remembers your last settings in the browser.</span>
+                    <span data-i18n="docs.sections.tips.proTip"><strong><i class="fas fa-lightbulb"></i> Pro Tip:</strong> Save your parameter combinations for common use cases. The app remembers your last settings in the browser.</span>
                 </div>
             </div>
         </div>

@@ -117,10 +117,12 @@
     "noBlocksToExport": "Aucun bloc à exporter. Veuillez d'abord générer un modèle.",
     "csvTooLarge": "Le contenu CSV est trop volumineux. Veuillez réduire la taille du modèle.",
     "exportError": "Erreur d'exportation : {{message}}. Tentative d'exportation en CSV...",
-    "csvError": "Erreur d'exportation CSV : {{message}}"
+    "csvError": "Erreur d'exportation CSV : {{message}}",
+    "imageExportSuccess": "Image du viewport enregistrée avec succès",
+    "imageExportError": "Erreur d'exportation d'image : {{message}}"
   },
   "stats": {
-    "title": "Tableau de Bord des Statistiques",
+    "title": "Statistiques d'Utilisation",
     "overview": "Aperçu",
     "totalModels": "Total des Modèles",
     "totalExports": "Total des Exportations",
@@ -145,7 +147,7 @@
     "millionM3": "millions de m³"
   },
   "modelStats": {
-    "title": "📈 Statistiques du Modèle",
+    "title": "Statistiques du Modèle",
     "blocks": "Blocs",
     "volume": "Volume",
     "ore": "Minerai",
@@ -248,23 +250,25 @@
     "french": "Français"
   },
   "docs": {
-    "title": "📚 Documentation",
+    "title": "Documentation",
     "subtitle": "Générateur de Modèle de Blocs",
-    "searchPlaceholder": "🔍 Rechercher dans la documentation...",
+    "searchPlaceholder": "Rechercher dans la documentation...",
     "nav": {
       "gettingStarted": "Démarrage",
       "modelParameters": "Paramètres du Modèle",
       "patterns": "Motifs de Matériau",
       "visualization": "Visualisation",
       "filters": "Filtres et Outils",
+      "statistics": "Statistiques du Modèle",
       "export": "Exportation et Données",
+      "gallery": "Galerie de Modèles",
       "schema": "Schéma de Données",
       "controls": "Contrôles",
       "tips": "Astuces et Conseils"
     },
     "sections": {
       "gettingStarted": {
-        "title": "🚀 Démarrage",
+        "title": "Démarrage",
         "welcome": "Bienvenue dans le <strong>Générateur de Modèle de Blocs Miniers</strong> ! Cet outil vous aide à créer des modèles de blocs 3D réalistes pour tester des applications minières, la visualisation et l'analyse de données. L'outil prend également en charge les applications de géologie pétrolière grâce à des motifs spécialisés.",
         "whatIsBlockModel": "Qu'est-ce qu'un Modèle de Blocs ?",
         "blockModelDesc": "Un modèle de blocs est une représentation de grille 3D d'un gisement minier, où chaque bloc (cellule) contient des propriétés telles que :",
@@ -281,13 +285,10 @@
         "step5": "Exporter - Télécharger au format CSV pour utiliser dans d'autres logiciels",
         "navigationHelp": "Navigation et Aide",
         "headerButtons": "L'en-tête contient des boutons d'accès rapide :",
-        "docsButton": "📚 Docs - Ouvre cette documentation (vous la lisez maintenant !)",
-        "memoryButton": "Mémoire - Surveiller l'utilisation de la mémoire pour les grands modèles",
-        "aboutButton": "À propos - Informations sur l'application et crédits",
-        "tipStart": "💡 Astuce : Commencez avec les paramètres par défaut pour vous familiariser avec l'outil, puis ajustez selon vos besoins."
+        "tipStart": "Astuce : Commencez avec les paramètres par défaut pour vous familiariser avec l'outil, puis ajustez selon vos besoins."
       },
       "modelParameters": {
-        "title": "⚙️ Paramètres du Modèle",
+        "title": "Paramètres du Modèle",
         "intro": "Les paramètres du modèle définissent la structure physique et les dimensions de votre modèle de blocs.",
         "originCoordinates": "Coordonnées d'Origine",
         "originDesc": "L'origine (X, Y, Z) définit le point de départ de votre modèle. Toutes les coordonnées des blocs sont calculées par rapport à cette origine.",
@@ -303,11 +304,11 @@
         "cellsXyz": "Cellules X, Y, Z - Nombre de blocs dans chaque direction (par défaut : 25 × 25 × 25)",
         "totalBlocks": "Total de blocs = Cellules X × Cellules Y × Cellules Z",
         "largerModels": "Les modèles plus grands prennent plus de temps à générer et à rendre",
-        "performanceNote": "⚠️ Note sur les Performances : Les modèles avec plus de 50 000 blocs peuvent prendre plus de temps à générer. L'application utilise automatiquement la mise en cache pour les grands modèles.",
-        "tipTesting": "💡 Astuce : Pour les tests, commencez avec des modèles plus petits (10×10×10 = 1 000 blocs). Pour la production, utilisez des dimensions minières réalistes (ex. : 50×50×30 = 75 000 blocs)."
+        "performanceNote": "Note sur les Performances : Les modèles avec plus de 50 000 blocs peuvent prendre plus de temps à générer. L'application utilise automatiquement la mise en cache pour les grands modèles.",
+        "tipTesting": "Astuce : Pour les tests, commencez avec des modèles plus petits (10×10×10 = 1 000 blocs). Pour la production, utilisez des dimensions minières réalistes (ex. : 50×50×30 = 75 000 blocs)."
       },
       "patterns": {
-        "title": "🎨 Motifs de Matériau",
+        "title": "Motifs de Matériau",
         "intro": "Les motifs de matériau contrôlent la façon dont différents matériaux (minerai, stérile, etc.) sont distribués dans votre modèle de blocs.",
         "advancedPatterns": "Motifs Avancés de Corps de Minerai",
         "geologicalPatterns": "Motifs Géologiques",
@@ -318,7 +319,7 @@
         "porphyryFeature3": "Variations de teneur liées à la profondeur (enrichissement supergène)",
         "porphyryFeature4": "Paramètres randomisés pour la variation entre les générations",
         "porphyryFeature5": "La position du centre, les rayons, les teneurs et les contrôles structurels sont randomisés",
-        "porphyryTip": "💡 Astuce : Chaque fois que vous appuyez sur Générer, le corps de minerai de porphyre aura des caractéristiques différentes tout en maintenant des motifs géologiques réalistes.",
+        "porphyryTip": "Astuce : Chaque fois que vous appuyez sur Générer, le corps de minerai de porphyre aura des caractéristiques différentes tout en maintenant des motifs géologiques réalistes.",
         "veinDesc": "Crée des corps de minerai linéaires ou plans suivant des contrôles structurels. Simule l'or épithermal, les veines mésothermales ou les gisements contrôlés par failles.",
         "veinFeature1": "Direction et pendage configurables",
         "veinFeature2": "Variations de teneur le long de la direction et du pendage",
@@ -333,12 +334,12 @@
         "saltDomeFeature3": "Zones d'eau sous le contact eau-pétrole",
         "saltDomeFeature4": "Plusieurs types de matériaux : Sel, CapRock, OilSand, GasSand, WaterSand, Shale",
         "saltDomeFeature5": "Position du dôme, taille, zones de piège et propriétés du matériau randomisées",
-        "saltDomeFieldMapping": "💡 Mappage des Champs : Pour la géologie pétrolière, les champs standard sont réutilisés :",
+        "saltDomeFieldMapping": "Mappage des Champs : Pour la géologie pétrolière, les champs standard sont réutilisés :",
         "saltDomeField1": "gradeCu = Saturation en Pétrole (%)",
         "saltDomeField2": "gradeAu = Saturation en Gaz (%)",
         "saltDomeField3": "density = Porosité (%)",
         "saltDomeField4": "rockType = Type de matériau (Sel, CapRock, OilSand, GasSand, WaterSand, Shale)",
-        "saltDomeTip": "💡 Astuce : Chaque génération produit une structure de dôme de sel différente avec des dimensions, positions et propriétés du matériau randomisées.",
+        "saltDomeTip": "Astuce : Chaque génération produit une structure de dôme de sel différente avec des dimensions, positions et propriétés du matériau randomisées.",
         "randomClustersDesc": "Crée plusieurs grappes de minerai distribuées aléatoirement. Simule les gisements disséminés ou en stockwork.",
         "inclinedVeinDesc": "Crée un corps de minerai plan incliné. Simule les gisements de veine ou la minéralisation contrôlée par failles.",
         "singleOreHorizonDesc": "Crée une seule couche de minerai horizontale à une profondeur spécifique. Simule les gisements plats.",
@@ -349,7 +350,7 @@
         "uniformDesc": "Tous les blocs ont les mêmes propriétés de matériau. Utile pour les tests ou les modèles simples."
       },
       "visualization": {
-        "title": "👁️ Visualisation",
+        "title": "Visualisation",
         "intro": "La visualisation 3D vous permet d'explorer votre modèle de blocs de manière interactive.",
         "viewModes": "Modes d'Affichage",
         "solidDesc": "Affiche les blocs sous forme de cubes solides. Idéal pour voir la structure globale et la distribution des matériaux.",
@@ -369,10 +370,10 @@
         "auGradeField": "Teneur en Au - Échelle de couleur basée sur la teneur en or",
         "valueField": "Valeur - Échelle de couleur basée sur la valeur économique",
         "controls3d": "Contrôles 3D",
-        "tipHover": "💡 Astuce : Survolez les blocs pour voir des informations détaillées dans l'info-bulle, y compris les coordonnées, les teneurs et d'autres propriétés."
+        "tipHover": "Astuce : Survolez les blocs pour voir des informations détaillées dans l'info-bulle, y compris les coordonnées, les teneurs et d'autres propriétés."
       },
       "filters": {
-        "title": "🔍 Filtres et Outils",
+        "title": "Filtres et Outils",
         "intro": "Les filtres et outils vous aident à vous concentrer sur des parties spécifiques de votre modèle ou à analyser des caractéristiques particulières.",
         "sliceTool": "Outil de Tranche",
         "valueFilter": "Filtre de Valeur",
@@ -396,8 +397,62 @@
         "groundLayerFeature1": "Afficher le Sol - Basculer la visibilité du plan du sol",
         "groundLayerUseful": "Utile pour comprendre la relation entre votre modèle et la surface."
       },
+      "statistics": {
+        "title": "Statistiques du Modèle",
+        "intro": "Chaque modèle généré inclut des statistiques détaillées qui vous aident à comprendre ses caractéristiques.",
+        "accessing": "Accéder aux Statistiques",
+        "accessingDesc": "Après avoir généré un modèle, un bouton circulaire Statistiques du Modèle apparaît dans le coin inférieur gauche du canevas. Cliquez dessus pour ouvrir un modal de statistiques détaillées.",
+        "display": "Affichage des Statistiques",
+        "displayDesc": "Le modal de statistiques affiche :",
+        "blockCount": "Nombre de Blocs : Nombre total de blocs dans le modèle",
+        "totalVolume": "Volume Total : Volume combiné de tous les blocs (mètres cubes)",
+        "dimensions": "Dimensions : Largeur, hauteur et profondeur du modèle",
+        "oreWaste": "Distribution Minerai/Stérile : Répartition en pourcentage par type de roche",
+        "zoneInfo": "Informations sur les Zones : Nombre de zones distinctes (le cas échéant)",
+        "gradeRanges": "Plages de Teneurs : Valeurs min, max et moyennes pour les teneurs Cu et Au (si disponibles)",
+        "econValue": "Valeur Économique : Statistiques sur la distribution de la valeur économique",
+        "interestingFacts": "Faits Intéressants : Informations générées automatiquement sur votre modèle",
+        "tableFormat": "Les statistiques sont affichées dans un format de tableau compact pour faciliter la lecture.",
+        "tip": "Astuce : Les statistiques se mettent à jour automatiquement lorsque vous générez un nouveau modèle. Le modal peut être fermé en cliquant à l'extérieur ou en utilisant le bouton de fermeture."
+      },
+      "gallery": {
+        "title": "Galerie de Modèles",
+        "intro": "La Galerie de Modèles vous permet de sauvegarder et recharger vos modèles favoris avec une préservation complète de l'état.",
+        "accessing": "Accéder à la Galerie",
+        "accessingDesc": "Cliquez sur le bouton Galerie (icône d'images) dans l'en-tête pour ouvrir le panneau de galerie. Le bouton affiche un badge indiquant le nombre de modèles sauvegardés.",
+        "saving": "Sauvegarder les Modèles",
+        "savingStep1": "Générez un modèle avec vos paramètres souhaités",
+        "savingStep2": "Ajustez les paramètres de visualisation (mode d'affichage, filtres, angle de caméra) comme souhaité",
+        "savingStep3": "Cliquez sur le bouton Sauvegarder le Modèle (icône d'étoile) dans le panneau de contrôle",
+        "savingStep4": "Entrez un nom pour votre modèle dans la boîte de dialogue",
+        "savingStep5": "Cliquez sur Sauvegarder pour stocker le modèle",
+        "whatSaved": "Ce qui est Sauvegardé :",
+        "savedParams": "Paramètres du Modèle : Origine, tailles de cellules, dimensions de la grille, type de motif",
+        "savedViz": "État de Visualisation : Mode d'affichage, champ de visualisation, paramètres de tranche, filtres, couche de sol",
+        "savedCamera": "Position de la Caméra : Angle de vue exact et cible de la caméra",
+        "savedSeed": "Graine Aléatoire : Valeurs utilisées pour la génération de motifs (garantit une régénération identique)",
+        "savedStats": "Statistiques du Modèle : Nombre de blocs, volume, pourcentages de minerai, distribution des zones",
+        "loading": "Charger les Modèles",
+        "loadingStep1": "Ouvrez le panneau Galerie",
+        "loadingStep2": "Trouvez votre modèle sauvegardé dans la liste",
+        "loadingStep3": "Cliquez sur Charger sur le modèle souhaité",
+        "loadingStep4": "Le modèle sera régénéré avec les paramètres sauvegardés",
+        "loadingStep5": "L'état de visualisation et la position de la caméra sont automatiquement restaurés",
+        "whatRestored": "Ce qui est Restauré :",
+        "restoredParams": "Tous les paramètres du formulaire sont définis aux valeurs sauvegardées",
+        "restoredPattern": "Le modèle se régénère avec un motif identique (même graine aléatoire)",
+        "restoredViz": "Le mode d'affichage, le champ et tous les paramètres de filtres sont restaurés",
+        "restoredCamera": "La caméra revient à la position exacte lors de la sauvegarde",
+        "restoredSlice": "La position et les paramètres de l'outil de tranche sont restaurés",
+        "managing": "Gérer les Modèles Sauvegardés",
+        "galleryLimit": "Limite de Galerie : Maximum de 50 modèles sauvegardés (le plus ancien est automatiquement supprimé lorsque la limite est atteinte)",
+        "deleteModels": "Supprimer les Modèles : Cliquez sur le bouton Supprimer sur n'importe quel modèle sauvegardé pour le supprimer",
+        "modelPreview": "Aperçu du Modèle : Chaque modèle sauvegardé affiche le nom, le type de motif, le nombre de blocs et la date de création",
+        "tip": "Astuce : Utilisez la galerie pour créer une bibliothèque de modèles de référence avec différents motifs et configurations. La préservation complète de l'état signifie que vous pouvez revenir exactement à la même vue et configuration d'analyse.",
+        "warning": "Note : Les modèles sauvegardés stockent les paramètres et l'état, pas les données réelles des blocs. Les modèles sont régénérés au chargement, ce qui signifie que le chargement peut prendre un moment pour les grands modèles."
+      },
       "export": {
-        "title": "💾 Exportation et Données",
+        "title": "Exportation et Données",
         "intro": "Exportez votre modèle de blocs au format CSV pour l'utiliser dans d'autres logiciels miniers.",
         "exportFormat": "Format d'Exportation",
         "exportFormatDesc": "Le CSV exporté suit un schéma standardisé compatible avec :",
@@ -420,12 +475,18 @@
         "exportedField5": "GRADE_AU - Teneur en or (g/t) ou Saturation en Gaz pour le pétrole",
         "exportedField6": "ECON_VALUE - Valeur économique",
         "exportedField7": "ZONE - Identifiant de zone (le cas échéant)",
-        "exportPetroleumNote": "💡 Note : Pour les motifs de géologie pétrolière, les significations des champs diffèrent. Consultez la section Schéma de Données pour les détails sur les mappages de champs pétroliers.",
-        "exportTip": "💡 Astuce : L'exportation filtre automatiquement les \"blocs d'air\" (blocs avec densité = 0) pour réduire la taille du fichier et améliorer la compatibilité.",
-        "exportWarning": "⚠️ Note : Les grands modèles peuvent produire de gros fichiers CSV. Pour les modèles avec >100 000 blocs, envisagez d'utiliser des filtres avant l'exportation. L'exportation utilise un traitement par fragments pour gérer les très grands modèles (200x200x200+) sans atteindre les limites de longueur de chaîne JavaScript."
+        "saveImage": "Sauvegarder l'Image du Viewport",
+        "saveImageDesc": "Le bouton Sauvegarder l'Image (icône de caméra) vous permet d'exporter le viewport 3D actuel comme une image PNG.",
+        "saveImageUsage": "Utilisation : Après avoir généré un modèle, cliquez sur le bouton de l'icône de caméra",
+        "saveImageOutput": "Sortie : Télécharge un fichier PNG avec horodatage dans le nom du fichier",
+        "saveImageUseCases": "Cas d'Usage : Créer des captures d'écran pour des rapports, présentations ou documentation",
+        "saveImageTip": "Astuce : L'image capture exactement ce que vous voyez dans le viewport, y compris les filtres, les vues de tranche et l'angle de caméra actuel.",
+        "exportPetroleumNote": "Note : Pour les motifs de géologie pétrolière, les significations des champs diffèrent. Consultez la section Schéma de Données pour les détails sur les mappages de champs pétroliers.",
+        "exportTip": "Astuce : L'exportation filtre automatiquement les \"blocs d'air\" (blocs avec densité = 0) pour réduire la taille du fichier et améliorer la compatibilité.",
+        "exportWarning": "Note : Les grands modèles peuvent produire de gros fichiers CSV. Pour les modèles avec >100 000 blocs, envisagez d'utiliser des filtres avant l'exportation. L'exportation utilise un traitement par fragments pour gérer les très grands modèles (200x200x200+) sans atteindre les limites de longueur de chaîne JavaScript."
       },
       "schema": {
-        "title": "📊 Schéma de Données",
+        "title": "Schéma de Données",
         "intro": "Le modèle de blocs utilise un schéma standardisé pour une compatibilité maximale avec les logiciels miniers.",
         "requiredFields": "Champs Requis",
         "optionalFields": "Champs Optionnels",
@@ -466,10 +527,10 @@
         "petroleumMapping5": "Valeur Économique",
         "petroleumMapping6": "Sel, CapRock, OilSand, GasSand, WaterSand, Shale",
         "petroleumMapping7": "$/baril équivalent",
-        "petroleumMappingsNote": "💡 Note : Ce mappage de champs permet d'utiliser le même cadre de modèle de blocs pour les applications minières et pétrolières. Lors de l'exportation de modèles pétroliers, sachez que les noms de champs restent les mêmes mais les significations diffèrent."
+        "petroleumMappingsNote": "Note : Ce mappage de champs permet d'utiliser le même cadre de modèle de blocs pour les applications minières et pétrolières. Lors de l'exportation de modèles pétroliers, sachez que les noms de champs restent les mêmes mais les significations diffèrent."
       },
       "controls": {
-        "title": "🎮 Contrôles",
+        "title": "Contrôles",
         "mouseControls": "Contrôles de la Souris",
         "mouseControlsTableAction": "Action",
         "mouseControlsTableControl": "Contrôle",
@@ -489,15 +550,24 @@
         "keyboardShortcuts": "Raccourcis Clavier",
         "keyboardDesc": "Actuellement, tous les contrôles sont basés sur la souris. Les raccourcis clavier peuvent être ajoutés dans les versions futures.",
         "buttonFunctions": "Fonctions des Boutons",
-        "buttonGenerate": "Générer - Crée un nouveau modèle de blocs basé sur les paramètres actuels",
-        "buttonExport": "Exporter - Télécharge le modèle actuel au format CSV (activé après génération)",
-        "buttonZoom": "Ajuster le Zoom - Réinitialise la caméra pour afficher tout le modèle",
-        "buttonDocs": "📚 Docs - Ouvre cette documentation dans une nouvelle fenêtre",
-        "buttonMemory": "Mémoire - Affiche les informations d'utilisation de la mémoire",
-        "buttonAbout": "À propos - Affiche les informations de l'application et les crédits"
+        "headerButtonsTitle": "Boutons de l'En-tête (Design avec Icônes Uniquement) :",
+        "buttonLanguage": "Sélecteur de Langue (icône de drapeau) - Changer la langue de l'interface (Anglais, Espagnol, Français)",
+        "buttonStats": "Statistiques (icône d'utilisateur) - Voir le tableau de bord des statistiques d'utilisation avec badges affichant le nombre de modèles",
+        "buttonGallery": "Galerie (icône d'images) - Accéder à la galerie de modèles sauvegardés avec badge affichant le nombre sauvegardé",
+        "buttonDocs": "Documentation (icône de point d'interrogation) - Ouvre cette documentation dans une nouvelle fenêtre",
+        "buttonAbout": "À propos (icône d'information) - Affiche les informations sur l'application, les crédits et la surveillance de la mémoire",
+        "controlPanelTitle": "Boutons du Panneau de Contrôle :",
+        "buttonGenerate": "Générer (icône de lecture) - Crée un nouveau modèle de blocs basé sur les paramètres actuels",
+        "buttonExport": "Exporter (icône de téléchargement) - Télécharge le modèle actuel au format CSV (activé après génération)",
+        "buttonZoom": "Ajuster le Zoom (icône de zoom) - Réinitialise la caméra pour afficher tout le modèle",
+        "buttonSaveModel": "Sauvegarder le Modèle (icône d'étoile) - Sauvegarde le modèle actuel dans la galerie avec boîte de dialogue de nom",
+        "buttonSaveImage": "Sauvegarder l'Image (icône de caméra) - Exporte le viewport 3D actuel comme une image PNG",
+        "onCanvasTitle": "Boutons sur le Canevas :",
+        "buttonStatsCanvas": "Statistiques du Modèle (bouton circulaire, en bas à gauche) - Ouvre le modal de statistiques détaillées pour le modèle actuel",
+        "buttonTip": "Astuce : Tous les boutons utilisent des icônes Font Awesome avec tooltips. Survolez n'importe quel bouton pour voir sa fonction. L'interface prend en charge trois langues avec détection automatique."
       },
       "tips": {
-        "title": "💡 Astuces et Conseils",
+        "title": "Astuces et Conseils",
         "performanceOptimization": "Optimisation des Performances",
         "perfTip1": "Commencez avec des modèles plus petits pour tester les motifs et les paramètres",
         "perfTip2": "Utilisez le mode d'affichage \"Points\" pour les très grands modèles (>100K blocs)",
@@ -537,7 +607,7 @@
         "useCase4Desc": "Testez les outils de visualisation avec diverses tailles de modèle, motifs et propriétés.",
         "useCase5Title": "Géologie Pétrolière",
         "useCase5Desc": "Utilisez le motif Réservoir de Dôme de Sel pour démontrer les concepts de géologie pétrolière, la modélisation de réservoirs et la visualisation des pièges à pétrole/gaz.",
-        "proTip": "💡 Astuce Pro : Enregistrez vos combinaisons de paramètres pour les cas d'usage courants. L'application se souvient de vos derniers paramètres dans le navigateur."
+        "proTip": "Astuce Pro : Enregistrez vos combinaisons de paramètres pour les cas d'usage courants. L'application se souvient de vos derniers paramètres dans le navigateur."
       }
     }
   }
