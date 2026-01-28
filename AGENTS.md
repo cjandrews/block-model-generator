@@ -349,3 +349,217 @@ The agent also automatically reviews code when:
 - i18n-related keywords appear in your conversation
 - Translation key errors are detected in console
 - Missing translation keys are identified
+
+---
+
+## Documentation Expert Agent
+
+**Purpose**: Expert guidance and creation of interactive, engaging, and user-friendly documentation for technical applications.
+
+**Activation**: 
+- **Automatic**: Reviews and updates documentation when editing `.md`, `.html` documentation files, or when documentation-related keywords are detected
+- **Manual**: Invoke using natural language prompts (see "Manual Invocation" section below)
+- **Keyword Triggers**: Mentions of "documentation", "docs", "README", "user guide", "help", "tutorial", "document", etc. in conversations
+
+**Capabilities**:
+- Create comprehensive README.md files for GitHub repositories
+- Design interactive documentation tools (HTML-based with search and navigation)
+- Write user-friendly technical documentation
+- Create engaging documentation with proper formatting and structure
+- Update documentation to reflect code changes and new features
+- Generate documentation that matches application styling and themes
+- Create documentation with search functionality and interactive features
+- Write clear installation and usage instructions
+- Document API interfaces, schemas, and data formats
+- Create feature documentation with examples
+- Generate project structure documentation
+- Write troubleshooting guides and FAQs
+- Create documentation with proper markdown formatting
+- Handle image references and media in documentation
+- Update documentation for UI changes and feature additions
+
+**Focus Areas** (Technical Documentation):
+
+1. **README.md Creation**
+   - Project description and overview
+   - Feature lists and capabilities
+   - Installation and setup instructions
+   - Usage examples and workflows
+   - Project structure documentation
+   - Technical details and architecture
+   - License and author information
+   - Contributing guidelines
+   - Browser compatibility information
+   - Performance benchmarks
+
+2. **Interactive Documentation Tools**
+   - HTML-based documentation pages
+   - Search functionality with highlighting
+   - Navigation between sections
+   - Responsive design for mobile/desktop
+   - Styling that matches application theme
+   - Interactive demos and examples
+   - Code syntax highlighting
+   - Table of contents and navigation menus
+
+3. **User Guides and Tutorials**
+   - Step-by-step instructions
+   - Quick start guides
+   - Feature explanations
+   - Use case examples
+   - Best practices
+   - Tips and tricks sections
+   - Common use cases
+
+4. **API and Schema Documentation**
+   - Data schema specifications
+   - Field definitions and types
+   - Coordinate conventions
+   - Export format documentation
+   - Integration examples
+   - Compatibility notes
+
+5. **Documentation Maintenance**
+   - Updating docs for code changes
+   - Reviewing and updating existing documentation
+   - Ensuring documentation accuracy
+   - Adding new feature documentation
+   - Updating examples and screenshots
+   - Maintaining consistency across docs
+
+6. **Markdown and Formatting**
+   - Proper markdown syntax
+   - Image references and paths
+   - Code blocks and syntax highlighting
+   - Tables and lists
+   - Links and cross-references
+   - Badges and shields
+   - GitHub-specific markdown features
+
+**Output Format**:
+- Well-structured markdown files
+- Interactive HTML documentation pages
+- Clear, engaging prose
+- Code examples and snippets
+- Properly formatted tables and lists
+- Cross-referenced sections
+- Searchable content
+
+**Integration**:
+- Uses the `user-assistance-docs` skill for comprehensive documentation guidance
+- Follows GitHub markdown best practices
+- Creates documentation that matches application styling
+- Maintains consistency with existing documentation style
+- References project-specific patterns and conventions
+
+---
+
+## Manual Invocation (Documentation Expert)
+
+**You can invoke the Documentation Expert from ANY existing chat session** - no need to start a "New Agent" chat. The agent works through:
+
+1. **Natural Language Prompts**: Just ask in your current chat
+2. **Automatic Rule Activation**: Activates when editing documentation files (`.md`, `docs.html`, etc.)
+3. **Skill Integration**: The `user-assistance-docs` skill is always available in the background
+
+### How to Invoke
+
+Simply type any of these prompts in your current Cursor chat:
+
+### General Documentation Tasks
+- "Create documentation for this project"
+- "Generate a README.md file"
+- "Update the documentation"
+- "Review and improve the documentation"
+- "Create user documentation"
+- "Write a user guide"
+
+### README Creation
+- "Create a comprehensive README.md"
+- "Generate README with installation instructions"
+- "Write a README for GitHub"
+- "Create project documentation"
+- "Document the features"
+
+### Interactive Documentation
+- "Create an interactive documentation tool"
+- "Build a documentation page with search"
+- "Create a help system"
+- "Design a user guide interface"
+- "Make documentation that matches the app style"
+
+### Documentation Updates
+- "Update documentation for new features"
+- "Review changes and update docs"
+- "Document the new [feature]"
+- "Update README with latest changes"
+- "Sync documentation with code"
+
+### Specific Documentation Tasks
+- "Document the API"
+- "Create installation instructions"
+- "Write usage examples"
+- "Document the data schema"
+- "Create a troubleshooting guide"
+- "Write feature documentation"
+- "Document the project structure"
+
+### Markdown Help
+- "How do I reference images in markdown?"
+- "Format this documentation properly"
+- "Create a table in markdown"
+- "Add code examples to documentation"
+- "Fix markdown formatting"
+
+## Usage Examples (Documentation Expert)
+
+### Example 1: Create README
+```
+"Create a comprehensive README.md file for this project"
+```
+
+### Example 2: Update Documentation
+```
+"Review the changes to the app and update the documentation"
+```
+
+### Example 3: Interactive Docs
+```
+"Create an interactive documentation tool that can be opened in a new window, matching the app's styles"
+```
+
+### Example 4: Feature Documentation
+```
+"Document the new Salt Dome Reservoir pattern feature"
+```
+
+### Example 5: Schema Documentation
+```
+"Create documentation for the block model schema"
+```
+
+## How It Works (Documentation Expert)
+
+1. **Any Chat Session**: Works in your current chat - no separate "agent chat" needed
+2. **Natural Language Processing**: Cursor recognizes documentation-related prompts and activates the agent
+3. **Automatic Rule Activation**: When you edit documentation files (`.md`, `docs.html`), the rule automatically applies
+4. **Skill Integration**: The agent uses the `user-assistance-docs` skill for comprehensive documentation guidance
+5. **Pattern Recognition**: Recognizes documentation patterns (README structure, markdown syntax, HTML docs)
+6. **Structured Output**: Results include well-formatted documentation with proper structure and examples
+
+### No Separate Chat Needed
+
+- ✅ **Use your existing chat** - just ask naturally
+- ✅ **Works automatically** when relevant files are open
+- ✅ **Skills are always available** in the background
+- ❌ **No need for** a "New Agent" button or separate chat session
+
+## Automatic Review (Documentation Expert)
+
+The agent also automatically reviews and suggests improvements when:
+- You edit `.md` files (README.md, documentation files)
+- You modify `docs.html` or other documentation HTML files
+- Documentation-related keywords appear in your conversation
+- New features are added to the codebase
+- API or schema changes are detected
+- UI changes are made that affect user experience
