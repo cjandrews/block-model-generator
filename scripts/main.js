@@ -123,9 +123,7 @@ function clearOldCache() {
             }
         });
         
-        if (cleared > 0) {
-            console.log(`Cleared ${cleared} old cache entries`);
-        }
+        // Cache cleared silently (no user notification needed)
     } catch (e) {
         console.error('Error clearing cache:', e);
     }
@@ -293,7 +291,7 @@ function init() {
                 localStorage.removeItem(key);
             }
         });
-        console.log('Cleared cached block models to ensure fresh generation with correct Z-axis convention.');
+        // Cache cleared to ensure fresh generation
     } catch (e) {
         console.warn('Could not clear cache:', e);
     }

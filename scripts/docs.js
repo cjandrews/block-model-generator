@@ -283,7 +283,7 @@
         demoButtons.forEach(button => {
             button.addEventListener('click', function() {
                 // Future: Add interactive demonstrations
-                console.log('Interactive demo clicked:', this.textContent);
+                // Interactive demo placeholder (future feature)
             });
         });
     }

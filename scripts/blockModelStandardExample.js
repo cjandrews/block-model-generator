@@ -21,7 +21,7 @@ function exampleGenerateGrid() {
     };
     
     const blocks = generateRegularGrid(gridParams);
-    console.log(`Generated ${blocks.length} blocks`);
+    // Generated blocks array ready for use
     return blocks;
 }
 

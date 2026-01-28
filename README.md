@@ -28,7 +28,11 @@ A powerful web-based tool for generating realistic 3D block models for mining an
 ![Example](./Examples/fun.jpg)
 
 ### Advanced Tools
-- **Slice Tool**: View cross-sections along X, Y, or Z axes
+- **Slice Tool**: Interactive cross-section viewer with camera-aware drag handles
+  - View cross-sections along X, Y, or Z axes
+  - Drag handles (bidirectional arrows) for intuitive slice positioning
+  - Linear drag mapping for precise control
+  - Visual feedback with color-coded handles (red/blue arrows, green shaft)
 - **Value Filter**: Filter blocks by economic value threshold
 - **Category Filter**: Show/hide specific rock types or categories
 - **Ground Layer**: Display ground surface for spatial context
