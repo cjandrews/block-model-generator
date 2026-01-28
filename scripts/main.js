@@ -932,6 +932,7 @@ function initAboutModal() {
     const aboutBtn = document.getElementById('aboutBtn');
     const aboutModal = document.getElementById('aboutModal');
     const aboutClose = aboutModal?.querySelector('.modal-close');
+    const githubBtn = document.getElementById('githubBtn');
     
     if (aboutBtn && aboutModal) {
         aboutBtn.addEventListener('click', () => {
@@ -949,6 +950,13 @@ function initAboutModal() {
             if (e.target === aboutModal) {
                 aboutModal.style.display = 'none';
             }
+        });
+    }
+    
+    // GitHub button - open GitHub repository in new tab
+    if (githubBtn) {
+        githubBtn.addEventListener('click', () => {
+            window.open('https://github.com/cjandrews/block-model-generator', '_blank', 'noopener,noreferrer');
         });
     }
 }
@@ -1165,8 +1173,22 @@ function initMemoryModal() {
  */
 function updateStatus(message, type = 'info') {
     const statusEl = document.getElementById('status');
-    statusEl.textContent = message;
-    statusEl.className = `status ${type}`;
+    const statusText = document.getElementById('statusText');
+    const statusClose = document.getElementById('statusClose');
+    
+    if (statusEl && statusText) {
+        statusText.textContent = message;
+        statusEl.className = `status-canvas-message ${type}`;
+        statusEl.style.display = 'flex';
+        
+        // Set up close button handler if not already set
+        if (statusClose && !statusClose.dataset.handlerSet) {
+            statusClose.addEventListener('click', () => {
+                statusEl.style.display = 'none';
+            });
+            statusClose.dataset.handlerSet = 'true';
+        }
+    }
 }
 
 /**
@@ -1351,8 +1373,8 @@ function initGalleryPanel() {
             html.push(`<div style="font-size: 0.85em; opacity: 0.8;">${escapeHtml(patternName)} • ${model.stats.blockCount.toLocaleString()} ${t('gallery.blocks')} • ${date}</div>`);
             html.push(`</div>`);
             html.push(`<div style="display: flex; gap: 4px;">`);
-            html.push(`<button class="header-btn gallery-load-btn" style="padding: 4px 8px; font-size: 0.85em;" data-model-id="${escapeHtml(model.id)}" title="${t('gallery.load')}"><i class="fas fa-folder-open"></i> <span>${t('gallery.load')}</span></button>`);
-            html.push(`<button class="header-btn gallery-delete-btn" style="padding: 4px 8px; font-size: 0.85em;" data-model-id="${escapeHtml(model.id)}" title="${t('gallery.delete')}"><i class="fas fa-trash"></i> <span>${t('gallery.delete')}</span></button>`);
+            html.push(`<button class="header-btn gallery-load-btn" style="padding: 4px 8px; font-size: 0.85em;" data-model-id="${escapeHtml(model.id)}" title="${t('gallery.load')}"><i class="fas fa-folder-open"></i></button>`);
+            html.push(`<button class="header-btn gallery-delete-btn" style="padding: 4px 8px; font-size: 0.85em;" data-model-id="${escapeHtml(model.id)}" title="${t('gallery.delete')}"><i class="fas fa-trash"></i></button>`);
             html.push(`</div>`);
             html.push(`</div>`);
             html.push(`</div>`);

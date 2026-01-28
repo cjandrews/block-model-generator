@@ -3008,85 +3008,109 @@ function restoreVisualizationState(state) {
     }
     
     // Restore visualization field (now that checkboxes are set)
+    // But DON'T call setVisualizationField yet - we'll call it after all filter settings are restored
+    // to ensure filters are applied correctly
+    let fieldToSet = null;
     if (state.field && ['rockType', 'density', 'gradeCu', 'gradeAu', 'econValue'].includes(state.field)) {
         const fieldSelect = document.getElementById('visualizationField');
         if (fieldSelect) {
             fieldSelect.value = state.field;
-            setVisualizationField(state.field);
+            fieldToSet = state.field;
+            // Set the internal variable but don't render yet
+            currentVisualizationField = state.field;
         }
     }
     
-    // Now restore slice tool settings (after field is set)
-    if (state.slice) {
-        // Checkbox already set above, now set the function to update UI
-        if (state.slice.enabled !== undefined) {
-            setSliceEnabled(state.slice.enabled);
+    // Restore value filter threshold and mode BEFORE setting the field (so they're ready when field is set)
+    if (state.valueFilter) {
+        if (state.valueFilter.threshold !== undefined) {
+            valueVisibilityThreshold = state.valueFilter.threshold;
+            const valueVisibilityThresholdSlider = document.getElementById('valueVisibilityThreshold');
+            if (valueVisibilityThresholdSlider) {
+                valueVisibilityThresholdSlider.value = state.valueFilter.threshold;
+            }
         }
         
+        if (state.valueFilter.mode && ['above', 'below'].includes(state.valueFilter.mode)) {
+            valueVisibilityMode = state.valueFilter.mode;
+            const valueVisibilityModeSelect = document.getElementById('valueVisibilityMode');
+            if (valueVisibilityModeSelect) {
+                valueVisibilityModeSelect.value = state.valueFilter.mode;
+            }
+        }
+    }
+    
+    // Restore category filter visible categories BEFORE setting the field
+    if (state.categoryFilter) {
+        if (state.categoryFilter.visibleCategories && Array.isArray(state.categoryFilter.visibleCategories)) {
+            // Restore visible categories
+            visibleCategories.clear();
+            state.categoryFilter.visibleCategories.forEach(cat => visibleCategories.add(cat));
+        }
+    }
+    
+    // Restore slice tool settings BEFORE setting the field
+    if (state.slice) {
         if (state.slice.axis && ['x', 'y', 'z'].includes(state.slice.axis)) {
+            sliceAxis = state.slice.axis;
             const sliceAxisSelect = document.getElementById('sliceAxis');
             if (sliceAxisSelect) {
                 sliceAxisSelect.value = state.slice.axis;
-                setSliceAxis(state.slice.axis);
             }
         }
         
         if (state.slice.position !== undefined) {
+            slicePosition = state.slice.position;
             const slicePositionSlider = document.getElementById('slicePosition');
             if (slicePositionSlider) {
                 slicePositionSlider.value = state.slice.position;
-                setSlicePosition(state.slice.position);
             }
         }
     }
     
-    // Now restore value filter settings (after field is set)
-    if (state.valueFilter) {
-        // Checkbox already set above, now call the function to update UI and apply filter
-        if (state.valueFilter.enabled !== undefined) {
-            setValueVisibilityEnabled(state.valueFilter.enabled);
+    // NOW set the visualization field (this will trigger renderBlocks with all filter states ready)
+    if (fieldToSet) {
+        setVisualizationField(fieldToSet);
+    }
+    
+    // Now apply filter setters to ensure UI is updated and filters are applied
+    // These will check if re-rendering is needed or just update uniforms
+    if (state.slice && state.slice.enabled !== undefined) {
+        setSliceEnabled(state.slice.enabled);
+        if (state.slice.axis && ['x', 'y', 'z'].includes(state.slice.axis)) {
+            setSliceAxis(state.slice.axis);
         }
-        
+        if (state.slice.position !== undefined) {
+            setSlicePosition(state.slice.position);
+        }
+    }
+    
+    if (state.valueFilter && state.valueFilter.enabled !== undefined) {
+        setValueVisibilityEnabled(state.valueFilter.enabled);
         if (state.valueFilter.mode && ['above', 'below'].includes(state.valueFilter.mode)) {
-            const valueVisibilityModeSelect = document.getElementById('valueVisibilityMode');
-            if (valueVisibilityModeSelect) {
-                valueVisibilityModeSelect.value = state.valueFilter.mode;
-                setValueVisibilityMode(state.valueFilter.mode);
-            }
+            setValueVisibilityMode(state.valueFilter.mode);
         }
-        
+        // Trigger threshold update if needed
         if (state.valueFilter.threshold !== undefined) {
             const valueVisibilityThresholdSlider = document.getElementById('valueVisibilityThreshold');
             if (valueVisibilityThresholdSlider) {
-                valueVisibilityThresholdSlider.value = state.valueFilter.threshold;
-                // Update threshold via the slider change event
                 valueVisibilityThresholdSlider.dispatchEvent(new Event('input'));
             }
         }
     }
     
-    // Now restore category filter settings (after field is set)
     if (state.categoryFilter) {
-        // Checkbox already set above, now call the function to update UI and apply filter
         if (state.categoryFilter.enabled !== undefined) {
             setCategoryFilterEnabled(state.categoryFilter.enabled);
         }
-        
+        // Update UI checkboxes after enabling
         if (state.categoryFilter.visibleCategories && Array.isArray(state.categoryFilter.visibleCategories)) {
-            // Restore visible categories
-            visibleCategories.clear();
-            state.categoryFilter.visibleCategories.forEach(cat => visibleCategories.add(cat));
-            // Update UI checkboxes
             updateCategoryFilterUI();
         }
     }
     
-    // Now restore ground layer (after field is set)
-    if (state.ground) {
-        // Checkbox already set above, now call the function to update UI
-        if (state.ground.enabled !== undefined) {
-            setGroundEnabled(state.ground.enabled);
-        }
+    if (state.ground && state.ground.enabled !== undefined) {
+        setGroundEnabled(state.ground.enabled);
     }
     
     // Restore camera position and controls target

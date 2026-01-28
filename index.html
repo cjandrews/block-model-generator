@@ -252,11 +252,15 @@
                     </div>
                 </div>
                 
-                <div id="status" class="status"></div>
             </aside>
 
             <main class="visualization-area">
-                <div id="canvasContainer"></div>
+                <div id="canvasContainer">
+                    <div id="status" class="status-canvas-message" style="display: none;">
+                        <span id="statusText"></span>
+                        <button id="statusClose" class="status-close" title="Close">&times;</button>
+                    </div>
+                </div>
                 <div id="blockTooltip" class="block-tooltip" style="display: none;"></div>
                 <div class="controls-hint">
                     <p data-i18n="controls.hint">Controls: Left-click drag to rotate | Right-click drag to pan | Scroll to zoom</p>
@@ -283,12 +287,11 @@
                     <strong data-i18n="about.license">License: MIT License</strong><br>
                     <strong data-i18n="about.copyright" data-i18n-params='{"year": "2026"}'>Copyright: © 2026 All rights reserved</strong>
                 </p>
-                <div style="margin-top: 20px; text-align: center; display: flex; gap: 10px; justify-content: center;">
-                    <a href="https://github.com/cjandrews/block-model-generator" target="_blank" rel="noopener noreferrer" class="header-btn" title="View on GitHub" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                        <i class="fab fa-github"></i>
-                        <span data-i18n="about.github">GitHub</span>
-                    </a>
-                    <button id="memoryBtn" class="header-btn" data-i18n="buttons.memory" title="Memory"><i class="fas fa-memory"></i> <span data-i18n="buttons.memory">Memory</span></button>
+                <div style="margin-top: 20px; text-align: center; display: flex; gap: 10px; justify-content: center; align-items: center;">
+                    <button id="githubBtn" class="header-btn" title="View on GitHub" style="flex: 0 0 auto; width: auto;">
+                        <i class="fas fa-code"></i>
+                    </button>
+                    <button id="memoryBtn" class="header-btn" data-i18n="buttons.memory" title="Memory" style="flex: 0 0 auto; width: auto;"><i class="fas fa-microchip"></i></button>
                 </div>
             </div>
         </div>
