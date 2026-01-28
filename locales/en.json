@@ -225,7 +225,7 @@
     "title": "About",
     "appName": "Mining Block Model Generator",
     "builtBy": "Built by <strong><a href=\"mailto:chris@builditdesignlab.com\">Chris Andrews</a></strong>, <a href=\"https://www.builditdesignlab.com/#block-model-generator\" target=\"_blank\" rel=\"noopener noreferrer\">BuildIT Design Labs</a>",
-    "license": "License: MIT License",
+    "license": "License: <a href=\"https://opensource.org/license/mit\" target=\"_blank\" rel=\"noopener noreferrer\">MIT License</a>",
     "copyright": "Copyright: © {{year}} All rights reserved",
     "github": "GitHub"
   },

@@ -176,7 +176,7 @@ const EMBEDDED_TRANSLATIONS = {
             "title": "About",
             "appName": "Mining Block Model Generator",
             "builtBy": "Built by <strong><a href=\"mailto:chris@builditdesignlab.com\">Chris Andrews</a></strong>, <a href=\"https://www.builditdesignlab.com/#block-model-generator\" target=\"_blank\" rel=\"noopener noreferrer\">BuildIT Design Labs</a>",
-            "license": "License: MIT License",
+            "license": "License: <a href=\"https://opensource.org/license/mit\" target=\"_blank\" rel=\"noopener noreferrer\">MIT License</a>",
             "copyright": "Copyright: © {{year}} All rights reserved",
             "github": "GitHub"
         },
@@ -808,7 +808,7 @@ const EMBEDDED_TRANSLATIONS = {
             "title": "Acerca de",
             "appName": "Generador de Modelo de Bloques Mineros",
             "builtBy": "Desarrollado por <strong><a href=\"mailto:chris@builditdesignlab.com\">Chris Andrews</a></strong>, <a href=\"https://www.builditdesignlab.com/#block-model-generator\" target=\"_blank\" rel=\"noopener noreferrer\">BuildIT Design Labs</a>",
-            "license": "Licencia: Licencia MIT",
+            "license": "Licencia: <a href=\"https://opensource.org/license/mit\" target=\"_blank\" rel=\"noopener noreferrer\">Licencia MIT</a>",
             "copyright": "Copyright: © {{year}} Todos los derechos reservados",
             "github": "GitHub"
         },
@@ -1365,7 +1365,7 @@ const EMBEDDED_TRANSLATIONS = {
             "title": "À propos",
             "appName": "Générateur de Modèle de Blocs Miniers",
             "builtBy": "Développé par <strong><a href=\"mailto:chris@builditdesignlab.com\">Chris Andrews</a></strong>, <a href=\"https://www.builditdesignlab.com/#block-model-generator\" target=\"_blank\" rel=\"noopener noreferrer\">BuildIT Design Labs</a>",
-            "license": "Licence : Licence MIT",
+            "license": "Licence : <a href=\"https://opensource.org/license/mit\" target=\"_blank\" rel=\"noopener noreferrer\">Licence MIT</a>",
             "copyright": "Copyright : © {{year}} Tous droits réservés",
             "github": "GitHub"
         },
