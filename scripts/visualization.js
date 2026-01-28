@@ -159,6 +159,142 @@ function initVisualization(container) {
 }
 
 /**
+ * Manually merge multiple BufferGeometries into one
+ * @param {Array<THREE.BufferGeometry>} geometries - Array of geometries to merge
+ * @returns {THREE.BufferGeometry} Merged geometry
+ */
+function mergeGeometries(geometries) {
+    if (geometries.length === 0) return new THREE.BufferGeometry();
+    if (geometries.length === 1) return geometries[0].clone();
+    
+    const merged = new THREE.BufferGeometry();
+    const positions = [];
+    const normals = [];
+    const uvs = [];
+    const allIndices = [];
+    let vertexOffset = 0;
+    
+    geometries.forEach(geometry => {
+        const pos = geometry.attributes.position;
+        const norm = geometry.attributes.normal;
+        const uv = geometry.attributes.uv;
+        
+        if (pos) {
+            for (let i = 0; i < pos.count; i++) {
+                positions.push(pos.getX(i), pos.getY(i), pos.getZ(i));
+            }
+        }
+        
+        if (norm) {
+            for (let i = 0; i < norm.count; i++) {
+                normals.push(norm.getX(i), norm.getY(i), norm.getZ(i));
+            }
+        }
+        
+        if (uv) {
+            for (let i = 0; i < uv.count; i++) {
+                uvs.push(uv.getX(i), uv.getY(i));
+            }
+        }
+        
+        // Merge indices
+        if (geometry.index) {
+            for (let i = 0; i < geometry.index.count; i++) {
+                allIndices.push(geometry.index.getX(i) + vertexOffset);
+            }
+        } else {
+            // Non-indexed geometry - create indices sequentially
+            const vertexCount = pos ? pos.count : 0;
+            for (let i = 0; i < vertexCount; i++) {
+                allIndices.push(vertexOffset + i);
+            }
+        }
+        
+        vertexOffset += pos ? pos.count : 0;
+    });
+    
+    merged.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    if (normals.length > 0) {
+        merged.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+    }
+    if (uvs.length > 0) {
+        merged.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    }
+    
+    if (allIndices.length > 0) {
+        merged.setIndex(allIndices);
+    }
+    
+    merged.computeBoundingSphere();
+    merged.computeBoundingBox();
+    
+    return merged;
+}
+
+/**
+ * Create a bidirectional arrow as a Group with separate colored parts
+ * @param {number} length - Total length of the arrow
+ * @param {number} shaftRadius - Radius of the shaft
+ * @param {number} headLength - Length of each arrowhead
+ * @param {number} headRadius - Radius of each arrowhead base
+ * @returns {THREE.Group} Arrow group with shaft and two arrowheads
+ */
+function createBidirectionalArrowGroup(length, shaftRadius, headLength, headRadius) {
+    const group = new THREE.Group();
+    
+    // Create shaft (cylinder in the middle) - GREEN
+    const shaftLength = Math.max(0.1, length - 2 * headLength);
+    const shaftGeometry = new THREE.CylinderGeometry(shaftRadius, shaftRadius, shaftLength, 16);
+    const shaftMaterial = new THREE.MeshBasicMaterial({
+        color: 0x00ff00, // Green
+        transparent: false,
+        opacity: 1.0,
+        depthTest: true,
+        depthWrite: true
+    });
+    const shaftMesh = new THREE.Mesh(shaftGeometry, shaftMaterial);
+    shaftMesh.position.y = 0; // Center at origin
+    group.add(shaftMesh);
+    
+    // Create first arrowhead (pointing in positive Y direction) - RED
+    const head1Geometry = new THREE.ConeGeometry(headRadius, headLength, 16);
+    const head1Material = new THREE.MeshBasicMaterial({
+        color: 0xff0000, // Red
+        transparent: false,
+        opacity: 1.0,
+        depthTest: true,
+        depthWrite: true
+    });
+    const head1Mesh = new THREE.Mesh(head1Geometry, head1Material);
+    // Position at top of shaft: shaft extends from -shaftLength/2 to +shaftLength/2
+    // Arrowhead tip should be at +length/2, base at +shaftLength/2
+    head1Mesh.position.y = shaftLength / 2 + headLength / 2;
+    group.add(head1Mesh);
+    
+    // Create second arrowhead (pointing in negative Y direction) - BLUE
+    const head2Geometry = new THREE.ConeGeometry(headRadius, headLength, 16);
+    const head2Material = new THREE.MeshBasicMaterial({
+        color: 0x0000ff, // Blue
+        transparent: false,
+        opacity: 1.0,
+        depthTest: true,
+        depthWrite: true
+    });
+    const head2Mesh = new THREE.Mesh(head2Geometry, head2Material);
+    // Rotate 180 degrees around X axis to point downward (not Z!)
+    // ConeGeometry points up (+Y) by default, so rotate around X to flip it
+    head2Mesh.rotation.x = Math.PI;
+    // Position at bottom of shaft: 
+    // Shaft center is at y=0, extends from -shaftLength/2 to +shaftLength/2
+    // Arrowhead base should be at -shaftLength/2, tip at -shaftLength/2 - headLength
+    // So arrowhead center (which is at headLength/2 from base) should be at -shaftLength/2 - headLength/2
+    head2Mesh.position.y = -shaftLength / 2 - headLength / 2;
+    group.add(head2Mesh);
+    
+    return group;
+}
+
+/**
  * Initialize slice plane for cutting through the model
  */
 function initSlicePlane() {
@@ -177,25 +313,61 @@ function initSlicePlane() {
     slicePlaneHelper.visible = false;
     scene.add(slicePlaneHelper);
     
-    // Create interactive handle (sphere) - size will be updated based on model scale
-    // Start with a reasonable default size
-    const handleGeometry = new THREE.SphereGeometry(2, 16, 16);
-    const handleMaterial = new THREE.MeshBasicMaterial({
-        color: 0x00ff00,
-        transparent: false,
-        opacity: 1.0,
-        depthTest: true, // Enable depth test for proper rendering
-        depthWrite: true, // Write to depth buffer
-        side: THREE.DoubleSide
-    });
-    sliceHandle = new THREE.Mesh(handleGeometry, handleMaterial);
-    sliceHandle.visible = false;
-    sliceHandle.userData.isSliceHandle = true; // Mark for raycasting
-    sliceHandle.renderOrder = 9999; // Very high render order to render on top
-    sliceHandle.frustumCulled = false; // Always visible to raycasting
-    // Ensure handle is raycastable
-    sliceHandle.raycast = THREE.Mesh.prototype.raycast; // Use standard mesh raycast
-    scene.add(sliceHandle);
+    // Create interactive handle (bidirectional arrow) - size will be updated based on model scale
+    // Start with reasonable default dimensions (will be scaled 2x in updateClippingPlanes)
+    const defaultLength = 10;
+    const defaultShaftRadius = 0.3;
+    const defaultHeadLength = 2;
+    const defaultHeadRadius = 0.8;
+    
+    // Create arrow as a Group (allows different colors for shaft and heads)
+    try {
+        sliceHandle = createBidirectionalArrowGroup(
+            defaultLength, 
+            defaultShaftRadius, 
+            defaultHeadLength, 
+            defaultHeadRadius
+        );
+        sliceHandle.visible = false;
+        sliceHandle.userData.isSliceHandle = true; // Mark for raycasting
+        sliceHandle.userData.arrowParams = {
+            length: defaultLength,
+            shaftRadius: defaultShaftRadius,
+            headLength: defaultHeadLength,
+            headRadius: defaultHeadRadius
+        };
+        sliceHandle.renderOrder = 9999; // Very high render order to render on top
+        sliceHandle.frustumCulled = false; // Always visible to raycasting
+        
+        // Custom raycast for Group - check all children
+        sliceHandle.raycast = function(raycaster, intersects) {
+            const children = this.children;
+            for (let i = 0; i < children.length; i++) {
+                children[i].raycast(raycaster, intersects);
+            }
+        };
+        
+        scene.add(sliceHandle);
+    } catch (e) {
+        // Fallback to sphere if arrow creation fails
+        console.warn('Could not create arrow group, using sphere:', e);
+        const handleGeometry = new THREE.SphereGeometry(2, 16, 16);
+        const handleMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
+            transparent: false,
+            opacity: 1.0,
+            depthTest: true,
+            depthWrite: true,
+            side: THREE.DoubleSide
+        });
+        sliceHandle = new THREE.Mesh(handleGeometry, handleMaterial);
+        sliceHandle.visible = false;
+        sliceHandle.userData.isSliceHandle = true;
+        sliceHandle.renderOrder = 9999;
+        sliceHandle.frustumCulled = false;
+        sliceHandle.raycast = THREE.Mesh.prototype.raycast;
+        scene.add(sliceHandle);
+    }
     
     // Create the actual clipping plane
     slicePlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
@@ -988,11 +1160,62 @@ function updateClippingPlanes() {
         );
         const handleRadius = Math.max(0.5, Math.min(handleSize, 5)); // Clamp between 0.5 and 5 units
         
-        // Update handle geometry if size changed significantly
-        if (!sliceHandle.userData.lastRadius || Math.abs(sliceHandle.userData.lastRadius - handleRadius) > 0.1) {
-            sliceHandle.geometry.dispose();
-            sliceHandle.geometry = new THREE.SphereGeometry(handleRadius, 16, 16);
-            sliceHandle.userData.lastRadius = handleRadius;
+        // Calculate arrow dimensions based on handle size
+        // Make it 2x bigger/thicker as requested
+        const arrowLength = handleRadius * 8; // 2x: was 4, now 8
+        const arrowShaftRadius = handleRadius * 0.3; // 2x: was 0.15, now 0.3
+        const arrowHeadLength = handleRadius * 1.6; // 2x: was 0.8, now 1.6
+        const arrowHeadRadius = handleRadius * 0.8; // 2x: was 0.4, now 0.8
+        
+        // Update handle geometry if size changed significantly or if it's not an arrow group yet
+        const params = sliceHandle.userData.arrowParams || {};
+        const sizeChanged = !params.length || 
+            Math.abs(params.length - arrowLength) > 0.5 ||
+            Math.abs(params.shaftRadius - arrowShaftRadius) > 0.05;
+        
+        if (sizeChanged && sliceHandle instanceof THREE.Group) {
+            // Remove old children
+            sliceHandle.children.forEach(child => {
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) child.material.dispose();
+                sliceHandle.remove(child);
+            });
+            
+            // Create new arrow group with updated size
+            try {
+                const newArrowGroup = createBidirectionalArrowGroup(
+                    arrowLength,
+                    arrowShaftRadius,
+                    arrowHeadLength,
+                    arrowHeadRadius
+                );
+                
+                // Copy properties from old handle
+                newArrowGroup.visible = sliceHandle.visible;
+                newArrowGroup.userData = sliceHandle.userData;
+                newArrowGroup.renderOrder = sliceHandle.renderOrder;
+                newArrowGroup.frustumCulled = sliceHandle.frustumCulled;
+                newArrowGroup.raycast = sliceHandle.raycast;
+                newArrowGroup.position.copy(sliceHandle.position);
+                newArrowGroup.quaternion.copy(sliceHandle.quaternion);
+                
+                // Replace in scene
+                scene.remove(sliceHandle);
+                sliceHandle = newArrowGroup;
+                scene.add(sliceHandle);
+                
+                sliceHandle.userData.arrowParams = {
+                    length: arrowLength,
+                    shaftRadius: arrowShaftRadius,
+                    headLength: arrowHeadLength,
+                    headRadius: arrowHeadRadius
+                };
+            } catch (e) {
+                console.warn('Could not update arrow group:', e);
+            }
+        } else if (!(sliceHandle instanceof THREE.Group)) {
+            // Handle is not a Group (fallback sphere), try to convert it
+            console.warn('Slice handle is not an arrow group, cannot update');
         }
         
         // Calculate edge offset based on handle size (so handle is clearly outside rectangle)
@@ -1024,8 +1247,41 @@ function updateClippingPlanes() {
             rectangleCenterZ + worldOffset.z
         );
         
-        // Rotate handle to match rectangle's rotation so it's in the same plane
-        sliceHandle.rotation.set(rectangleRotation.x, rectangleRotation.y, rectangleRotation.z);
+        // Calculate arrow direction based on slice axis
+        // The arrow should point along the direction of slice movement
+        let arrowDirection = new THREE.Vector3();
+        switch (sliceAxis) {
+            case 'x':
+                // Movement along X axis: arrow points along X (left-right)
+                arrowDirection.set(1, 0, 0);
+                break;
+            case 'y':
+                // Movement along Z axis (mining Y -> Three.js Z): arrow points along Z (forward-backward)
+                arrowDirection.set(0, 0, 1);
+                break;
+            case 'z':
+            default:
+                // Movement along Y axis (mining Z -> Three.js Y): arrow points along Y (up-down)
+                arrowDirection.set(0, 1, 0);
+                break;
+        }
+        
+        // Rotate arrow to point along the movement direction
+        // First, apply rectangle rotation to align with the slice plane
+        const rectangleEuler = new THREE.Euler(rectangleRotation.x, rectangleRotation.y, rectangleRotation.z);
+        const rectangleQuaternion = new THREE.Quaternion().setFromEuler(rectangleEuler);
+        
+        // Transform arrow direction by rectangle rotation
+        arrowDirection.applyQuaternion(rectangleQuaternion);
+        
+        // Calculate rotation to align arrow's Y-axis (default direction) with arrowDirection
+        // Default arrow points along +Y, so we need to rotate to point along arrowDirection
+        const defaultDirection = new THREE.Vector3(0, 1, 0);
+        const quaternion = new THREE.Quaternion().setFromUnitVectors(defaultDirection, arrowDirection);
+        
+        // Combine rectangle rotation with arrow direction rotation
+        const finalQuaternion = rectangleQuaternion.clone().multiply(quaternion);
+        sliceHandle.quaternion.copy(finalQuaternion);
         
     } else if (sliceHandle) {
         sliceHandle.visible = false;
