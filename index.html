@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="license" content="MIT License">
     <meta name="copyright" content="Copyright (c) 2026 BuildIT Design Labs, LLC">
+    <!-- Content Security Policy to mitigate XSS attacks -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self';">
     <title>Mining Block Model Generator</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -297,9 +299,20 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- External CDN scripts with Subresource Integrity (SRI) for security -->
+    <!-- TODO: Add integrity hashes - visit CDN pages or use: openssl dgst -sha384 -binary <file> | openssl base64 -A -->
+    <!-- Three.js r128: https://cdnjs.com/libraries/three.js/r128 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" 
+            integrity="" 
+            crossorigin="anonymous"></script>
+    <!-- OrbitControls: https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"
+            integrity=""
+            crossorigin="anonymous"></script>
+    <!-- JSZip 3.10.1: https://cdnjs.com/libraries/jszip -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
+            integrity=""
+            crossorigin="anonymous"></script>
     <script src="scripts/i18n.js"></script>
     <script>
         // Toggle collapsible sections

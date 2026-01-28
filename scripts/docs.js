@@ -203,6 +203,17 @@
     }
 
     /**
+     * Escape HTML to prevent XSS attacks
+     * @param {string} str - String to escape
+     * @returns {string} Escaped string
+     */
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    /**
      * Show search results count
      */
     function showSearchResults(count, query) {
@@ -226,10 +237,14 @@
             document.body.appendChild(resultsDiv);
         }
 
+        // Sanitize user input to prevent XSS
+        const safeQuery = escapeHtml(query);
+        const safeCount = escapeHtml(String(count));
+        
         resultsDiv.innerHTML = `
-            <strong style="color: #7c8aff;">Found ${count} section${count !== 1 ? 's' : ''}</strong>
+            <strong style="color: #7c8aff;">Found ${safeCount} section${count !== 1 ? 's' : ''}</strong>
             <br>
-            <span style="opacity: 0.8;">Searching for: "${query}"</span>
+            <span style="opacity: 0.8;">Searching for: "${safeQuery}"</span>
         `;
         resultsDiv.style.display = 'block';
     }

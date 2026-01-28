@@ -156,7 +156,6 @@ block-model-generator/
 └── docs/                  # Documentation files
     ├── BLOCK_MODEL_SCHEMA.md      # Data schema specification
     ├── ORE_BODY_ALGORITHMS.md     # Algorithm documentation
-    └── LOCALIZATION_PROPOSAL.md   # i18n proposal
 ```
 
 ## 🔧 Technical Details
@@ -239,18 +238,17 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-Copyright (c) 2026 BuildIT Design Labs, LLC
+Copyright (c) 2026 BuildIT Design Lab, LLC
 
 ## 👤 Author
 
 **Chris Andrews**  
-BuildIT Design Labs, LLC
+[BuildIT Design Lab, LLC](https://www.builditdesignlab.com#block-model-generator)
 
 ## 🙏 Acknowledgments
 
 - Three.js community for excellent 3D graphics library
 - Mining software industry for standardized block model formats
-- Open source community for inspiration and tools
 
 ## 📧 Support
 

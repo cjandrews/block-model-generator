@@ -1053,9 +1053,15 @@
     <script>
         // Initialize i18n when documentation page loads
         (function() {
-            // Get locale from URL parameter
+            // Get locale from URL parameter and validate to prevent XSS/URL manipulation
             const urlParams = new URLSearchParams(window.location.search);
-            const locale = urlParams.get('locale') || 'en';
+            let locale = urlParams.get('locale') || 'en';
+            
+            // Validate locale - only allow supported locales
+            const SUPPORTED_LOCALES = ['en', 'es', 'fr'];
+            if (!SUPPORTED_LOCALES.includes(locale)) {
+                locale = 'en'; // Default to English if invalid
+            }
             
             // Initialize i18n when ready
             if (typeof initI18n === 'function') {

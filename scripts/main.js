@@ -333,16 +333,48 @@ async function handleGenerate() {
             patternType: document.getElementById('patternType').value
         };
         
-        // Validate inputs
-        if (params.cellSizeX <= 0 || params.cellSizeY <= 0 || params.cellSizeZ <= 0) {
+        // Validate inputs - prevent DoS attacks with extremely large numbers
+        // Check for NaN, Infinity, or invalid numbers
+        const numericFields = ['originX', 'originY', 'originZ', 'cellSizeX', 'cellSizeY', 'cellSizeZ', 'cellsX', 'cellsY', 'cellsZ'];
+        for (const field of numericFields) {
+            if (!isFinite(params[field]) || isNaN(params[field])) {
+                throw new Error(t('errors.invalidNumber', { field: field }));
+            }
+        }
+        
+        // Validate cell sizes (must be positive and reasonable)
+        const MAX_CELL_SIZE = 10000; // 10km max cell size
+        if (params.cellSizeX <= 0 || params.cellSizeX > MAX_CELL_SIZE ||
+            params.cellSizeY <= 0 || params.cellSizeY > MAX_CELL_SIZE ||
+            params.cellSizeZ <= 0 || params.cellSizeZ > MAX_CELL_SIZE) {
             throw new Error(t('errors.cellSizeInvalid'));
         }
         
-        if (params.cellsX <= 0 || params.cellsY <= 0 || params.cellsZ <= 0) {
+        // Validate cell counts (must be positive and reasonable to prevent DoS)
+        const MAX_CELLS = 1000; // Maximum 1000 cells per dimension (1 billion total blocks max)
+        if (params.cellsX <= 0 || params.cellsX > MAX_CELLS ||
+            params.cellsY <= 0 || params.cellsY > MAX_CELLS ||
+            params.cellsZ <= 0 || params.cellsZ > MAX_CELLS) {
             throw new Error(t('errors.cellCountInvalid'));
         }
         
+        // Validate patternType (whitelist approach to prevent injection)
+        const VALID_PATTERNS = [
+            'porphyry_ore', 'vein_ore', 'ellipsoid_ore', 'salt_dome',
+            'random_clusters', 'inclined_vein', 'ore_horizon',
+            'random', 'checkerboard', 'gradient', 'layered', 'uniform'
+        ];
+        if (!VALID_PATTERNS.includes(params.patternType)) {
+            params.patternType = 'random_clusters'; // Default to safe value
+        }
+        
         const totalCells = params.cellsX * params.cellsY * params.cellsZ;
+        
+        // Additional safety check: prevent extremely large models that could crash the browser
+        const MAX_TOTAL_CELLS = 100000000; // 100 million blocks max
+        if (totalCells > MAX_TOTAL_CELLS) {
+            throw new Error(t('errors.modelTooLarge', { max: MAX_TOTAL_CELLS.toLocaleString() }));
+        }
         
         // Check cache first for large models
         const cacheKey = generateCacheKey(params);
@@ -731,17 +763,27 @@ function initAboutModal() {
 function initDocsButton() {
     const openDocs = () => {
         // Get current locale to pass to documentation
-        const currentLocale = typeof getLocale === 'function' ? getLocale() : 'en';
+        let currentLocale = typeof getLocale === 'function' ? getLocale() : 'en';
+        
+        // Sanitize locale parameter to prevent XSS/URL manipulation
+        // Only allow alphanumeric characters (2-5 chars for locale codes)
+        const SUPPORTED_LOCALES = ['en', 'es', 'fr'];
+        if (!SUPPORTED_LOCALES.includes(currentLocale)) {
+            currentLocale = 'en'; // Default to English if invalid
+        }
+        
+        // URL encode the locale parameter (though it should be safe after validation)
+        const safeLocale = encodeURIComponent(currentLocale);
         
         // Open documentation in a new window with locale parameter
-        const docsWindow = window.open(`docs.html?locale=${currentLocale}`, 'BlockModelDocs', 
+        const docsWindow = window.open(`docs.html?locale=${safeLocale}`, 'BlockModelDocs', 
             'width=1200,height=800,scrollbars=yes,resizable=yes');
         
         if (docsWindow) {
             docsWindow.focus();
         } else {
             // Fallback if popup is blocked
-            window.location.href = `docs.html?locale=${currentLocale}`;
+            window.location.href = `docs.html?locale=${safeLocale}`;
         }
     };
     

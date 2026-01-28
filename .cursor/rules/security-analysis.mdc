@@ -1,0 +1,156 @@
+---
+description: Security analysis and review for client-side JavaScript web application
+globs: **/*.js, **/*.html, **/*.json
+alwaysApply: false
+---
+
+# Security Analysis for Block Model Generator
+
+This rule leverages the `security-analysis` skill to review code for security vulnerabilities specific to this client-side JavaScript web application.
+
+## Primary Security Concerns
+
+### 1. Cross-Site Scripting (XSS)
+This is a client-side application - XSS is the primary risk.
+
+**Check for:**
+- Unsafe `innerHTML` usage with user input
+- Missing output encoding/escaping
+- DOM manipulation with untrusted data
+- Unsafe use of `eval()` or `Function()` constructor
+- URL parameters used directly in DOM
+
+**Example vulnerabilities:**
+```javascript
+// ❌ XSS via innerHTML
+document.getElementById('output').innerHTML = userInput;
+
+// ❌ XSS via URL parameter
+const query = new URLSearchParams(window.location.search).get('q');
+document.getElementById('result').innerHTML = query;
+
+// ✅ Safe alternatives
+document.getElementById('output').textContent = userInput;
+// or sanitize with DOMPurify if HTML is needed
+document.getElementById('output').innerHTML = DOMPurify.sanitize(userInput);
+```
+
+### 2. localStorage Security
+Application uses localStorage for caching - ensure no sensitive data.
+
+**Check for:**
+- Storing API keys or secrets in localStorage
+- Storing user credentials or tokens
+- Storing PII without encryption
+- Cache poisoning vulnerabilities
+
+**Current usage:**
+- Block model data caching (acceptable - non-sensitive)
+- Model parameters caching (acceptable - non-sensitive)
+
+**Never store:**
+- API keys
+- Authentication tokens
+- User passwords
+- Personal information
+
+### 3. Input Validation
+Validate all user inputs before processing.
+
+**Check for:**
+- Missing input validation on form fields
+- Missing type checking (numbers, strings)
+- Missing range validation (coordinates, dimensions)
+- Missing length limits
+
+**Example:**
+```javascript
+// ❌ No validation
+const x = parseFloat(document.getElementById('originX').value);
+
+// ✅ With validation
+const xInput = document.getElementById('originX').value;
+const x = parseFloat(xInput);
+if (isNaN(x) || x < -1000000 || x > 1000000) {
+  throw new Error('Invalid X coordinate');
+}
+```
+
+### 4. Three.js Security
+Review Three.js usage for security best practices.
+
+**Check for:**
+- Loading external resources without validation
+- Unsafe shader code execution
+- Memory leaks from scene objects
+- Unsafe texture loading from user input
+
+### 5. Content Security Policy
+Ensure CSP is properly configured in HTML.
+
+**Check for:**
+- Missing CSP meta tag or header
+- Overly permissive CSP (`unsafe-inline`, `unsafe-eval`)
+- Missing nonce or hash for inline scripts
+
+**Recommended CSP:**
+```html
+<meta http-equiv="Content-Security-Policy" 
+      content="default-src 'self'; 
+               script-src 'self' 'unsafe-inline'; 
+               style-src 'self' 'unsafe-inline'; 
+               img-src 'self' data:; 
+               connect-src 'self';">
+```
+
+### 6. Dependency Security
+Check for vulnerable npm packages.
+
+**Check for:**
+- Outdated Three.js version with known CVEs
+- Vulnerable dependencies in package.json
+- Missing package-lock.json
+- Unverified third-party packages
+
+**Commands to run:**
+```bash
+npm audit
+npm audit fix
+```
+
+## Security Review Checklist
+
+When reviewing code changes, verify:
+
+- [ ] No `innerHTML` with user input (use `textContent` or sanitize)
+- [ ] No `eval()` or `Function()` constructor usage
+- [ ] No sensitive data in localStorage
+- [ ] Input validation on all form fields
+- [ ] Output encoding for user-generated content
+- [ ] CSP headers/meta tags present
+- [ ] No hardcoded secrets or API keys
+- [ ] Dependencies are up to date
+- [ ] Error messages don't expose sensitive information
+- [ ] File uploads (if any) are validated
+
+## Reporting Format
+
+When security issues are found, report them as:
+
+```markdown
+## Security Issue: [Title]
+
+**Location**: `file:line`
+**Severity**: 🔴 Critical | 🟠 High | 🟡 Medium | 🟢 Low
+**Description**: [Clear explanation]
+**Impact**: [What could happen]
+**Recommendation**: [Specific fix with code example]
+```
+
+## Integration with Security Analysis Skill
+
+This rule works in conjunction with the `security-analysis` skill:
+- Use the skill's comprehensive checklists
+- Reference OWASP Top 10 guidance
+- Follow language-specific security patterns for JavaScript
+- Use examples from the skill's examples.md

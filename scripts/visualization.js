@@ -23,9 +23,14 @@ let fieldValueRanges = {
 // Slice tool
 let slicePlane = null;
 let slicePlaneHelper = null;
+let sliceHandle = null; // Interactive handle for dragging the slice plane
 let sliceEnabled = false;
 let sliceAxis = 'z'; // 'x', 'y', or 'z'
 let slicePosition = 0;
+let isDraggingSliceHandle = false; // Track if user is dragging the slice handle
+let sliceDragStartPos = null; // Starting position when dragging begins
+let sliceDragStartSlicePos = 0; // Starting slice position when dragging begins
+let isHoveringSliceHandle = false; // Track if mouse is hovering over handle
 let modelBounds = { minX: -100, maxX: 100, minY: -100, maxY: 100, minZ: -100, maxZ: 100 };
 
 // Value-based visibility
@@ -132,19 +137,21 @@ function initVisualization(container) {
     // Get tooltip element
     tooltipElement = document.getElementById('blockTooltip');
     
-    // Add mouse move listener for tooltip
+    // Add mouse move listener for tooltip and handle dragging
+    // Use both mouse and pointer events for better compatibility
     renderer.domElement.addEventListener('mousemove', onMouseMove);
+    renderer.domElement.addEventListener('pointermove', onMouseMove);
     renderer.domElement.addEventListener('mouseout', onMouseOut);
+    renderer.domElement.addEventListener('pointerout', onMouseOut);
     
     // Hide tooltip when dragging (camera controls)
+    // Use capture phase to intercept clicks before OrbitControls
+    // Also listen to pointer events which OrbitControls might use
     if (controls) {
-        renderer.domElement.addEventListener('mousedown', () => {
-            isDragging = true;
-            hideTooltip();
-        });
-        renderer.domElement.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
+        renderer.domElement.addEventListener('mousedown', onMouseDown, true); // true = capture phase
+        renderer.domElement.addEventListener('mouseup', onMouseUp, true);
+        renderer.domElement.addEventListener('pointerdown', onMouseDown, true); // Pointer events
+        renderer.domElement.addEventListener('pointerup', onMouseUp, true);
     }
     
     // Start animation loop
@@ -169,6 +176,26 @@ function initSlicePlane() {
     slicePlaneHelper = new THREE.LineSegments(edgesGeometry, lineMaterial);
     slicePlaneHelper.visible = false;
     scene.add(slicePlaneHelper);
+    
+    // Create interactive handle (sphere) - size will be updated based on model scale
+    // Start with a reasonable default size
+    const handleGeometry = new THREE.SphereGeometry(2, 16, 16);
+    const handleMaterial = new THREE.MeshBasicMaterial({
+        color: 0x00ff00,
+        transparent: false,
+        opacity: 1.0,
+        depthTest: true, // Enable depth test for proper rendering
+        depthWrite: true, // Write to depth buffer
+        side: THREE.DoubleSide
+    });
+    sliceHandle = new THREE.Mesh(handleGeometry, handleMaterial);
+    sliceHandle.visible = false;
+    sliceHandle.userData.isSliceHandle = true; // Mark for raycasting
+    sliceHandle.renderOrder = 9999; // Very high render order to render on top
+    sliceHandle.frustumCulled = false; // Always visible to raycasting
+    // Ensure handle is raycastable
+    sliceHandle.raycast = THREE.Mesh.prototype.raycast; // Use standard mesh raycast
+    scene.add(sliceHandle);
     
     // Create the actual clipping plane
     slicePlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
@@ -239,6 +266,8 @@ function clearBlocks() {
         pointCloud.material.dispose();
         pointCloud = null;
     }
+    
+    // Note: sliceHandle is kept alive - it's part of the slice tool, not block visualization
 }
 
 /**
@@ -939,6 +968,69 @@ function updateClippingPlanes() {
         slicePlaneHelper.rotation.set(rectangleRotation.x, rectangleRotation.y, rectangleRotation.z);
     }
     
+    // Update handle position and size - place handle at rectangle edge in the same plane
+    // Handle should be positioned at the edge of the rectangle (outside, next to it)
+    if (sliceHandle && sliceEnabled) {
+        sliceHandle.visible = true;
+        
+        // Calculate handle size based on model scale (use smallest cell size or model extent)
+        const modelExtentX = modelBounds.maxX - modelBounds.minX;
+        const modelExtentY = modelBounds.maxY - modelBounds.minY;
+        const modelExtentZ = modelBounds.maxZ - modelBounds.minZ;
+        const minExtent = Math.min(modelExtentX, modelExtentY, modelExtentZ);
+        const avgCellSize = Math.min(currentCellSizes.x, currentCellSizes.y, currentCellSizes.z);
+        
+        // Handle size: 2-5% of smallest model extent, or 1-2 cell sizes, whichever is larger
+        // But cap at reasonable min/max for visibility
+        const handleSize = Math.max(
+            Math.min(minExtent * 0.03, avgCellSize * 1.5), // 3% of extent or 1.5 cell sizes
+            Math.min(minExtent * 0.01, avgCellSize * 0.5)  // Minimum: 1% of extent or 0.5 cell sizes
+        );
+        const handleRadius = Math.max(0.5, Math.min(handleSize, 5)); // Clamp between 0.5 and 5 units
+        
+        // Update handle geometry if size changed significantly
+        if (!sliceHandle.userData.lastRadius || Math.abs(sliceHandle.userData.lastRadius - handleRadius) > 0.1) {
+            sliceHandle.geometry.dispose();
+            sliceHandle.geometry = new THREE.SphereGeometry(handleRadius, 16, 16);
+            sliceHandle.userData.lastRadius = handleRadius;
+        }
+        
+        // Calculate edge offset based on handle size (so handle is clearly outside rectangle)
+        const edgeOffset = handleRadius * 2; // Place handle 2 radii away from rectangle edge
+        
+        // Position handle at the edge of the rectangle in the rectangle's local coordinate system
+        // Rectangle's local X is width, local Y is height
+        // Place handle at the midpoint of one edge (along local X, at edge of local Y)
+        const localOffsetX = rectangleWidth * 0.5 + edgeOffset; // Right edge + offset
+        const localOffsetY = rectangleHeight * 0.5; // Top edge (midpoint)
+        const localOffsetZ = 0; // In plane (no depth)
+        
+        // Create offset vector in rectangle's local space
+        const localOffset = new THREE.Vector3(localOffsetX, localOffsetY, localOffsetZ);
+        
+        // Transform to world space using rectangle's rotation
+        const rotationMatrix = new THREE.Matrix4();
+        rotationMatrix.makeRotationFromEuler(
+            new THREE.Euler(rectangleRotation.x, rectangleRotation.y, rectangleRotation.z)
+        );
+        
+        // Apply rotation to offset vector
+        const worldOffset = localOffset.applyMatrix4(rotationMatrix);
+        
+        // Position handle at rectangle center + rotated offset
+        sliceHandle.position.set(
+            rectangleCenterX + worldOffset.x,
+            rectangleCenterY + worldOffset.y,
+            rectangleCenterZ + worldOffset.z
+        );
+        
+        // Rotate handle to match rectangle's rotation so it's in the same plane
+        sliceHandle.rotation.set(rectangleRotation.x, rectangleRotation.y, rectangleRotation.z);
+        
+    } else if (sliceHandle) {
+        sliceHandle.visible = false;
+    }
+    
     // If slice position is at or very close to the top, disable clipping to show full volume
     const epsilon = (maxValue - minValue) * 0.001;
     if (slicePosition >= maxValue - epsilon) {
@@ -1637,6 +1729,9 @@ function setSliceEnabled(enabled) {
     if (slicePlaneHelper) {
         slicePlaneHelper.visible = enabled;
     }
+    if (sliceHandle) {
+        sliceHandle.visible = enabled;
+    }
     if (vizCurrentBlocks.length > 0) {
         // Always re-render when toggling slice tool to ensure all blocks are visible when disabled
         // This preserves view mode and field settings while resetting visibility
@@ -1647,6 +1742,10 @@ function setSliceEnabled(enabled) {
             currentCellSizes.z,
             false // Don't center camera on dropdown change
         );
+        // Update clipping planes (and handle position) after rendering
+        if (enabled) {
+            updateClippingPlanes();
+        }
     }
 }
 
@@ -1668,6 +1767,10 @@ function setSliceAxis(axis) {
                 currentCellSizes.z,
                 false // Don't center camera on dropdown change
             );
+            // Ensure handle position is updated after axis change
+            if (sliceEnabled) {
+                updateClippingPlanes();
+            }
         }
     }
 }
@@ -2047,16 +2150,334 @@ function setGroundEnabled(enabled) {
 }
 
 /**
- * Handle mouse move for tooltip
+ * Handle mouse down - check for slice handle interaction
+ * @param {MouseEvent} event - Mouse event
+ */
+function onMouseDown(event) {
+    // Only handle left mouse button (button 0) or primary pointer
+    const isLeftButton = event.button === 0 || event.button === undefined;
+    if (!isLeftButton) {
+        return; // Let OrbitControls handle right/middle mouse
+    }
+    
+    // Always update mouse position first
+    if (!renderer) {
+        isDragging = true;
+        hideTooltip();
+        return;
+    }
+    
+    // Handle both mouse and pointer events
+    const clientX = event.clientX !== undefined ? event.clientX : (event.pointerId !== undefined ? event.clientX : 0);
+    const clientY = event.clientY !== undefined ? event.clientY : (event.pointerId !== undefined ? event.clientY : 0);
+    
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+    
+    // Check if we're hovering over the handle (set by mousemove)
+    // OR check handle directly if hover flag isn't set
+    let handleClicked = isHoveringSliceHandle;
+    
+    if (!handleClicked && sliceHandle && sliceHandle.visible && sliceEnabled && raycaster) {
+        raycaster.setFromCamera(mouse, camera);
+        const handleIntersects = raycaster.intersectObject(sliceHandle, false);
+        handleClicked = handleIntersects.length > 0;
+    }
+    
+    if (handleClicked) {
+        // User clicked on slice handle - start dragging
+        isDraggingSliceHandle = true;
+        isDragging = true; // Prevent camera controls
+        
+        // CRITICAL: Disable OrbitControls BEFORE it processes the event
+        if (controls) {
+            controls.enabled = false;
+            // Don't call reset() - that causes the view to jump
+        }
+        
+        sliceDragStartPos = new THREE.Vector2(mouse.x, mouse.y);
+        sliceDragStartSlicePos = slicePosition;
+        hideTooltip();
+        
+        // Stop all event propagation - MUST be done in capture phase
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        
+        // For pointer events, also set pointer capture to ensure we get all move events
+        if (event.pointerId !== undefined && renderer.domElement.setPointerCapture) {
+            try {
+                renderer.domElement.setPointerCapture(event.pointerId);
+            } catch (e) {
+                // Ignore errors if pointer capture fails
+            }
+        }
+        
+        // Also ensure mousemove events will be captured
+        renderer.domElement.style.userSelect = 'none'; // Prevent text selection during drag
+        
+        return; // Exit early, don't trigger camera drag
+    }
+    
+    // Normal camera drag (if handle wasn't clicked)
+    // Re-enable controls if they were disabled
+    if (controls && !controls.enabled && !isDraggingSliceHandle) {
+        controls.enabled = true;
+    }
+    isDragging = true;
+    hideTooltip();
+}
+
+/**
+ * Handle mouse up - stop dragging slice handle
+ * @param {MouseEvent} event - Mouse event
+ */
+function onMouseUp(event) {
+    // Handle both mouse and pointer events
+    if (isDraggingSliceHandle) {
+        isDraggingSliceHandle = false;
+        sliceDragStartPos = null;
+        
+        // Re-enable OrbitControls after dragging handle
+        if (controls) {
+            controls.enabled = true;
+        }
+        
+        // Release pointer capture if it was set
+        if (event.pointerId !== undefined && renderer.domElement.releasePointerCapture) {
+            try {
+                renderer.domElement.releasePointerCapture(event.pointerId);
+            } catch (e) {
+                // Ignore errors if pointer release fails
+            }
+        }
+        
+        // Restore user selection
+        if (renderer && renderer.domElement) {
+            renderer.domElement.style.userSelect = '';
+        }
+        
+        // Stop event propagation
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+    }
+    isDragging = false;
+}
+
+/**
+ * Handle mouse move for tooltip and slice handle dragging
  * @param {MouseEvent} event - Mouse event
  */
 function onMouseMove(event) {
-    if (!tooltipElement || !raycaster || !renderer || isDragging) return;
+    // Update mouse position for raycasting
+    if (!renderer) return;
+    
+    // Handle both mouse and pointer events
+    const clientX = event.clientX !== undefined ? event.clientX : 0;
+    const clientY = event.clientY !== undefined ? event.clientY : 0;
     
     const rect = renderer.domElement.getBoundingClientRect();
-    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
     
+    // Handle slice handle dragging FIRST (before cursor checks)
+    if (isDraggingSliceHandle && sliceHandle && sliceEnabled && sliceDragStartPos) {
+        // Prevent OrbitControls from interfering during drag
+        if (controls && controls.enabled) {
+            controls.enabled = false;
+        }
+        
+        // Prevent default to stop any other handlers
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // Calculate mouse movement delta
+        const deltaX = mouse.x - sliceDragStartPos.x;
+        const deltaY = mouse.y - sliceDragStartPos.y;
+        
+        // Debug: Log deltas to verify both are being calculated
+        // console.log('Deltas - X:', deltaX.toFixed(4), 'Y:', deltaY.toFixed(4));
+        
+        // Get bounds for the current axis
+        let min, max, range;
+        switch (sliceAxis) {
+            case 'x':
+                min = modelBounds.minX;
+                max = modelBounds.maxX;
+                break;
+            case 'y':
+                min = modelBounds.minZ;
+                max = modelBounds.maxZ;
+                break;
+            case 'z':
+            default:
+                min = modelBounds.minY;
+                max = modelBounds.maxY;
+                break;
+        }
+        range = max - min;
+        
+        // Calculate linear drag: map mouse movement directly to slice range
+        // Use camera-aware projection: project slice axis direction to screen space
+        // Then project mouse movement onto that screen-space direction
+        
+        // Get the slice axis direction in world space
+        let axisDirection = new THREE.Vector3();
+        switch (sliceAxis) {
+            case 'x':
+                axisDirection.set(1, 0, 0); // X axis direction
+                break;
+            case 'y':
+                axisDirection.set(0, 0, 1); // Z axis direction (mining Y -> Three.js Z)
+                break;
+            case 'z':
+            default:
+                axisDirection.set(0, 1, 0); // Y axis direction (mining Z -> Three.js Y)
+                break;
+        }
+        
+        // Get model center for more accurate projection
+        const modelCenter = new THREE.Vector3(
+            (modelBounds.minX + modelBounds.maxX) / 2,
+            (modelBounds.minY + modelBounds.maxY) / 2,
+            (modelBounds.minZ + modelBounds.maxZ) / 2
+        );
+        
+        // Transform axis direction to screen space
+        // Get two points along the axis direction from model center
+        const worldPoint1 = modelCenter.clone();
+        const worldPoint2 = modelCenter.clone().add(axisDirection.clone().multiplyScalar(range));
+        
+        // Project to screen space (normalized device coordinates)
+        const screenPoint1 = worldPoint1.clone().project(camera);
+        const screenPoint2 = worldPoint2.clone().project(camera);
+        
+        // Calculate screen-space direction vector
+        const screenDirection = new THREE.Vector2(
+            screenPoint2.x - screenPoint1.x,
+            screenPoint2.y - screenPoint1.y
+        );
+        const screenDirLength = screenDirection.length();
+        
+        // Normalize screen direction
+        if (screenDirLength > 0.0001) {
+            screenDirection.normalize();
+        } else {
+            // Axis is perpendicular to view (edge case), use default direction
+            switch (sliceAxis) {
+                case 'x':
+                    screenDirection.set(1, 0); // Horizontal
+                    break;
+                case 'y':
+                case 'z':
+                default:
+                    screenDirection.set(0, 1); // Vertical
+                    break;
+            }
+        }
+        
+        // Project mouse movement onto screen-space axis direction
+        // This gives us how much the mouse moved along the slice axis direction on screen
+        const mouseMovement = new THREE.Vector2(deltaX, deltaY);
+        const projectedMovement = mouseMovement.dot(screenDirection);
+        
+        // Map projected movement to slice range linearly
+        // The screen-space length of the axis direction tells us how much screen space = full range
+        // screenDirection points from min to max in screen space
+        // So positive projectedMovement = dragging in direction of max = move toward max
+        // Negative projectedMovement = dragging opposite = move toward min
+        let movement = 0;
+        if (screenDirLength > 0.0001) {
+            // Linear mapping: mouse movement fraction of screen = slice movement fraction of range
+            // screenDirLength is the NDC distance for the full range
+            // projectedMovement / screenDirLength gives us the fraction of range to move
+            movement = (projectedMovement / screenDirLength) * range;
+        } else {
+            // Fallback: use simple scaling if axis is perpendicular to view
+            movement = projectedMovement * (range / 2.0);
+        }
+        
+        // Debug: Log screen direction and projection
+        console.log('Screen projection:', {
+            axis: sliceAxis,
+            screenDir: `(${screenDirection.x.toFixed(3)}, ${screenDirection.y.toFixed(3)})`,
+            screenDirLength: screenDirLength.toFixed(3),
+            mouseDelta: `(${deltaX.toFixed(3)}, ${deltaY.toFixed(3)})`,
+            projectedMovement: projectedMovement.toFixed(4),
+            movement: movement.toFixed(4)
+        });
+        
+        // Calculate new position
+        const newPos = Math.max(min, Math.min(max, sliceDragStartSlicePos + movement));
+        
+        // Debug: Log the calculation details
+        const calculatedPos = sliceDragStartSlicePos + movement;
+        const diff = Math.abs(newPos - slicePosition);
+        const willUpdate = diff > 0.001;
+        
+        // Log key values separately for easier debugging
+        console.log(`Drag [${sliceAxis}]: deltaX=${deltaX.toFixed(4)}, deltaY=${deltaY.toFixed(4)}, movement=${movement.toFixed(4)}, pos=${newPos.toFixed(4)}, update=${willUpdate}`);
+        
+        // Only update if position actually changed (avoid unnecessary updates)
+        // Lower threshold to 0.001 to allow smaller movements
+        if (Math.abs(newPos - slicePosition) > 0.001) {
+            console.log('Updating slice position from', slicePosition.toFixed(4), 'to', newPos.toFixed(4));
+            
+            // Use setSlicePosition to ensure all updates happen correctly
+            setSlicePosition(newPos);
+            
+            // Also update slider value and UI elements
+            const slider = document.getElementById('slicePosition');
+            if (slider) {
+                slider.value = newPos;
+                console.log('Slider value set to:', newPos);
+            }
+            const valueDisplay = document.getElementById('slicePositionValue');
+            if (valueDisplay) {
+                valueDisplay.textContent = newPos.toFixed(1);
+                // Update label text with translation
+                const label = document.querySelector('label[for="slicePosition"]');
+                if (label && typeof t === 'function') {
+                    const labelText = t('sliceTool.position', { value: newPos.toFixed(1) });
+                    label.innerHTML = labelText;
+                }
+            }
+            
+            console.log('Slice position updated, clipping planes should be updated');
+        } else {
+            console.warn('Update skipped - diff too small:', diff.toFixed(6), '< 0.001');
+        }
+        
+        // Set cursor and return - don't check blocks or tooltip while dragging
+        renderer.domElement.style.cursor = 'grabbing';
+        
+        // Stop event propagation to prevent OrbitControls from handling it
+        event.stopPropagation();
+        return;
+    }
+    
+    // Change cursor when hovering over slice handle (only when not dragging)
+    // Check handle FIRST before checking blocks (handle has priority)
+    isHoveringSliceHandle = false; // Reset flag
+    
+    if (sliceHandle && sliceHandle.visible && sliceEnabled && raycaster) {
+        raycaster.setFromCamera(mouse, camera);
+        // Check handle (no children, so use false)
+        const handleIntersects = raycaster.intersectObject(sliceHandle, false);
+        if (handleIntersects.length > 0) {
+            isHoveringSliceHandle = true; // Set flag for mousedown handler
+            renderer.domElement.style.cursor = 'grab';
+            return; // Don't check blocks if hovering over handle
+        } else {
+            renderer.domElement.style.cursor = '';
+        }
+    }
+    
+    if (!tooltipElement || !raycaster || !renderer || isDragging) return;
+    
+    // Mouse position already updated above
     // Update raycaster
     raycaster.setFromCamera(mouse, camera);
     
@@ -2158,6 +2579,18 @@ function onMouseOut() {
 }
 
 /**
+ * Escape HTML to prevent XSS attacks
+ * @param {string} str - String to escape
+ * @returns {string} Escaped string
+ */
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = String(str);
+    return div.innerHTML;
+}
+
+/**
  * Show tooltip with block data
  * @param {MouseEvent} event - Mouse event
  * @param {Object} block - Block object
@@ -2165,30 +2598,34 @@ function onMouseOut() {
 function showTooltip(event, block) {
     if (!tooltipElement) return;
     
-    // Build tooltip content
-    let content = `<div class="tooltip-header">${t('tooltip.title')}</div>`;
-    content += `<div class="tooltip-row"><span class="tooltip-label">${t('tooltip.position')}</span> <span class="tooltip-value">(${block.x.toFixed(2)}, ${block.y.toFixed(2)}, ${block.z.toFixed(2)})</span></div>`;
-    content += `<div class="tooltip-row"><span class="tooltip-label">${t('tooltip.indices')}</span> <span class="tooltip-value">I=${block.i}, J=${block.j}, K=${block.k}</span></div>`;
-    content += `<div class="tooltip-row"><span class="tooltip-label">${t('tooltip.rockType')}</span> <span class="tooltip-value">${block.rockType || block.material || t('tooltip.notAvailable')}</span></div>`;
+    // Sanitize string values from block data to prevent XSS
+    const safeRockType = escapeHtml(block.rockType || block.material || t('tooltip.notAvailable'));
+    const safeZone = block.zone !== undefined && block.zone !== null ? escapeHtml(String(block.zone)) : '';
+    
+    // Build tooltip content (numeric values are safe, but string values are sanitized)
+    let content = `<div class="tooltip-header">${escapeHtml(t('tooltip.title'))}</div>`;
+    content += `<div class="tooltip-row"><span class="tooltip-label">${escapeHtml(t('tooltip.position'))}</span> <span class="tooltip-value">(${block.x.toFixed(2)}, ${block.y.toFixed(2)}, ${block.z.toFixed(2)})</span></div>`;
+    content += `<div class="tooltip-row"><span class="tooltip-label">${escapeHtml(t('tooltip.indices'))}</span> <span class="tooltip-value">I=${block.i}, J=${block.j}, K=${block.k}</span></div>`;
+    content += `<div class="tooltip-row"><span class="tooltip-label">${escapeHtml(t('tooltip.rockType'))}</span> <span class="tooltip-value">${safeRockType}</span></div>`;
     
     if (block.density !== undefined && block.density !== null) {
-        content += `<div class="tooltip-row"><span class="tooltip-label">${t('tooltip.density')}</span> <span class="tooltip-value">${block.density.toFixed(2)} ${t('tooltip.units.density')}</span></div>`;
+        content += `<div class="tooltip-row"><span class="tooltip-label">${escapeHtml(t('tooltip.density'))}</span> <span class="tooltip-value">${block.density.toFixed(2)} ${escapeHtml(t('tooltip.units.density'))}</span></div>`;
     }
     
     if (block.gradeCu !== undefined && block.gradeCu !== null) {
-        content += `<div class="tooltip-row"><span class="tooltip-label">${t('tooltip.cuGrade')}</span> <span class="tooltip-value">${block.gradeCu.toFixed(2)}${t('tooltip.units.cuGrade')}</span></div>`;
+        content += `<div class="tooltip-row"><span class="tooltip-label">${escapeHtml(t('tooltip.cuGrade'))}</span> <span class="tooltip-value">${block.gradeCu.toFixed(2)}${escapeHtml(t('tooltip.units.cuGrade'))}</span></div>`;
     }
     
     if (block.gradeAu !== undefined && block.gradeAu !== null) {
-        content += `<div class="tooltip-row"><span class="tooltip-label">${t('tooltip.auGrade')}</span> <span class="tooltip-value">${block.gradeAu.toFixed(2)} ${t('tooltip.units.auGrade')}</span></div>`;
+        content += `<div class="tooltip-row"><span class="tooltip-label">${escapeHtml(t('tooltip.auGrade'))}</span> <span class="tooltip-value">${block.gradeAu.toFixed(2)} ${escapeHtml(t('tooltip.units.auGrade'))}</span></div>`;
     }
     
     if (block.econValue !== undefined && block.econValue !== null) {
-        content += `<div class="tooltip-row"><span class="tooltip-label">${t('tooltip.econValue')}</span> <span class="tooltip-value">${block.econValue.toFixed(2)}</span></div>`;
+        content += `<div class="tooltip-row"><span class="tooltip-label">${escapeHtml(t('tooltip.econValue'))}</span> <span class="tooltip-value">${block.econValue.toFixed(2)}</span></div>`;
     }
     
     if (block.zone !== undefined && block.zone !== null) {
-        content += `<div class="tooltip-row"><span class="tooltip-label">${t('tooltip.zone')}</span> <span class="tooltip-value">${block.zone}</span></div>`;
+        content += `<div class="tooltip-row"><span class="tooltip-label">${escapeHtml(t('tooltip.zone'))}</span> <span class="tooltip-value">${safeZone}</span></div>`;
     }
     
     tooltipElement.innerHTML = content;
