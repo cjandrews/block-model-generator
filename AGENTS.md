@@ -2,6 +2,65 @@
 
 This file defines specialized subagents for this project.
 
+---
+
+## How to Verify Agent Activation
+
+Since agents work transparently in the background, here's how to tell if a subagent is actively being invoked:
+
+### Visual Indicators
+
+1. **Structured Output Format**
+   - Each agent produces distinctive, structured outputs:
+     - **Security Analysis**: Reports with severity levels (Critical, High, Medium, Low), specific file locations with line numbers, and actionable recommendations
+     - **Localization-i18n**: Translation file structures, code examples using `t()` patterns, mentions of `data-i18n` attributes, and locale-specific formatting
+     - **Documentation Expert**: Well-structured markdown with proper formatting, interactive HTML documentation patterns, and documentation-focused guidance
+
+2. **Agent-Specific Terminology**
+   - Agents use specialized vocabulary:
+     - **Security**: OWASP Top 10, XSS, injection vulnerabilities, Content Security Policy, input sanitization
+     - **i18n**: Translation keys, locale detection, `t()` function, `data-i18n`, pluralization, parameter substitution
+     - **Documentation**: README structure, markdown formatting, user guides, interactive docs, search functionality
+
+3. **Skill File Access**
+   - When an agent is invoked, Cursor reads the corresponding skill file:
+     - `security-analysis\SKILL.md` for Security Analysis
+     - `localization-i18n\SKILL.md` for i18n Expert
+     - `user-assistance-docs\SKILL.md` for Documentation Expert
+   - You can see these tool calls in the chat interface
+
+4. **Response Behavior**
+   - Agents follow their documented patterns and focus areas
+   - They provide comprehensive, domain-specific guidance rather than generic responses
+   - They reference project-specific patterns and conventions
+
+### How to Explicitly Check
+
+You can ask directly:
+- "Are you using the Security Analysis Agent right now?"
+- "Is the i18n expert active?"
+- "Which agent is handling this request?"
+
+The agent will confirm if it's using a specialized subagent and which one.
+
+### Automatic Activation Triggers
+
+Agents activate automatically when:
+- **File Types**: Editing relevant file types (e.g., `.js`, `.html`, `.json` for Security; translation files for i18n)
+- **Keywords**: Using trigger keywords in your prompts (e.g., "security", "vulnerability", "translation", "i18n", "documentation")
+- **File Context**: Having relevant files open in your editor
+
+### What to Expect
+
+When an agent is active, you'll notice:
+- ✅ More comprehensive, domain-specific responses
+- ✅ Structured outputs matching the agent's format
+- ✅ References to specialized tools, patterns, or frameworks
+- ✅ Focus on the agent's specific expertise area
+- ✅ Actionable recommendations with specific examples
+
+---
+
 ## Security Analysis Agent
 
 **Purpose**: Automated security analysis and review of code changes and the application codebase.

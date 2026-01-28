@@ -45,7 +45,7 @@ header {
 
 .header-btn {
     padding: 6px 12px;
-    background: #444;
+    background: #6b5bff;
     color: white;
     border: none;
     border-radius: 4px;
@@ -55,8 +55,14 @@ header {
     white-space: nowrap;
 }
 
-.header-btn:hover {
-    background: #555;
+.header-btn:hover:not(:disabled) {
+    background: #8d7dff;
+}
+
+/* Larger icons for Stats and Gallery buttons */
+#statsBtn i,
+#galleryBtn i {
+    font-size: 1.3em;
 }
 
 /* Language Selector Styles */
@@ -285,19 +291,31 @@ button {
     font-size: 0.9em;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
     text-transform: uppercase;
     letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+button i {
+    font-size: 1.4em;
+}
+
+/* Icon-only buttons - make icons larger */
+.button-group button i {
+    font-size: 1.6em;
 }
 
 #generateBtn {
-    background: #4a5aff;
+    background: #6b5bff;
     color: white;
 }
 
 #generateBtn:hover:not(:disabled) {
-    background: #5b6bff;
-    box-shadow: 0 2px 8px rgba(74, 90, 255, 0.4);
+    background: #8d7dff;
 }
 
 #exportBtn {
@@ -306,18 +324,16 @@ button {
 }
 
 #exportBtn:hover:not(:disabled) {
-    background: #7c6cff;
-    box-shadow: 0 2px 8px rgba(107, 91, 255, 0.4);
+    background: #8d7dff;
 }
 
 #zoomResetBtn {
-    background: #555;
+    background: #6b5bff;
     color: white;
 }
 
 #zoomResetBtn:hover:not(:disabled) {
-    background: #666;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    background: #8d7dff;
 }
 
 button:disabled {
@@ -529,6 +545,22 @@ button:disabled {
 
 .modal-body strong {
     color: #7c8aff;
+}
+
+.modal-body a {
+    color: #7c8aff;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.modal-body a:hover {
+    color: #9ba3ff;
+    text-decoration: underline;
+}
+
+.modal-body button {
+    margin-top: 10px;
+    padding: 10px 20px;
 }
 
 /* Hide Memory and Docs buttons on small screens */

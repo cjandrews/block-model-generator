@@ -35,7 +35,11 @@ const EMBEDDED_TRANSLATIONS = {
             "zoomToFit": "Zoom",
             "memory": "Memory",
             "about": "About",
-            "documentation": "📚 Documentation"
+            "documentation": "Documentation",
+            "stats": "Stats",
+            "gallery": "Gallery",
+            "save": "Save",
+            "cancel": "Cancel"
         },
         "modelParameters": {
             "title": "Model Parameters",
@@ -168,7 +172,7 @@ const EMBEDDED_TRANSLATIONS = {
         "about": {
             "title": "About",
             "appName": "Mining Block Model Generator",
-            "builtBy": "Built by <strong>{{author}}</strong>, {{company}}",
+            "builtBy": "Built by <strong><a href=\"mailto:chris@builditdesignlab.com\">Chris Andrews</a></strong>, <a href=\"https://www.builditdesignlab.com/#block-model-generator\" target=\"_blank\" rel=\"noopener noreferrer\">BuildIT Design Labs</a>",
             "license": "License: MIT License",
             "copyright": "Copyright: © {{year}} All rights reserved"
         },
@@ -187,6 +191,81 @@ const EMBEDDED_TRANSLATIONS = {
             "geometries": "Geometries",
             "materials": "Materials",
             "textures": "Textures"
+        },
+        "stats": {
+            "title": "Statistics Dashboard",
+            "overview": "Overview",
+            "totalModels": "Total Models",
+            "totalExports": "Total Exports",
+            "firstModel": "First Model",
+            "lastModel": "Last Model",
+            "patternsExplored": "Patterns Explored",
+            "patternsTried": "Patterns Tried",
+            "mostUsed": "Most Used",
+            "featuresUsed": "Features Used",
+            "viewModes": "View Modes",
+            "toolsUsed": "Tools Used",
+            "modelCharacteristics": "Model Characteristics",
+            "largestModel": "Largest Model",
+            "averageModelSize": "Average Model Size",
+            "totalVolume": "Total Volume Generated",
+            "currentSession": "Current Session",
+            "modelsGenerated": "Models Generated",
+            "of12": "of 12",
+            "of7": "of 7",
+            "of4": "of 4",
+            "blocks": "blocks",
+            "millionM3": "million m³"
+        },
+        "modelStats": {
+            "title": "📈 Model Statistics",
+            "blocks": "Blocks",
+            "volume": "Volume",
+            "ore": "Ore",
+            "waste": "Waste",
+            "zones": "Zones",
+            "cuGrade": "Cu Grade",
+            "auGrade": "Au Grade",
+            "interestingFacts": "Interesting Facts",
+            "kM3": "K m³",
+            "avg": "avg",
+            "gPerT": "g/t",
+            "facts": {
+                "volumeLarge": "Model volume: {{volume}}K cubic meters",
+                "volume": "Model volume: {{volume}} cubic meters",
+                "orePercentage": "{{percentage}}% of blocks are ore-grade material",
+                "zones": "Contains {{count}} distinct zone",
+                "zonesPlural": "Contains {{count}} distinct zones",
+                "cuGradeRange": "Cu grade ranges from {{min}}% to {{max}}%",
+                "auGradeRange": "Au grade ranges from {{min}} to {{max}} g/t",
+                "econValue": "Total economic value: {{value}} units",
+                "rockTypes": "Contains {{count}} different rock types",
+                "sizeLarge": "Large-scale model (100K+ blocks)",
+                "sizeMediumLarge": "Medium-large model (50K+ blocks)",
+                "sizeMedium": "Medium-scale model (10K+ blocks)"
+            }
+        },
+        "gallery": {
+            "title": "Model Gallery",
+            "saveCurrent": "Save Current Model",
+            "saveModel": "Save Model",
+            "modelName": "Model Name",
+            "modelNamePlaceholder": "Enter model name",
+            "load": "Load",
+            "delete": "Delete",
+            "noModels": "No saved models yet. Generate a model and click \"Save\" to add it to your gallery.",
+            "modelSaved": "Model \"{{name}}\" saved to gallery",
+            "modelLoaded": "Loaded: {{name}}",
+            "modelDeleted": "Model deleted from gallery",
+            "deleteConfirm": "Delete this model from gallery?",
+            "generateFirst": "Please generate a model first",
+            "enterName": "Please enter a model name",
+            "loading": "Loading model: {{name}}...",
+            "saveError": "Error saving model: {{message}}",
+            "blocks": "blocks",
+            "nameTooLong": "Model name must be {{max}} characters or less",
+            "storageQuotaExceeded": "Storage quota exceeded. Some data may not be saved.",
+            "storageReduced": "Storage full. Reduced gallery size to save space."
         },
         "language": {
             "select": "Language",
@@ -500,7 +579,11 @@ const EMBEDDED_TRANSLATIONS = {
             "zoomToFit": "Zoom",
             "memory": "Memoria",
             "about": "Acerca de",
-            "documentation": "📚 Documentación"
+            "documentation": "Documentación",
+            "stats": "Estadísticas",
+            "gallery": "Galería",
+            "save": "Guardar",
+            "cancel": "Cancelar"
         },
         "modelParameters": {
             "title": "Parámetros del Modelo",
@@ -610,6 +693,81 @@ const EMBEDDED_TRANSLATIONS = {
             "cellSizeInvalid": "Los tamaños de celda deben ser mayores que 0",
             "cellCountInvalid": "El número de celdas debe ser mayor que 0"
         },
+        "stats": {
+            "title": "Panel de Estadísticas",
+            "overview": "Resumen",
+            "totalModels": "Total de Modelos",
+            "totalExports": "Total de Exportaciones",
+            "firstModel": "Primer Modelo",
+            "lastModel": "Último Modelo",
+            "patternsExplored": "Patrones Explorados",
+            "patternsTried": "Patrones Probados",
+            "mostUsed": "Más Usado",
+            "featuresUsed": "Características Usadas",
+            "viewModes": "Modos de Vista",
+            "toolsUsed": "Herramientas Usadas",
+            "modelCharacteristics": "Características del Modelo",
+            "largestModel": "Modelo Más Grande",
+            "averageModelSize": "Tamaño Promedio del Modelo",
+            "totalVolume": "Volumen Total Generado",
+            "currentSession": "Sesión Actual",
+            "modelsGenerated": "Modelos Generados",
+            "of12": "de 12",
+            "of7": "de 7",
+            "of4": "de 4",
+            "blocks": "bloques",
+            "millionM3": "millones de m³"
+        },
+        "modelStats": {
+            "title": "📈 Estadísticas del Modelo",
+            "blocks": "Bloques",
+            "volume": "Volumen",
+            "ore": "Mineral",
+            "waste": "Desecho",
+            "zones": "Zonas",
+            "cuGrade": "Ley de Cu",
+            "auGrade": "Ley de Au",
+            "interestingFacts": "Datos Interesantes",
+            "kM3": "K m³",
+            "avg": "prom",
+            "gPerT": "g/t",
+            "facts": {
+                "volumeLarge": "Volumen del modelo: {{volume}}K metros cúbicos",
+                "volume": "Volumen del modelo: {{volume}} metros cúbicos",
+                "orePercentage": "{{percentage}}% de los bloques son material de ley de mineral",
+                "zones": "Contiene {{count}} zona distinta",
+                "zonesPlural": "Contiene {{count}} zonas distintas",
+                "cuGradeRange": "La ley de Cu varía de {{min}}% a {{max}}%",
+                "auGradeRange": "La ley de Au varía de {{min}} a {{max}} g/t",
+                "econValue": "Valor económico total: {{value}} unidades",
+                "rockTypes": "Contiene {{count}} tipos de roca diferentes",
+                "sizeLarge": "Modelo a gran escala (100K+ bloques)",
+                "sizeMediumLarge": "Modelo mediano-grande (50K+ bloques)",
+                "sizeMedium": "Modelo de escala media (10K+ bloques)"
+            }
+        },
+        "gallery": {
+            "title": "Galería de Modelos",
+            "saveCurrent": "Guardar Modelo Actual",
+            "saveModel": "Guardar Modelo",
+            "modelName": "Nombre del Modelo",
+            "modelNamePlaceholder": "Ingresa el nombre del modelo",
+            "load": "Cargar",
+            "delete": "Eliminar",
+            "noModels": "Aún no hay modelos guardados. Genera un modelo y haz clic en \"Guardar\" para agregarlo a tu galería.",
+            "modelSaved": "Modelo \"{{name}}\" guardado en la galería",
+            "modelLoaded": "Cargado: {{name}}",
+            "modelDeleted": "Modelo eliminado de la galería",
+            "deleteConfirm": "¿Eliminar este modelo de la galería?",
+            "generateFirst": "Por favor, genera un modelo primero",
+            "enterName": "Por favor, ingresa un nombre para el modelo",
+            "loading": "Cargando modelo: {{name}}...",
+            "saveError": "Error al guardar el modelo: {{message}}",
+            "blocks": "bloques",
+            "nameTooLong": "El nombre del modelo debe tener {{max}} caracteres o menos",
+            "storageQuotaExceeded": "Cuota de almacenamiento excedida. Es posible que algunos datos no se guarden.",
+            "storageReduced": "Almacenamiento lleno. Se redujo el tamaño de la galería para ahorrar espacio."
+        },
         "tooltip": {
             "title": "Información del Bloque",
             "position": "Posición:",
@@ -633,7 +791,7 @@ const EMBEDDED_TRANSLATIONS = {
         "about": {
             "title": "Acerca de",
             "appName": "Generador de Modelo de Bloques Mineros",
-            "builtBy": "Desarrollado por <strong>{{author}}</strong>, {{company}}",
+            "builtBy": "Desarrollado por <strong><a href=\"mailto:chris@builditdesignlab.com\">Chris Andrews</a></strong>, <a href=\"https://www.builditdesignlab.com/#block-model-generator\" target=\"_blank\" rel=\"noopener noreferrer\">BuildIT Design Labs</a>",
             "license": "Licencia: Licencia MIT",
             "copyright": "Copyright: © {{year}} Todos los derechos reservados"
         },
@@ -965,7 +1123,11 @@ const EMBEDDED_TRANSLATIONS = {
             "zoomToFit": "Zoom",
             "memory": "Mémoire",
             "about": "À propos",
-            "documentation": "📚 Documentation"
+            "documentation": "Documentation",
+            "stats": "Statistiques",
+            "gallery": "Galerie",
+            "save": "Enregistrer",
+            "cancel": "Annuler"
         },
         "modelParameters": {
             "title": "Paramètres du Modèle",
@@ -1075,6 +1237,81 @@ const EMBEDDED_TRANSLATIONS = {
             "cellSizeInvalid": "Les tailles de cellule doivent être supérieures à 0",
             "cellCountInvalid": "Le nombre de cellules doit être supérieur à 0"
         },
+        "stats": {
+            "title": "Tableau de Bord des Statistiques",
+            "overview": "Aperçu",
+            "totalModels": "Total des Modèles",
+            "totalExports": "Total des Exportations",
+            "firstModel": "Premier Modèle",
+            "lastModel": "Dernier Modèle",
+            "patternsExplored": "Motifs Explorés",
+            "patternsTried": "Motifs Essayés",
+            "mostUsed": "Le Plus Utilisé",
+            "featuresUsed": "Fonctionnalités Utilisées",
+            "viewModes": "Modes d'Affichage",
+            "toolsUsed": "Outils Utilisés",
+            "modelCharacteristics": "Caractéristiques du Modèle",
+            "largestModel": "Modèle le Plus Grand",
+            "averageModelSize": "Taille Moyenne du Modèle",
+            "totalVolume": "Volume Total Généré",
+            "currentSession": "Session Actuelle",
+            "modelsGenerated": "Modèles Générés",
+            "of12": "sur 12",
+            "of7": "sur 7",
+            "of4": "sur 4",
+            "blocks": "blocs",
+            "millionM3": "millions de m³"
+        },
+        "modelStats": {
+            "title": "📈 Statistiques du Modèle",
+            "blocks": "Blocs",
+            "volume": "Volume",
+            "ore": "Minerai",
+            "waste": "Stérile",
+            "zones": "Zones",
+            "cuGrade": "Teneur en Cu",
+            "auGrade": "Teneur en Au",
+            "interestingFacts": "Faits Intéressants",
+            "kM3": "K m³",
+            "avg": "moy",
+            "gPerT": "g/t",
+            "facts": {
+                "volumeLarge": "Volume du modèle : {{volume}}K mètres cubes",
+                "volume": "Volume du modèle : {{volume}} mètres cubes",
+                "orePercentage": "{{percentage}}% des blocs sont du matériau de qualité minerai",
+                "zones": "Contient {{count}} zone distincte",
+                "zonesPlural": "Contient {{count}} zones distinctes",
+                "cuGradeRange": "La teneur en Cu varie de {{min}}% à {{max}}%",
+                "auGradeRange": "La teneur en Au varie de {{min}} à {{max}} g/t",
+                "econValue": "Valeur économique totale : {{value}} unités",
+                "rockTypes": "Contient {{count}} types de roche différents",
+                "sizeLarge": "Modèle à grande échelle (100K+ blocs)",
+                "sizeMediumLarge": "Modèle moyen-grand (50K+ blocs)",
+                "sizeMedium": "Modèle à échelle moyenne (10K+ blocs)"
+            }
+        },
+        "gallery": {
+            "title": "Galerie de Modèles",
+            "saveCurrent": "Enregistrer le Modèle Actuel",
+            "saveModel": "Enregistrer le Modèle",
+            "modelName": "Nom du Modèle",
+            "modelNamePlaceholder": "Entrez le nom du modèle",
+            "load": "Charger",
+            "delete": "Supprimer",
+            "noModels": "Aucun modèle enregistré pour le moment. Générez un modèle et cliquez sur \"Enregistrer\" pour l'ajouter à votre galerie.",
+            "modelSaved": "Modèle \"{{name}}\" enregistré dans la galerie",
+            "modelLoaded": "Chargé : {{name}}",
+            "modelDeleted": "Modèle supprimé de la galerie",
+            "deleteConfirm": "Supprimer ce modèle de la galerie ?",
+            "generateFirst": "Veuillez d'abord générer un modèle",
+            "enterName": "Veuillez entrer un nom pour le modèle",
+            "loading": "Chargement du modèle : {{name}}...",
+            "saveError": "Erreur lors de l'enregistrement du modèle : {{message}}",
+            "blocks": "blocs",
+            "nameTooLong": "Le nom du modèle doit contenir {{max}} caractères ou moins",
+            "storageQuotaExceeded": "Quota de stockage dépassé. Certaines données peuvent ne pas être enregistrées.",
+            "storageReduced": "Stockage plein. Taille de la galerie réduite pour économiser de l'espace."
+        },
         "tooltip": {
             "title": "Informations sur le Bloc",
             "position": "Position :",
@@ -1098,7 +1335,7 @@ const EMBEDDED_TRANSLATIONS = {
         "about": {
             "title": "À propos",
             "appName": "Générateur de Modèle de Blocs Miniers",
-            "builtBy": "Développé par <strong>{{author}}</strong>, {{company}}",
+            "builtBy": "Développé par <strong><a href=\"mailto:chris@builditdesignlab.com\">Chris Andrews</a></strong>, <a href=\"https://www.builditdesignlab.com/#block-model-generator\" target=\"_blank\" rel=\"noopener noreferrer\">BuildIT Design Labs</a>",
             "license": "Licence : Licence MIT",
             "copyright": "Copyright : © {{year}} Tous droits réservés"
         },
@@ -1607,6 +1844,16 @@ async function setLocale(locale) {
     // Update all translations
     updateAllTranslations();
     
+    // Clean up icon-only buttons - remove any spans that shouldn't be there
+    document.querySelectorAll('button[title][data-i18n]').forEach(button => {
+        const icon = button.querySelector('i');
+        const span = button.querySelector('span');
+        // If button has title (icon-only) and has a span, remove the span
+        if (icon && span && button.hasAttribute('title')) {
+            span.remove();
+        }
+    });
+    
     // Trigger custom event
     window.dispatchEvent(new CustomEvent('localeChanged', { detail: { locale } }));
 }
@@ -1651,8 +1898,62 @@ function updateAllTranslations() {
         } else if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
             element.placeholder = translation;
         } else {
-            // For labels and other elements, use innerHTML to preserve HTML tags
-            if (element.tagName === 'LABEL' || element.tagName === 'P' || element.tagName === 'SPAN') {
+            // For buttons, preserve Font Awesome icons
+            if (element.tagName === 'BUTTON') {
+                // First, check if button already has an icon element (any <i> tag)
+                const existingIcon = element.querySelector('i');
+                const existingSpan = element.querySelector('span');
+                
+                // If button has title attribute, update it with translation (for icon-only buttons)
+                if (element.hasAttribute('title')) {
+                    element.setAttribute('title', translation);
+                }
+                
+                // If button has title attribute, it's an icon-only button - don't add text
+                if (element.hasAttribute('title') && existingIcon && !existingSpan) {
+                    // Icon-only button - preserve icon, don't add text
+                    return; // Don't process further
+                }
+                
+                // If button already has both icon and span
+                if (existingIcon && existingSpan) {
+                    // If button has title attribute, it should be icon-only - remove span
+                    if (element.hasAttribute('title')) {
+                        existingSpan.remove();
+                        return; // Don't process further
+                    }
+                    // Button should have text - update span text, preserve icon
+                    if (!existingIcon.parentNode || existingIcon.parentNode !== element) {
+                        // Icon was lost somehow, restore it
+                        const iconHTML = existingIcon.outerHTML;
+                        element.innerHTML = iconHTML + ' <span>' + translation + '</span>';
+                    } else {
+                        // Icon is fine, just update span text
+                        existingSpan.textContent = translation;
+                    }
+                    return; // Don't process further
+                }
+                
+                // If button has icon but no span, check if it should be icon-only (has title)
+                if (existingIcon && !existingSpan) {
+                    if (element.hasAttribute('title')) {
+                        // Icon-only button - don't add text
+                        return;
+                    }
+                    // Has icon but should have text - add span with translation
+                    const iconHTML = existingIcon.outerHTML;
+                    element.innerHTML = iconHTML + ' <span>' + translation + '</span>';
+                    return; // Don't process further
+                }
+                
+                // If button has no icon structure, check if translation contains HTML
+                // (shouldn't happen for buttons, but be safe)
+                if (!existingIcon) {
+                    // No icon found, just update text content
+                    element.textContent = translation;
+                }
+            } else if (element.tagName === 'LABEL' || element.tagName === 'P' || element.tagName === 'SPAN') {
+                // For labels and other elements, use innerHTML to preserve HTML tags
                 element.innerHTML = translation;
             } else {
                 element.textContent = translation;

@@ -6,8 +6,10 @@
     <meta name="license" content="MIT License">
     <meta name="copyright" content="Copyright (c) 2026 BuildIT Design Labs, LLC">
     <!-- Content Security Policy to mitigate XSS attacks -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data:; font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; connect-src 'self';">
     <title>Mining Block Model Generator</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -32,8 +34,9 @@
                         </div>
                     </div>
                 </div>
-                <button id="memoryBtn" class="header-btn" data-i18n="buttons.memory">Memory</button>
-                <button id="aboutBtn" class="header-btn" data-i18n="buttons.about">About</button>
+                <button id="statsBtn" class="header-btn" data-i18n="buttons.stats" title="Stats"><i class="fas fa-chart-bar"></i></button>
+                <button id="galleryBtn" class="header-btn" data-i18n="buttons.gallery" title="Gallery"><i class="fas fa-images"></i></button>
+                <button id="aboutBtn" class="header-btn" data-i18n="buttons.about" title="About"><i class="fas fa-info-circle"></i></button>
             </div>
         </header>
 
@@ -108,12 +111,11 @@
                     </div>
                     
                     <div class="button-group">
-                        <button type="button" id="generateBtn" data-i18n="buttons.generate">Generate</button>
-                        <button type="button" id="exportBtn" disabled data-i18n="buttons.export">Export</button>
-                        <button type="button" id="zoomResetBtn" data-i18n="buttons.zoomToFit">Zoom to Fit</button>
-                    </div>
-                    <div class="button-group" style="margin-top: 8px; display: block;">
-                        <button type="button" id="docsBtnControl" class="header-btn" style="width: 100%; flex: none;" data-i18n="buttons.documentation">📚 Documentation</button>
+                        <button type="button" id="generateBtn" data-i18n="buttons.generate" title="Generate"><i class="fas fa-play"></i></button>
+                        <button type="button" id="zoomResetBtn" data-i18n="buttons.zoomToFit" title="Zoom to Fit"><i class="fas fa-search-plus"></i></button>
+                        <button type="button" id="exportBtn" disabled data-i18n="buttons.export" title="Export"><i class="fas fa-download"></i></button>
+                        <button type="button" id="saveModelBtn" disabled class="header-btn" data-i18n="gallery.saveCurrent" title="Save Model"><i class="fas fa-star"></i></button>
+                        <button type="button" id="docsBtnControl" class="header-btn" data-i18n="buttons.documentation" title="Documentation"><i class="fas fa-question-circle"></i></button>
                     </div>
                 </form>
                 
@@ -250,6 +252,19 @@
                 </div>
                 
                 <div id="status" class="status"></div>
+                
+                <!-- Model Statistics Display -->
+                <div id="modelStatsSection" class="collapsible-section" style="margin-top: 16px; display: none;">
+                    <div class="section-header collapsible-header" onclick="toggleSection(this)">
+                        <h3 data-i18n="modelStats.title">📈 Model Statistics</h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <div id="modelStatsContent" style="font-size: 0.9em; line-height: 1.6;">
+                            <!-- Statistics will be populated here -->
+                        </div>
+                    </div>
+                </div>
             </aside>
 
             <main class="visualization-area">
@@ -271,11 +286,67 @@
             </div>
             <div class="modal-body">
                 <p><strong data-i18n="about.appName">Mining Block Model Generator</strong></p>
-                <p data-i18n="about.builtBy" data-i18n-params='{"author": "Chris Andrews", "company": "BuildIT Design Labs"}'>Built by <strong>Chris Andrews</strong>, BuildIT Design Labs</p>
+                <p data-i18n="about.builtBy">Built by <strong><a href="mailto:chris@builditdesignlab.com">Chris Andrews</a></strong>, <a href="https://www.builditdesignlab.com/#block-model-generator" target="_blank" rel="noopener noreferrer">BuildIT Design Labs</a></p>
                 <p style="margin-top: 20px;">
                     <strong data-i18n="about.license">License: MIT License</strong><br>
                     <strong data-i18n="about.copyright" data-i18n-params='{"year": "2026"}'>Copyright: © 2026 All rights reserved</strong>
                 </p>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button id="memoryBtn" class="header-btn" data-i18n="buttons.memory" title="Memory"><i class="fas fa-memory"></i> <span data-i18n="buttons.memory">Memory</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Panel (Non-modal) -->
+    <div id="statsPanel" class="memory-panel" style="display: none;">
+        <div class="memory-panel-content">
+            <div class="memory-panel-header">
+                <h3 data-i18n="stats.title">Statistics Dashboard</h3>
+                <span class="memory-panel-close">&times;</span>
+            </div>
+            <div class="memory-panel-body">
+                <div id="statsContent" style="font-size: 0.9em; line-height: 1.6;">
+                    <!-- Statistics will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model Gallery Panel (Non-modal) -->
+    <div id="galleryPanel" class="memory-panel" style="display: none;">
+        <div class="memory-panel-content">
+            <div class="memory-panel-header">
+                <h3 data-i18n="gallery.title">Model Gallery</h3>
+                <span class="memory-panel-close">&times;</span>
+            </div>
+            <div class="memory-panel-body">
+                <div style="margin-bottom: 12px;">
+                    <button id="saveCurrentModelBtn" class="header-btn" style="width: 100%;" data-i18n="gallery.saveCurrent"><i class="fas fa-star"></i> <span>Save Current Model</span></button>
+                </div>
+                <div id="galleryContent" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Gallery items will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Model Dialog (Modal) -->
+    <div id="saveModelModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2 data-i18n="gallery.saveModel">Save Model</h2>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="modelNameInput" data-i18n="gallery.modelName">Model Name:</label>
+                    <input type="text" id="modelNameInput" placeholder="Enter model name" style="width: 100%; padding: 8px; margin-top: 8px;">
+                </div>
+                <div style="margin-top: 16px; text-align: right;">
+                    <button id="saveModelConfirmBtn" class="header-btn" data-i18n="buttons.save"><i class="fas fa-star"></i> <span>Save</span></button>
+                    <button id="saveModelCancelBtn" class="header-btn" style="margin-left: 8px;" data-i18n="buttons.cancel"><i class="fas fa-times"></i> <span>Cancel</span></button>
+                </div>
             </div>
         </div>
     </div>
@@ -377,6 +448,28 @@
                     }
                 }
                 
+                // Create a stable handler function that captures the flag element
+                if (!window.languageFlagUpdateHandler) {
+                    window.languageFlagUpdateHandler = function(e) {
+                        const flagElement = document.getElementById('languageFlag');
+                        if (!flagElement) return;
+                        
+                        const locale = (e && e.detail && e.detail.locale) 
+                            ? e.detail.locale 
+                            : (typeof getLocale === 'function' ? getLocale() : 'en');
+                        
+                        const flagMap = {
+                            'en': 'images/Flag_of_the_United_Kingdom.svg',
+                            'es': 'images/Flag_of_Spain.svg',
+                            'fr': 'images/Flag_of_France.svg'
+                        };
+                        
+                        if (flagMap[locale]) {
+                            flagElement.src = flagMap[locale];
+                        }
+                    };
+                }
+                
                 // Toggle dropdown
                 languageSelectBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -429,24 +522,21 @@
                     });
                 });
                 
-                // Update display when locale changes - use a single handler
-                localeChangeHandler = function(e) {
-                    if (e && e.detail && e.detail.locale) {
-                        updateLanguageDisplay(e.detail.locale);
-                    } else if (typeof getLocale === 'function') {
-                        updateLanguageDisplay(getLocale());
-                    }
-                };
+                // Listen for locale changes using the stable handler
+                window.removeEventListener('localeChanged', window.languageFlagUpdateHandler);
+                window.addEventListener('localeChanged', window.languageFlagUpdateHandler);
                 
-                // Listen for locale changes (only add once)
-                window.removeEventListener('localeChanged', localeChangeHandler); // Remove if exists
-                window.addEventListener('localeChanged', localeChangeHandler);
-                
-                // Initial update
+                // Initial update - trigger the handler manually to set initial flag
                 function doInitialUpdate() {
                     if (typeof getLocale === 'function') {
                         const currentLocale = getLocale();
-                        updateLanguageDisplay(currentLocale);
+                        // Manually trigger the handler with the current locale
+                        if (window.languageFlagUpdateHandler) {
+                            window.languageFlagUpdateHandler({ detail: { locale: currentLocale } });
+                        } else {
+                            // Fallback to direct update
+                            updateLanguageDisplay(currentLocale);
+                        }
                     } else {
                         // Wait a bit more for i18n
                         setTimeout(doInitialUpdate, 100);

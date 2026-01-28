@@ -14,6 +14,14 @@ const STORAGE_KEY_PARAMS = 'blockModel_params';
 const LARGE_MODEL_THRESHOLD = 50000; // Use caching for models with > 50K blocks
 let isFirstGeneration = true; // Track if this is the first model generation on startup
 
+// Gamification: Statistics and Gallery
+const STATS_STORAGE_KEY = 'app_stats';
+const GALLERY_STORAGE_KEY = 'app_savedModels';
+const MAX_SAVED_MODELS = 50; // Limit gallery size
+const MAX_MODEL_NAME_LENGTH = 100; // Maximum model name length
+const VOLUME_CONVERSION_FACTOR = 1000000; // Convert to million m³
+let currentModelStats = null; // Current model statistics
+
 /**
  * Generate a cache key from parameters
  * @param {Object} params - Model parameters
@@ -157,14 +165,38 @@ function init() {
     const slicePositionSlider = document.getElementById('slicePosition');
     const slicePositionValue = document.getElementById('slicePositionValue');
     
+    if (sliceEnabledCheckbox) {
+        sliceEnabledCheckbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                trackToolUsage('sliceTool');
+            }
+        });
+    }
+    
     // Value visibility controls
     const valueVisibilityEnabledCheckbox = document.getElementById('valueVisibilityEnabled');
     const valueVisibilityModeSelect = document.getElementById('valueVisibilityMode');
     const valueVisibilityThresholdSlider = document.getElementById('valueVisibilityThreshold');
     const valueVisibilityThresholdValue = document.getElementById('valueVisibilityThresholdValue');
     
+    if (valueVisibilityEnabledCheckbox) {
+        valueVisibilityEnabledCheckbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                trackToolUsage('valueFilter');
+            }
+        });
+    }
+    
     // Ground layer controls
     const groundEnabledCheckbox = document.getElementById('groundEnabled');
+    
+    if (groundEnabledCheckbox) {
+        groundEnabledCheckbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                trackToolUsage('groundLayer');
+            }
+        });
+    }
     
     // Initialize visualization
     initVisualization(canvasContainer);
@@ -187,7 +219,10 @@ function init() {
     // Visualization controls
     if (viewModeSelect) {
         viewModeSelect.addEventListener('change', (e) => {
-            setViewMode(e.target.value);
+            const mode = e.target.value;
+            setViewMode(mode);
+            // Track view mode usage for statistics
+            trackViewMode(mode);
         });
     }
     
@@ -276,6 +311,9 @@ function init() {
     if (categoryFilterEnabledCheckbox) {
         categoryFilterEnabledCheckbox.addEventListener('change', (e) => {
             setCategoryFilterEnabled(e.target.checked);
+            if (e.target.checked) {
+                trackToolUsage('categoryFilter');
+            }
         });
     }
     
@@ -300,6 +338,9 @@ function init() {
     initAboutModal();
     initMemoryModal();
     initDocsButton();
+    initStatsPanel();
+    initGalleryPanel();
+    initModelStatsDisplay();
     
     updateStatus(t('status.generatingInitial'));
     
@@ -498,8 +539,25 @@ async function handleGenerate() {
             }, 100);
         }
         
-        // Enable export button
+        // Enable export button and save button
         document.getElementById('exportBtn').disabled = false;
+        const saveModelBtn = document.getElementById('saveModelBtn');
+        if (saveModelBtn && currentBlocks.length > 0) {
+            saveModelBtn.disabled = false;
+        }
+        
+        // Track model generation for statistics
+        trackModelGeneration(params, currentBlocks);
+        
+        // Calculate and store model statistics
+        currentModelStats = calculateModelStats(currentBlocks, params);
+        
+        // Display model statistics (use setTimeout to ensure DOM is ready)
+        setTimeout(() => {
+            if (typeof updateModelStatsDisplay === 'function') {
+                updateModelStatsDisplay();
+            }
+        }, 100);
         
         // Update status
         if (totalCells > 200000) {
@@ -667,6 +725,9 @@ async function handleExport() {
         const compressedSize = zipBlob.size;
         const compressionRatio = ((1 - compressedSize / originalSize) * 100).toFixed(1);
         
+        // Track export for statistics
+        trackExport();
+        
         updateStatus(
             t('status.exportSuccess', {
                 count: currentBlocks.length.toLocaleString(),
@@ -716,6 +777,9 @@ function exportAsCsv() {
         
         // Clean up
         setTimeout(() => URL.revokeObjectURL(url), 100);
+        
+        // Track export for statistics
+        trackExport();
         
         updateStatus(
             t('status.csvSuccess', { count: currentBlocks.length.toLocaleString() }),
@@ -969,6 +1033,989 @@ function updateStatus(message, type = 'info') {
     const statusEl = document.getElementById('status');
     statusEl.textContent = message;
     statusEl.className = `status ${type}`;
+}
+
+/**
+ * Update badge text with count
+ * @param {HTMLElement} button - Button element
+ * @param {string} translationKey - Translation key for button text
+ * @param {number} count - Count to display
+ */
+function updateBadgeText(button, translationKey, count) {
+    if (!button) return;
+    // Use translation function to get the base text, then append count if needed
+    const baseText = t(translationKey);
+    button.textContent = count > 0 ? `${baseText} (${count})` : baseText;
+}
+
+// ============================================================================
+// Gamification: UI Initialization
+// ============================================================================
+
+/**
+ * Initialize Statistics Panel
+ */
+function initStatsPanel() {
+    const statsBtn = document.getElementById('statsBtn');
+    const statsPanel = document.getElementById('statsPanel');
+    const statsClose = statsPanel?.querySelector('.memory-panel-close');
+    const statsContent = document.getElementById('statsContent');
+    
+    function updateStatsDisplay() {
+        if (!statsContent) return;
+        
+        const stats = loadStats();
+        const html = [];
+        
+        // Overview section
+        html.push(`<div style="margin-bottom: 16px;"><strong>${t('stats.overview')}</strong></div>`);
+        html.push(`<div style="margin-bottom: 8px;">${t('stats.totalModels')}: <strong>${stats.totalModels}</strong></div>`);
+        html.push(`<div style="margin-bottom: 8px;">${t('stats.totalExports')}: <strong>${stats.totalExports}</strong></div>`);
+        
+        if (stats.firstModelDate) {
+            const firstDate = new Date(stats.firstModelDate).toLocaleDateString();
+            html.push(`<div style="margin-bottom: 8px;">${t('stats.firstModel')}: ${firstDate}</div>`);
+        }
+        
+        if (stats.lastModelDate) {
+            const lastDate = new Date(stats.lastModelDate).toLocaleDateString();
+            html.push(`<div style="margin-bottom: 16px;">${t('stats.lastModel')}: ${lastDate}</div>`);
+        }
+        
+        // Patterns section
+        if (stats.patternsTried.length > 0) {
+            html.push(`<div style="margin-bottom: 16px;"><strong>${t('stats.patternsExplored')}</strong></div>`);
+            html.push(`<div style="margin-bottom: 8px;">${t('stats.patternsTried')}: <strong>${stats.patternsTried.length}</strong> ${t('stats.of12')}</div>`);
+            
+            // Most used pattern
+            let mostUsed = '';
+            let mostUsedCount = 0;
+            Object.keys(stats.patternUsage).forEach(pattern => {
+                if (stats.patternUsage[pattern] > mostUsedCount) {
+                    mostUsedCount = stats.patternUsage[pattern];
+                    mostUsed = pattern;
+                }
+            });
+            if (mostUsed) {
+                const patternName = t(`patterns.${mostUsed}`) || mostUsed;
+                html.push(`<div style="margin-bottom: 16px;">${t('stats.mostUsed')}: <strong>${escapeHtml(patternName)}</strong> (${mostUsedCount}x)</div>`);
+            }
+        }
+        
+        // Features section
+        html.push(`<div style="margin-bottom: 16px;"><strong>${t('stats.featuresUsed')}</strong></div>`);
+        html.push(`<div style="margin-bottom: 8px;">${t('stats.viewModes')}: <strong>${stats.viewModesUsed.length}</strong> ${t('stats.of7')}</div>`);
+        
+        const toolsUsedCount = Object.values(stats.toolsUsed).filter(v => v).length;
+        html.push(`<div style="margin-bottom: 16px;">${t('stats.toolsUsed')}: <strong>${toolsUsedCount}</strong> ${t('stats.of4')}</div>`);
+        
+        // Model characteristics
+        if (stats.largestModel > 0) {
+            html.push(`<div style="margin-bottom: 16px;"><strong>${t('stats.modelCharacteristics')}</strong></div>`);
+            html.push(`<div style="margin-bottom: 8px;">${t('stats.largestModel')}: <strong>${stats.largestModel.toLocaleString()}</strong> ${t('stats.blocks')}</div>`);
+            html.push(`<div style="margin-bottom: 8px;">${t('stats.averageModelSize')}: <strong>${stats.averageModelSize.toLocaleString()}</strong> ${t('stats.blocks')}</div>`);
+            if (stats.totalVolume > 0) {
+                const volumeKm3 = stats.totalVolume / VOLUME_CONVERSION_FACTOR;
+                html.push(`<div style="margin-bottom: 16px;">${t('stats.totalVolume')}: <strong>${volumeKm3.toFixed(2)}</strong> ${t('stats.millionM3')}</div>`);
+            }
+        }
+        
+        // Current session
+        if (stats.currentSession.modelsGenerated > 0) {
+            html.push(`<div style="margin-bottom: 16px;"><strong>${t('stats.currentSession')}</strong></div>`);
+            html.push(`<div style="margin-bottom: 8px;">${t('stats.modelsGenerated')}: <strong>${stats.currentSession.modelsGenerated}</strong></div>`);
+        }
+        
+        statsContent.innerHTML = html.join('');
+    }
+    
+    if (statsBtn && statsPanel) {
+        statsBtn.addEventListener('click', () => {
+            updateStatsDisplay();
+            statsPanel.style.display = statsPanel.style.display === 'none' ? 'block' : 'none';
+        });
+        
+        if (statsClose) {
+            statsClose.addEventListener('click', () => {
+                statsPanel.style.display = 'none';
+            });
+        }
+        
+        // Update stats badge (after i18n is ready)
+        function updateStatsBadge() {
+            if (!statsBtn) return;
+            const stats = loadStats();
+            const baseText = t('buttons.stats');
+            // Only update if translation is loaded (not the key itself)
+            if (baseText && baseText !== 'buttons.stats') {
+                // Update title attribute with badge count
+                const badgeText = stats.totalModels > 0 ? `${baseText} (${stats.totalModels})` : baseText;
+                statsBtn.setAttribute('title', badgeText);
+            }
+        }
+        
+        // Wait for i18n to initialize before updating badge
+        // Listen for localeChanged event to ensure translations are loaded
+        function initStatsBadge() {
+            const translated = t('buttons.stats');
+            if (translated && translated !== 'buttons.stats') {
+                // Translations are loaded
+                updateStatsBadge();
+                setInterval(updateStatsBadge, 5000); // Update every 5 seconds
+            } else {
+                // Wait a bit longer for translations
+                setTimeout(initStatsBadge, 100);
+            }
+        }
+        initStatsBadge();
+        
+        // Re-update badge when locale changes
+        window.addEventListener('localeChanged', () => {
+            setTimeout(updateStatsBadge, 50);
+        });
+    }
+}
+
+/**
+ * Initialize Gallery Panel
+ */
+function initGalleryPanel() {
+    const galleryBtn = document.getElementById('galleryBtn');
+    const galleryPanel = document.getElementById('galleryPanel');
+    const galleryClose = galleryPanel?.querySelector('.memory-panel-close');
+    const galleryContent = document.getElementById('galleryContent');
+    const saveCurrentModelBtn = document.getElementById('saveCurrentModelBtn');
+    const saveModelBtn = document.getElementById('saveModelBtn');
+    const saveModelModal = document.getElementById('saveModelModal');
+    const saveModelConfirmBtn = document.getElementById('saveModelConfirmBtn');
+    const saveModelCancelBtn = document.getElementById('saveModelCancelBtn');
+    const modelNameInput = document.getElementById('modelNameInput');
+    const saveModelModalClose = saveModelModal?.querySelector('.modal-close');
+    
+    function updateGalleryDisplay() {
+        if (!galleryContent) return;
+        
+        const models = getSavedModels();
+        
+        if (models.length === 0) {
+            galleryContent.innerHTML = `<p style="opacity: 0.7; text-align: center; padding: 20px;">${t('gallery.noModels')}</p>`;
+            return;
+        }
+        
+        const html = [];
+        models.forEach(model => {
+            const date = new Date(model.date).toLocaleDateString();
+            const patternName = t(`patterns.${model.preview.pattern}`) || model.preview.pattern;
+            
+            html.push(`<div style="border: 1px solid rgba(255,255,255,0.2); padding: 12px; margin-bottom: 8px; border-radius: 4px;">`);
+            html.push(`<div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">`);
+            html.push(`<div style="flex: 1;">`);
+            html.push(`<div style="font-weight: bold; margin-bottom: 4px;">${escapeHtml(model.name)}</div>`);
+            html.push(`<div style="font-size: 0.85em; opacity: 0.8;">${escapeHtml(patternName)} • ${model.stats.blockCount.toLocaleString()} ${t('gallery.blocks')} • ${date}</div>`);
+            html.push(`</div>`);
+            html.push(`<div style="display: flex; gap: 4px;">`);
+            html.push(`<button class="header-btn gallery-load-btn" style="padding: 4px 8px; font-size: 0.85em;" data-model-id="${escapeHtml(model.id)}">${t('gallery.load')}</button>`);
+            html.push(`<button class="header-btn gallery-delete-btn" style="padding: 4px 8px; font-size: 0.85em;" data-model-id="${escapeHtml(model.id)}">${t('gallery.delete')}</button>`);
+            html.push(`</div>`);
+            html.push(`</div>`);
+            html.push(`</div>`);
+        });
+        
+        galleryContent.innerHTML = html.join('');
+    }
+    
+    function openSaveModelDialog() {
+        if (!currentParams || !currentModelStats) {
+            updateStatus(t('gallery.generateFirst'), 'error');
+            return;
+        }
+        modelNameInput.value = '';
+        modelNameInput.placeholder = t('gallery.modelNamePlaceholder');
+        saveModelModal.style.display = 'block';
+        modelNameInput.focus();
+    }
+    
+    function saveCurrentModel() {
+        const name = modelNameInput.value.trim();
+        if (!name) {
+            updateStatus(t('gallery.enterName'), 'error');
+            return;
+        }
+        
+        if (name.length > MAX_MODEL_NAME_LENGTH) {
+            updateStatus(t('gallery.nameTooLong', { max: MAX_MODEL_NAME_LENGTH }), 'error');
+            return;
+        }
+        
+        try {
+            saveModelToGallery(name, currentParams, currentModelStats);
+            updateStatus(t('gallery.modelSaved', { name: name }), 'success');
+            saveModelModal.style.display = 'none';
+            updateGalleryDisplay();
+            if (typeof window.updateGalleryBadge === 'function') {
+                window.updateGalleryBadge();
+            }
+        } catch (e) {
+            updateStatus(t('gallery.saveError', { message: e.message }), 'error');
+        }
+    }
+    
+    // Event delegation for gallery buttons (avoids XSS risk from inline onclick)
+    function handleGalleryButtonClick(e) {
+        const target = e.target.closest('.gallery-load-btn, .gallery-delete-btn');
+        if (!target) return;
+        
+        const modelId = target.getAttribute('data-model-id');
+        if (!modelId) return;
+        
+        if (target.classList.contains('gallery-load-btn')) {
+            const model = loadModelFromGallery(modelId);
+            if (model) {
+                updateStatus(t('gallery.loading', { name: model.name }), 'info');
+                galleryPanel.style.display = 'none';
+                setTimeout(() => {
+                    handleGenerate();
+                    updateStatus(t('gallery.modelLoaded', { name: model.name }), 'success');
+                }, 100);
+            }
+        } else if (target.classList.contains('gallery-delete-btn')) {
+            if (confirm(t('gallery.deleteConfirm'))) {
+                deleteModelFromGallery(modelId);
+                updateGalleryDisplay();
+                if (typeof window.updateGalleryBadge === 'function') {
+                    window.updateGalleryBadge();
+                }
+                updateStatus(t('gallery.modelDeleted'), 'success');
+            }
+        }
+    }
+    
+    if (galleryBtn && galleryPanel) {
+        galleryBtn.addEventListener('click', () => {
+            updateGalleryDisplay();
+            galleryPanel.style.display = galleryPanel.style.display === 'none' ? 'block' : 'none';
+        });
+        
+        if (galleryClose) {
+            galleryClose.addEventListener('click', () => {
+                galleryPanel.style.display = 'none';
+            });
+        }
+        
+        if (saveCurrentModelBtn) {
+            saveCurrentModelBtn.addEventListener('click', openSaveModelDialog);
+        }
+        
+        if (saveModelBtn) {
+            saveModelBtn.addEventListener('click', openSaveModelDialog);
+        }
+        
+        if (saveModelConfirmBtn) {
+            saveModelConfirmBtn.addEventListener('click', saveCurrentModel);
+        }
+        
+        if (saveModelCancelBtn) {
+            saveModelCancelBtn.addEventListener('click', () => {
+                saveModelModal.style.display = 'none';
+            });
+        }
+        
+        if (saveModelModalClose) {
+            saveModelModalClose.addEventListener('click', () => {
+                saveModelModal.style.display = 'none';
+            });
+        }
+        
+        // Close modal on outside click
+        if (saveModelModal) {
+            saveModelModal.addEventListener('click', (e) => {
+                if (e.target === saveModelModal) {
+                    saveModelModal.style.display = 'none';
+                }
+            });
+        }
+        
+        // Enter key to save
+        if (modelNameInput) {
+            modelNameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    saveCurrentModel();
+                }
+            });
+        }
+        
+        // Event delegation for gallery buttons (secure, avoids XSS)
+        if (galleryContent) {
+            galleryContent.addEventListener('click', handleGalleryButtonClick);
+        }
+        
+        // Update gallery badge (after i18n is ready)
+        function updateGalleryBadgeSafe() {
+            if (!galleryBtn) return;
+            const models = getSavedModels();
+            const baseText = t('buttons.gallery');
+            // Only update if translation is loaded (not the key itself)
+            if (baseText && baseText !== 'buttons.gallery') {
+                // Update title attribute with badge count
+                const badgeText = models.length > 0 ? `${baseText} (${models.length})` : baseText;
+                galleryBtn.setAttribute('title', badgeText);
+            }
+        }
+        
+        // Wait for i18n to initialize before updating badge
+        function initGalleryBadge() {
+            const translated = t('buttons.gallery');
+            if (translated && translated !== 'buttons.gallery') {
+                // Translations are loaded
+                updateGalleryBadgeSafe();
+            } else {
+                // Wait a bit longer for translations
+                setTimeout(initGalleryBadge, 100);
+            }
+        }
+        initGalleryBadge();
+        
+        // Re-update badge when locale changes
+        window.addEventListener('localeChanged', () => {
+            setTimeout(updateGalleryBadgeSafe, 50);
+        });
+        
+        // Expose updateGalleryBadge for use elsewhere
+        window.updateGalleryBadge = updateGalleryBadgeSafe;
+    }
+}
+
+/**
+ * Initialize Model Statistics Display
+ */
+function initModelStatsDisplay() {
+    const modelStatsSection = document.getElementById('modelStatsSection');
+    const modelStatsContent = document.getElementById('modelStatsContent');
+    
+    // Ensure title is translated when section becomes visible
+    function ensureTitleTranslated() {
+        if (modelStatsSection) {
+            const titleElement = modelStatsSection.querySelector('h3[data-i18n="modelStats.title"]');
+            if (titleElement && typeof t === 'function') {
+                const translated = t('modelStats.title');
+                // Only update if translation is loaded (not the key itself)
+                if (translated && translated !== 'modelStats.title') {
+                    titleElement.textContent = translated;
+                }
+            }
+        }
+    }
+    
+    // Initial translation check
+    function initModelStatsTitle() {
+        const translated = t('modelStats.title');
+        if (translated && translated !== 'modelStats.title') {
+            ensureTitleTranslated();
+        } else {
+            // Wait for translations to load
+            setTimeout(initModelStatsTitle, 100);
+        }
+    }
+    initModelStatsTitle();
+    
+    function updateModelStatsDisplay() {
+        if (!modelStatsContent || !currentModelStats) {
+            if (modelStatsSection) {
+                modelStatsSection.style.display = 'none';
+            }
+            return;
+        }
+        
+        if (modelStatsSection) {
+            modelStatsSection.style.display = 'block';
+            ensureTitleTranslated(); // Ensure title is translated when shown
+        }
+        
+        const stats = currentModelStats;
+        const html = [];
+        
+        // Key stats (always visible)
+        html.push('<div style="margin-bottom: 12px;">');
+        html.push(`<div style="margin-bottom: 4px;"><strong>${t('modelStats.blocks')}:</strong> ${stats.blockCount.toLocaleString()}</div>`);
+        html.push(`<div style="margin-bottom: 4px;"><strong>${t('modelStats.volume')}:</strong> ${(stats.totalVolume / 1000).toFixed(1)}${t('modelStats.kM3')}</div>`);
+        html.push(`<div style="margin-bottom: 4px;"><strong>${t('modelStats.ore')}:</strong> ${stats.orePercentage.toFixed(1)}% | <strong>${t('modelStats.waste')}:</strong> ${stats.wastePercentage.toFixed(1)}%</div>`);
+        
+        if (stats.zoneCount > 0) {
+            html.push(`<div style="margin-bottom: 4px;"><strong>${t('modelStats.zones')}:</strong> ${stats.zoneCount}</div>`);
+        }
+        
+        if (stats.gradeCu.hasData) {
+            html.push(`<div style="margin-bottom: 4px;"><strong>${t('modelStats.cuGrade')}:</strong> ${stats.gradeCu.min.toFixed(2)}% - ${stats.gradeCu.max.toFixed(2)}% (${t('modelStats.avg')}: ${stats.gradeCu.avg.toFixed(2)}%)</div>`);
+        }
+        
+        if (stats.gradeAu.hasData) {
+            html.push(`<div style="margin-bottom: 4px;"><strong>${t('modelStats.auGrade')}:</strong> ${stats.gradeAu.min.toFixed(2)} - ${stats.gradeAu.max.toFixed(2)} ${t('modelStats.gPerT')} (${t('modelStats.avg')}: ${stats.gradeAu.avg.toFixed(2)})</div>`);
+        }
+        
+        html.push('</div>');
+        
+        // Interesting facts
+        if (stats.interestingFacts.length > 0) {
+            html.push('<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1);">');
+            html.push(`<div style="font-size: 0.85em; opacity: 0.9;"><strong>${t('modelStats.interestingFacts')}:</strong></div>`);
+            stats.interestingFacts.forEach(fact => {
+                html.push(`<div style="font-size: 0.85em; opacity: 0.8; margin-top: 4px;">• ${escapeHtml(fact)}</div>`);
+            });
+            html.push('</div>');
+        }
+        
+        modelStatsContent.innerHTML = html.join('');
+    }
+    
+    // Expose function to update display
+    window.updateModelStatsDisplay = updateModelStatsDisplay;
+    
+    // Ensure title is translated on locale change
+    window.addEventListener('localeChanged', ensureTitleTranslated);
+}
+
+// ============================================================================
+// Gamification: Statistics Tracking
+// ============================================================================
+
+/**
+ * Initialize statistics structure
+ * @returns {Object} Statistics object
+ */
+function initStats() {
+    return {
+        totalModels: 0,
+        totalExports: 0,
+        firstModelDate: null,
+        lastModelDate: null,
+        totalSessionTime: 0,
+        patternsTried: [],
+        patternUsage: {},
+        viewModesUsed: [],
+        toolsUsed: {
+            sliceTool: false,
+            valueFilter: false,
+            categoryFilter: false,
+            groundLayer: false
+        },
+        largestModel: 0,
+        averageModelSize: 0,
+        totalVolume: 0,
+        currentSession: {
+            startTime: Date.now(),
+            modelsGenerated: 0
+        }
+    };
+}
+
+/**
+ * Load statistics from localStorage
+ * @returns {Object} Statistics object
+ */
+function loadStats() {
+    try {
+        const stored = localStorage.getItem(STATS_STORAGE_KEY);
+        if (stored) {
+            const stats = JSON.parse(stored);
+            // Initialize current session if not present
+            if (!stats.currentSession || !stats.currentSession.startTime) {
+                stats.currentSession = {
+                    startTime: Date.now(),
+                    modelsGenerated: 0
+                };
+            }
+            return stats;
+        }
+    } catch (e) {
+        console.error('Error loading statistics:', e);
+    }
+    return initStats();
+}
+
+/**
+ * Save statistics to localStorage
+ * @param {Object} stats - Statistics object
+ */
+function saveStats(stats) {
+    try {
+        localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(stats));
+    } catch (e) {
+        console.error('Error saving statistics:', e);
+        // Handle quota exceeded error
+        if (e.name === 'QuotaExceededError' || e.code === 22) {
+            updateStatus(t('gallery.storageQuotaExceeded'), 'error');
+        }
+    }
+}
+
+/**
+ * Track model generation
+ * @param {Object} params - Model parameters
+ * @param {Array} blocks - Generated blocks
+ */
+function trackModelGeneration(params, blocks) {
+    const stats = loadStats();
+    const now = Date.now();
+    
+    // Update model counts
+    stats.totalModels++;
+    stats.currentSession.modelsGenerated++;
+    
+    // Update dates
+    if (!stats.firstModelDate) {
+        stats.firstModelDate = now;
+    }
+    stats.lastModelDate = now;
+    
+    // Track pattern
+    const pattern = params.patternType;
+    if (!stats.patternsTried.includes(pattern)) {
+        stats.patternsTried.push(pattern);
+    }
+    stats.patternUsage[pattern] = (stats.patternUsage[pattern] || 0) + 1;
+    
+    // Track model size
+    const blockCount = blocks.length;
+    if (blockCount > stats.largestModel) {
+        stats.largestModel = blockCount;
+    }
+    
+    // Update average model size
+    const totalModels = stats.totalModels;
+    stats.averageModelSize = Math.round(
+        ((stats.averageModelSize * (totalModels - 1)) + blockCount) / totalModels
+    );
+    
+    // Calculate and track volume (approximate)
+    const volume = params.cellSizeX * params.cellSizeY * params.cellSizeZ * blockCount;
+    stats.totalVolume += volume;
+    
+    saveStats(stats);
+    return stats;
+}
+
+/**
+ * Track export
+ */
+function trackExport() {
+    const stats = loadStats();
+    stats.totalExports++;
+    saveStats(stats);
+}
+
+/**
+ * Track view mode usage
+ * @param {string} mode - View mode name
+ */
+function trackViewMode(mode) {
+    const stats = loadStats();
+    if (!stats.viewModesUsed.includes(mode)) {
+        stats.viewModesUsed.push(mode);
+        saveStats(stats);
+    }
+}
+
+/**
+ * Track tool usage
+ * @param {string} tool - Tool name: 'sliceTool', 'valueFilter', 'categoryFilter', 'groundLayer'
+ */
+function trackToolUsage(tool) {
+    const stats = loadStats();
+    if (stats.toolsUsed.hasOwnProperty(tool)) {
+        stats.toolsUsed[tool] = true;
+        saveStats(stats);
+    }
+}
+
+/**
+ * Update session time
+ */
+function updateSessionTime() {
+    const stats = loadStats();
+    if (stats.currentSession.startTime) {
+        const sessionDuration = Math.floor((Date.now() - stats.currentSession.startTime) / 1000);
+        stats.totalSessionTime += sessionDuration;
+        stats.currentSession.startTime = Date.now(); // Reset for next session
+        saveStats(stats);
+    }
+}
+
+// ============================================================================
+// Gamification: Model Statistics Calculation
+// ============================================================================
+
+/**
+ * Calculate comprehensive statistics for a model
+ * @param {Array} blocks - Array of block objects
+ * @param {Object} params - Model parameters
+ * @returns {Object} Model statistics
+ */
+function calculateModelStats(blocks, params) {
+    if (!blocks || blocks.length === 0) {
+        return null;
+    }
+    
+    const stats = {
+        blockCount: blocks.length,
+        totalVolume: 0,
+        dimensions: { width: 0, height: 0, depth: 0 },
+        rockTypes: {},
+        orePercentage: 0,
+        wastePercentage: 0,
+        zones: {},
+        zoneCount: 0,
+        gradeCu: { min: null, max: null, avg: 0, hasData: false },
+        gradeAu: { min: null, max: null, avg: 0, hasData: false },
+        econValue: { min: null, max: null, avg: 0, total: 0, hasData: false },
+        density: { min: Infinity, max: -Infinity, avg: 0 },
+        interestingFacts: []
+    };
+    
+    // Calculate dimensions
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+    let minZ = Infinity, maxZ = -Infinity;
+    
+    let totalDensity = 0;
+    let totalGradeCu = 0, gradeCuCount = 0;
+    let totalGradeAu = 0, gradeAuCount = 0;
+    let totalEconValue = 0, econValueCount = 0;
+    let oreCount = 0;
+    
+    blocks.forEach(block => {
+        // Dimensions
+        minX = Math.min(minX, block.x);
+        maxX = Math.max(maxX, block.x);
+        minY = Math.min(minY, block.y);
+        maxY = Math.max(maxY, block.y);
+        minZ = Math.min(minZ, block.z);
+        maxZ = Math.max(maxZ, block.z);
+        
+        // Rock types
+        const rockType = block.rockType || block.material || 'Unknown';
+        stats.rockTypes[rockType] = (stats.rockTypes[rockType] || 0) + 1;
+        
+        // Ore vs waste
+        if (rockType.toLowerCase().includes('ore') || 
+            (block.gradeCu && block.gradeCu > 0.3) ||
+            (block.gradeAu && block.gradeAu > 0.5)) {
+            oreCount++;
+        }
+        
+        // Zones
+        if (block.zone !== undefined && block.zone !== null) {
+            const zone = String(block.zone);
+            stats.zones[zone] = (stats.zones[zone] || 0) + 1;
+        }
+        
+        // Density
+        if (block.density !== undefined && block.density !== null) {
+            stats.density.min = Math.min(stats.density.min, block.density);
+            stats.density.max = Math.max(stats.density.max, block.density);
+            totalDensity += block.density;
+        }
+        
+        // Cu Grade
+        if (block.gradeCu !== undefined && block.gradeCu !== null && !isNaN(block.gradeCu)) {
+            stats.gradeCu.hasData = true;
+            if (stats.gradeCu.min === null || block.gradeCu < stats.gradeCu.min) {
+                stats.gradeCu.min = block.gradeCu;
+            }
+            if (stats.gradeCu.max === null || block.gradeCu > stats.gradeCu.max) {
+                stats.gradeCu.max = block.gradeCu;
+            }
+            totalGradeCu += block.gradeCu;
+            gradeCuCount++;
+        }
+        
+        // Au Grade
+        if (block.gradeAu !== undefined && block.gradeAu !== null && !isNaN(block.gradeAu)) {
+            stats.gradeAu.hasData = true;
+            if (stats.gradeAu.min === null || block.gradeAu < stats.gradeAu.min) {
+                stats.gradeAu.min = block.gradeAu;
+            }
+            if (stats.gradeAu.max === null || block.gradeAu > stats.gradeAu.max) {
+                stats.gradeAu.max = block.gradeAu;
+            }
+            totalGradeAu += block.gradeAu;
+            gradeAuCount++;
+        }
+        
+        // Economic Value
+        if (block.econValue !== undefined && block.econValue !== null && !isNaN(block.econValue)) {
+            stats.econValue.hasData = true;
+            if (stats.econValue.min === null || block.econValue < stats.econValue.min) {
+                stats.econValue.min = block.econValue;
+            }
+            if (stats.econValue.max === null || block.econValue > stats.econValue.max) {
+                stats.econValue.max = block.econValue;
+            }
+            totalEconValue += block.econValue;
+            econValueCount++;
+        }
+    });
+    
+    // Calculate averages
+    stats.density.avg = blocks.length > 0 ? totalDensity / blocks.length : 0;
+    if (stats.density.min === Infinity) stats.density.min = 0;
+    if (stats.density.max === -Infinity) stats.density.max = 0;
+    
+    if (gradeCuCount > 0) {
+        stats.gradeCu.avg = totalGradeCu / gradeCuCount;
+    }
+    
+    if (gradeAuCount > 0) {
+        stats.gradeAu.avg = totalGradeAu / gradeAuCount;
+    }
+    
+    if (econValueCount > 0) {
+        stats.econValue.avg = totalEconValue / econValueCount;
+        stats.econValue.total = totalEconValue;
+    }
+    
+    // Calculate dimensions
+    stats.dimensions.width = maxX - minX + (params.cellSizeX || 0);
+    stats.dimensions.height = maxY - minY + (params.cellSizeY || 0);
+    stats.dimensions.depth = maxZ - minZ + (params.cellSizeZ || 0);
+    
+    // Calculate volume (cubic meters)
+    stats.totalVolume = params.cellSizeX * params.cellSizeY * params.cellSizeZ * blocks.length;
+    
+    // Calculate percentages
+    stats.orePercentage = blocks.length > 0 ? (oreCount / blocks.length) * 100 : 0;
+    stats.wastePercentage = 100 - stats.orePercentage;
+    
+    // Zone count
+    stats.zoneCount = Object.keys(stats.zones).length;
+    
+    // Generate interesting facts
+    stats.interestingFacts = generateInterestingFacts(stats, params);
+    
+    return stats;
+}
+
+/**
+ * Generate interesting facts about the model
+ * @param {Object} stats - Model statistics
+ * @param {Object} params - Model parameters
+ * @returns {Array} Array of fact strings
+ */
+function generateInterestingFacts(stats, params) {
+    const facts = [];
+    
+    // Volume fact
+    if (stats.totalVolume >= 1000) {
+        facts.push(t('modelStats.facts.volumeLarge', { volume: (stats.totalVolume / 1000).toFixed(1) }));
+    } else {
+        facts.push(t('modelStats.facts.volume', { volume: stats.totalVolume.toFixed(1) }));
+    }
+    
+    // Ore percentage
+    if (stats.orePercentage > 0) {
+        facts.push(t('modelStats.facts.orePercentage', { percentage: stats.orePercentage.toFixed(1) }));
+    }
+    
+    // Zone count
+    if (stats.zoneCount > 0) {
+        const zoneKey = stats.zoneCount > 1 ? 'modelStats.facts.zonesPlural' : 'modelStats.facts.zones';
+        facts.push(t(zoneKey, { count: stats.zoneCount }));
+    }
+    
+    // Grade ranges
+    if (stats.gradeCu.hasData) {
+        facts.push(t('modelStats.facts.cuGradeRange', { 
+            min: stats.gradeCu.min.toFixed(2), 
+            max: stats.gradeCu.max.toFixed(2) 
+        }));
+    }
+    
+    if (stats.gradeAu.hasData) {
+        facts.push(t('modelStats.facts.auGradeRange', { 
+            min: stats.gradeAu.min.toFixed(2), 
+            max: stats.gradeAu.max.toFixed(2) 
+        }));
+    }
+    
+    // Economic value
+    if (stats.econValue.hasData && stats.econValue.total > 0) {
+        facts.push(t('modelStats.facts.econValue', { value: stats.econValue.total.toLocaleString() }));
+    }
+    
+    // Rock type diversity
+    const rockTypeCount = Object.keys(stats.rockTypes).length;
+    if (rockTypeCount > 3) {
+        facts.push(t('modelStats.facts.rockTypes', { count: rockTypeCount }));
+    }
+    
+    // Model size category
+    if (stats.blockCount >= 100000) {
+        facts.push(t('modelStats.facts.sizeLarge'));
+    } else if (stats.blockCount >= 50000) {
+        facts.push(t('modelStats.facts.sizeMediumLarge'));
+    } else if (stats.blockCount >= 10000) {
+        facts.push(t('modelStats.facts.sizeMedium'));
+    }
+    
+    return facts;
+}
+
+// ============================================================================
+// Gamification: Model Gallery
+// ============================================================================
+
+/**
+ * Generate UUID v4
+ * Uses crypto.randomUUID() if available (more secure), falls back to Math.random()
+ * @returns {string} UUID
+ */
+function generateUUID() {
+    // Use crypto.randomUUID() if available (more secure)
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    // Fallback to Math.random() for older browsers
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+/**
+ * Load saved models from localStorage
+ * @returns {Array} Array of saved models
+ */
+function loadSavedModels() {
+    try {
+        const stored = localStorage.getItem(GALLERY_STORAGE_KEY);
+        if (stored) {
+            return JSON.parse(stored);
+        }
+    } catch (e) {
+        console.error('Error loading saved models:', e);
+    }
+    return [];
+}
+
+/**
+ * Save models array to localStorage
+ * @param {Array} models - Array of saved models
+ */
+function saveModelsToGallery(models) {
+    try {
+        // Limit to MAX_SAVED_MODELS, keep most recent
+        const sorted = models.sort((a, b) => new Date(b.date) - new Date(a.date));
+        const limited = sorted.slice(0, MAX_SAVED_MODELS);
+        localStorage.setItem(GALLERY_STORAGE_KEY, JSON.stringify(limited));
+    } catch (e) {
+        console.error('Error saving models to gallery:', e);
+        // Handle quota exceeded error
+        if (e.name === 'QuotaExceededError' || e.code === 22) {
+            updateStatus(t('gallery.storageQuotaExceeded'), 'error');
+            // Try to save fewer models
+            try {
+                const reduced = sorted.slice(0, Math.floor(MAX_SAVED_MODELS * 0.8));
+                localStorage.setItem(GALLERY_STORAGE_KEY, JSON.stringify(reduced));
+                updateStatus(t('gallery.storageReduced'), 'info');
+            } catch (e2) {
+                console.error('Failed to save reduced gallery:', e2);
+            }
+        }
+    }
+}
+
+/**
+ * Save current model to gallery
+ * @param {string} name - Model name
+ * @param {Object} params - Model parameters
+ * @param {Object} stats - Model statistics
+ * @returns {Object} Saved model object
+ */
+function saveModelToGallery(name, params, stats) {
+    const models = loadSavedModels();
+    
+    const savedModel = {
+        id: generateUUID(),
+        name: name.trim() || 'Unnamed Model',
+        date: new Date().toISOString(),
+        params: {
+            originX: params.originX,
+            originY: params.originY,
+            originZ: params.originZ,
+            cellSizeX: params.cellSizeX,
+            cellSizeY: params.cellSizeY,
+            cellSizeZ: params.cellSizeZ,
+            cellsX: params.cellsX,
+            cellsY: params.cellsY,
+            cellsZ: params.cellsZ,
+            patternType: params.patternType
+        },
+        stats: {
+            blockCount: stats.blockCount,
+            totalVolume: stats.totalVolume,
+            orePercentage: stats.orePercentage,
+            zoneCount: stats.zoneCount,
+            hasGrades: stats.gradeCu.hasData || stats.gradeAu.hasData,
+            hasZones: stats.zoneCount > 0
+        },
+        preview: {
+            pattern: params.patternType,
+            size: stats.blockCount < 10000 ? 'small' : stats.blockCount < 50000 ? 'medium' : 'large',
+            hasGrades: stats.gradeCu.hasData || stats.gradeAu.hasData,
+            hasZones: stats.zoneCount > 0
+        }
+    };
+    
+    models.push(savedModel);
+    saveModelsToGallery(models);
+    
+    return savedModel;
+}
+
+/**
+ * Load model from gallery (sets parameters and triggers generation)
+ * @param {string} modelId - Model ID
+ * @returns {Object|null} Model object or null if not found
+ */
+function loadModelFromGallery(modelId) {
+    const models = loadSavedModels();
+    const model = models.find(m => m.id === modelId);
+    
+    if (!model) {
+        return null;
+    }
+    
+    // Set form parameters
+    document.getElementById('originX').value = model.params.originX;
+    document.getElementById('originY').value = model.params.originY;
+    document.getElementById('originZ').value = model.params.originZ;
+    document.getElementById('cellSizeX').value = model.params.cellSizeX;
+    document.getElementById('cellSizeY').value = model.params.cellSizeY;
+    document.getElementById('cellSizeZ').value = model.params.cellSizeZ;
+    document.getElementById('cellsX').value = model.params.cellsX;
+    document.getElementById('cellsY').value = model.params.cellsY;
+    document.getElementById('cellsZ').value = model.params.cellsZ;
+    document.getElementById('patternType').value = model.params.patternType;
+    
+    return model;
+}
+
+/**
+ * Delete model from gallery
+ * @param {string} modelId - Model ID
+ */
+function deleteModelFromGallery(modelId) {
+    const models = loadSavedModels();
+    const filtered = models.filter(m => m.id !== modelId);
+    saveModelsToGallery(filtered);
+}
+
+/**
+ * Get all saved models
+ * @returns {Array} Array of saved models
+ */
+function getSavedModels() {
+    return loadSavedModels();
 }
 
 // Initialize when DOM is ready AND i18n is loaded

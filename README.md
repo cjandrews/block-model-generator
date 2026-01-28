@@ -54,6 +54,25 @@ A powerful web-based tool for generating realistic 3D block models for mining an
 - Memory monitoring tools
 - Efficient localStorage management
 
+### Gamification Features
+- **Statistics Dashboard**: Track your usage, patterns explored, and model characteristics
+  - View total models generated, exports, and session statistics
+  - See which patterns you've tried and most used patterns
+  - Monitor feature usage (view modes, tools)
+  - Track model characteristics (largest model, average size, total volume)
+- **Model Statistics Display**: View detailed statistics for each generated model
+  - Block count, volume, and dimensions
+  - Ore vs waste percentages
+  - Zone distribution
+  - Grade ranges (Cu, Au) if available
+  - Economic value statistics
+  - Interesting facts about your model
+- **Model Gallery**: Save and reload your favorite models
+  - Save models with custom names
+  - Quick access to saved model parameters
+  - Automatic model regeneration from saved parameters
+  - Gallery limited to 50 models (most recent kept)
+
 ### Documentation
 - Interactive documentation tool (opens in new window)
 - Comprehensive guides and tutorials
