@@ -177,7 +177,8 @@ const EMBEDDED_TRANSLATIONS = {
             "appName": "Mining Block Model Generator",
             "builtBy": "Built by <strong><a href=\"mailto:chris@builditdesignlab.com\">Chris Andrews</a></strong>, <a href=\"https://www.builditdesignlab.com/#block-model-generator\" target=\"_blank\" rel=\"noopener noreferrer\">BuildIT Design Labs</a>",
             "license": "License: MIT License",
-            "copyright": "Copyright: © {{year}} All rights reserved"
+            "copyright": "Copyright: © {{year}} All rights reserved",
+            "github": "GitHub"
         },
         "memory": {
             "title": "Memory Monitor",
@@ -808,7 +809,8 @@ const EMBEDDED_TRANSLATIONS = {
             "appName": "Generador de Modelo de Bloques Mineros",
             "builtBy": "Desarrollado por <strong><a href=\"mailto:chris@builditdesignlab.com\">Chris Andrews</a></strong>, <a href=\"https://www.builditdesignlab.com/#block-model-generator\" target=\"_blank\" rel=\"noopener noreferrer\">BuildIT Design Labs</a>",
             "license": "Licencia: Licencia MIT",
-            "copyright": "Copyright: © {{year}} Todos los derechos reservados"
+            "copyright": "Copyright: © {{year}} Todos los derechos reservados",
+            "github": "GitHub"
         },
         "memory": {
             "title": "Monitor de Memoria",
@@ -1364,7 +1366,8 @@ const EMBEDDED_TRANSLATIONS = {
             "appName": "Générateur de Modèle de Blocs Miniers",
             "builtBy": "Développé par <strong><a href=\"mailto:chris@builditdesignlab.com\">Chris Andrews</a></strong>, <a href=\"https://www.builditdesignlab.com/#block-model-generator\" target=\"_blank\" rel=\"noopener noreferrer\">BuildIT Design Labs</a>",
             "license": "Licence : Licence MIT",
-            "copyright": "Copyright : © {{year}} Tous droits réservés"
+            "copyright": "Copyright : © {{year}} Tous droits réservés",
+            "github": "GitHub"
         },
         "memory": {
             "title": "Moniteur de Mémoire",

@@ -226,7 +226,8 @@
     "appName": "Generador de Modelo de Bloques Mineros",
     "builtBy": "Desarrollado por <strong><a href=\"mailto:chris@builditdesignlab.com\">Chris Andrews</a></strong>, <a href=\"https://www.builditdesignlab.com/#block-model-generator\" target=\"_blank\" rel=\"noopener noreferrer\">BuildIT Design Labs</a>",
     "license": "Licencia: Licencia MIT",
-    "copyright": "Copyright: © {{year}} Todos los derechos reservados"
+    "copyright": "Copyright: © {{year}} Todos los derechos reservados",
+    "github": "GitHub"
   },
   "memory": {
     "title": "Monitor de Memoria",
