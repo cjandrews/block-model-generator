@@ -39,7 +39,8 @@ const EMBEDDED_TRANSLATIONS = {
             "stats": "Stats",
             "gallery": "Gallery",
             "save": "Save",
-            "cancel": "Cancel"
+            "cancel": "Cancel",
+            "saveImage": "Save Image"
         },
         "modelParameters": {
             "title": "Model Parameters",
@@ -594,7 +595,8 @@ const EMBEDDED_TRANSLATIONS = {
             "stats": "Estadísticas",
             "gallery": "Galería",
             "save": "Guardar",
-            "cancel": "Cancelar"
+            "cancel": "Cancelar",
+            "saveImage": "Guardar Imagen"
         },
         "modelParameters": {
             "title": "Parámetros del Modelo",
@@ -1149,7 +1151,8 @@ const EMBEDDED_TRANSLATIONS = {
             "stats": "Statistiques",
             "gallery": "Galerie",
             "save": "Enregistrer",
-            "cancel": "Annuler"
+            "cancel": "Annuler",
+            "saveImage": "Enregistrer l'Image"
         },
         "modelParameters": {
             "title": "Paramètres du Modèle",

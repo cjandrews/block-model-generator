@@ -13,7 +13,8 @@
     "stats": "Statistiques",
     "gallery": "Galerie",
     "save": "Enregistrer",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "saveImage": "Enregistrer l'Image"
   },
   "modelParameters": {
     "title": "Paramètres du Modèle",
