@@ -1991,8 +1991,8 @@ function updateAllTranslations() {
                     // No icon found, just update text content
                     element.textContent = translation;
                 }
-            } else if (element.tagName === 'LABEL' || element.tagName === 'P' || element.tagName === 'SPAN') {
-                // For labels and other elements, use innerHTML to preserve HTML tags
+            } else if (element.tagName === 'LABEL' || element.tagName === 'P' || element.tagName === 'SPAN' || element.tagName === 'STRONG') {
+                // For labels, paragraphs, spans, and strong (e.g. license with link), use innerHTML to preserve HTML tags
                 element.innerHTML = translation;
             } else if (element.tagName === 'H1' || element.tagName === 'H2' || element.tagName === 'H3' || element.tagName === 'H4' || element.tagName === 'H5' || element.tagName === 'H6') {
                 // For headings, preserve Font Awesome icons
